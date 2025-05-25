@@ -48,7 +48,7 @@ export function Step2Deductions({
   const handleInputChange = (
     field: 'propertyTax' | 'mortgageInterest' | 'donations',
     value: string,
-    input: ReturnType<typeof useValidatedInput>
+    input: any
   ) => {
     const numValue = parseFloat(value) || 0;
     input.setValue(numValue);

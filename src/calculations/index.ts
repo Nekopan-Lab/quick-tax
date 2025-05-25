@@ -1,4 +1,4 @@
-import { TaxFormData, TaxCalculationResult, SuggestedPayment } from '../types';
+import { TaxFormData, TaxCalculationResult, SuggestedPayment, TaxBreakdown } from '../types';
 import { calculateFederalTax } from './federalTax';
 import { calculateCaliforniaTax } from './californiaTax';
 import { FEDERAL_TAX_RATES_2025, CALIFORNIA_TAX_RATES_2025 } from '../constants/taxRates';
