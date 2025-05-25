@@ -61,3 +61,13 @@ All tax calculation functions must have comprehensive unit tests covering:
 - No external API calls or server communication
 - Clear data deletion functionality must be provided
 - Privacy disclaimer must be prominently displayed
+
+## Deployment Requirements
+
+- This application should be deployed via GitHub Pages, i.e. works as a static web page
+- The build process must generate static assets that can be served directly without a backend server
+
+## Development Guidelines
+
+- Always include summary of user's prompt as part of commit message
+- Reference the exact user request in commit messages using format: "As requested: '[user prompt]'"
