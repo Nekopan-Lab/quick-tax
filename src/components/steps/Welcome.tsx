@@ -13,7 +13,7 @@ export function Welcome({ onStart, onClearData }: WelcomeProps) {
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">QuickTax</h1>
-          <p className="text-gray-600">2025 Tax Year Estimator</p>
+          <p className="text-gray-600">Estimated Tax Calculator</p>
           
           <div className="mt-6 p-4 bg-amber-50 border-2 border-amber-300 rounded-lg max-w-3xl mx-auto">
             <p className="text-base font-medium text-amber-900">
@@ -30,7 +30,7 @@ export function Welcome({ onStart, onClearData }: WelcomeProps) {
         <div className="bg-white rounded-lg shadow-sm p-8">
           <h2 className="text-2xl font-semibold mb-4">Welcome to QuickTax</h2>
           <p className="text-gray-700 mb-6">
-            This application will help you estimate your 2025 federal and California state taxes 
+            This application will help you estimate your federal and California state taxes 
             throughout the tax year. All data is stored locally in your browser for privacy and 
             convenience.
           </p>

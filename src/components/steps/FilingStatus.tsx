@@ -5,8 +5,11 @@ interface FilingStatusProps {
   onPrevious: () => void
 }
 
+// Available tax years - can easily add more years in the future
+const AVAILABLE_TAX_YEARS = [2025] as const
+
 export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
-  const { filingStatus, setFilingStatus, includeCaliforniaTax, setIncludeCaliforniaTax } = useStore()
+  const { taxYear, setTaxYear, filingStatus, setFilingStatus, includeCaliforniaTax, setIncludeCaliforniaTax } = useStore()
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -14,6 +17,33 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
       
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-8 space-y-8">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Tax Year
+            </h3>
+            <div className="flex gap-4 mb-2">
+              {AVAILABLE_TAX_YEARS.map(year => (
+                <label key={year} className={`
+                  relative flex items-center px-6 py-3 border-2 rounded-xl cursor-pointer transition-all
+                  ${taxYear === year 
+                    ? 'border-blue-500 bg-blue-50 shadow-md' 
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                  }
+                `}>
+                  <input
+                    type="radio"
+                    name="taxYear"
+                    value={year}
+                    checked={taxYear === year}
+                    onChange={() => setTaxYear(year)}
+                    className="sr-only"
+                  />
+                  <span className="font-semibold text-gray-900">{year}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Select Your Filing Status

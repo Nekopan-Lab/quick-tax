@@ -67,7 +67,7 @@ function App() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">QuickTax</h1>
-              <p className="text-sm text-gray-600">2025 Tax Year Estimator</p>
+              <p className="text-sm text-gray-600">Estimated Tax Calculator</p>
             </div>
             
             {/* Tax Status Display */}

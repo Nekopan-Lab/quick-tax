@@ -43,6 +43,10 @@ interface IncomeData {
 }
 
 interface TaxStore {
+  // Tax Year
+  taxYear: number
+  setTaxYear: (year: number) => void
+  
   // Filing Status
   filingStatus: 'single' | 'marriedFilingJointly' | null
   setFilingStatus: (status: 'single' | 'marriedFilingJointly') => void
@@ -99,12 +103,14 @@ export const useStore = create<TaxStore>()(
   persist(
     (set) => ({
       // Initial state
+      taxYear: 2025,
       filingStatus: null,
       includeCaliforniaTax: true,
       userIncome: { ...initialIncomeData },
       spouseIncome: { ...initialIncomeData },
       
       // Actions
+      setTaxYear: (year) => set({ taxYear: year }),
       setFilingStatus: (status) => set({ filingStatus: status }),
       setIncludeCaliforniaTax: (include) => set({ includeCaliforniaTax: include }),
       
@@ -117,6 +123,7 @@ export const useStore = create<TaxStore>()(
       })),
       
       clearAllData: () => set({
+        taxYear: 2025,
         filingStatus: null,
         includeCaliforniaTax: true,
         userIncome: { ...initialIncomeData },
