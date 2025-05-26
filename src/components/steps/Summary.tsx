@@ -1,5 +1,10 @@
 import { useStore } from '../../store/useStore'
-import { calculateComprehensiveTax, calculateCaliforniaWithholdings } from '../../utils/taxCalculations'
+import { 
+  calculateComprehensiveTax, 
+  calculateCaliforniaWithholdings,
+  calculateFederalEstimatedPayments,
+  calculateCaliforniaEstimatedPayments
+} from '../../utils/taxCalculations'
 import { TaxYear } from '../../types'
 
 interface SummaryProps {
@@ -57,6 +62,16 @@ export function Summary({ onPrevious }: SummaryProps) {
   const californiaWithholdings = includeCaliforniaTax 
     ? calculateCaliforniaWithholdings(userIncome, spouseIncome, filingStatus)
     : 0
+    
+  // Calculate suggested estimated payments
+  const federalSuggestions = calculateFederalEstimatedPayments(federalOwed, estimatedPayments)
+  const californiaSuggestions = includeCaliforniaTax 
+    ? calculateCaliforniaEstimatedPayments(caOwed, estimatedPayments)
+    : []
+    
+  // Check if all payments have been made
+  const allFederalPaid = federalSuggestions.every(s => s.isPaid)
+  const allCaliforniaPaid = californiaSuggestions.every(s => s.isPaid)
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -184,51 +199,140 @@ export function Summary({ onPrevious }: SummaryProps) {
         )}
       </div>
 
-      {/* Suggested Estimated Payments */}
-      {(federalOwed > 0 || caOwed > 0) && (
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-medium mb-4">Suggested Remaining Estimated Payments</h3>
+      {/* Estimated Payments Status & Suggestions */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h3 className="text-lg font-medium mb-4">Estimated Tax Payments</h3>
+        
+        {/* Federal Payments */}
+        <div className="mb-6">
+          <h4 className="font-medium mb-3">Federal (IRS)</h4>
           
-          {federalOwed > 0 && (
-            <div className="mb-6">
-              <h4 className="font-medium mb-3">Federal (IRS)</h4>
-              <div className="bg-blue-50 p-4 rounded-md space-y-2">
-                <div className="flex justify-between">
-                  <span>Q2 - June 16, 2025</span>
-                  <span className="font-medium">${(federalOwed / 3).toFixed(0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Q3 - September 15, 2025</span>
-                  <span className="font-medium">${(federalOwed / 3).toFixed(0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Q4 - January 15, 2026</span>
-                  <span className="font-medium">${(federalOwed / 3).toFixed(0)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {includeCaliforniaTax && caOwed > 0 && (
-            <div>
-              <h4 className="font-medium mb-3">California (FTB)</h4>
-              <div className="bg-blue-50 p-4 rounded-md space-y-2">
-                <div className="flex justify-between">
-                  <span>Q2 - June 16, 2025 (40%)</span>
-                  <span className="font-medium">${(caOwed * 0.4).toFixed(0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Q4 - January 15, 2026 (30%)</span>
-                  <span className="font-medium">${(caOwed * 0.3).toFixed(0)}</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mt-2">
-                * California uses weighted percentages for estimated payments
+          {allFederalPaid && federalOwed !== 0 ? (
+            <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
+              <p className="font-medium mb-2">
+                All quarterly payments have been made.
               </p>
+              <p className="text-sm">
+                Based on current data, you would 
+                {federalOwed > 0 ? (
+                  <span className="font-medium text-red-600"> owe ${federalOwed.toLocaleString()}</span>
+                ) : (
+                  <span className="font-medium text-green-600"> be refunded ${Math.abs(federalOwed).toLocaleString()}</span>
+                )} when filing taxes.
+              </p>
+              <p className="text-xs text-gray-600 mt-2">
+                This is an estimation only and not professional tax advice.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {federalSuggestions.map((payment) => (
+                <div key={payment.quarter} className={`flex justify-between items-center p-3 rounded-md ${
+                  payment.isPaid ? 'bg-green-50 border border-green-200' : 
+                  payment.isPastDue ? 'bg-gray-50 border border-gray-200' :
+                  'bg-blue-50 border border-blue-200'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {payment.isPaid && (
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                    <span className={payment.isPaid ? 'font-medium' : payment.isPastDue ? 'text-gray-500' : ''}>
+                      {payment.quarter} - {payment.dueDate}
+                    </span>
+                    {payment.isPaid && <span className="text-sm text-green-600">(Paid)</span>}
+                    {payment.isPastDue && <span className="text-sm text-gray-500">(Past Due)</span>}
+                  </div>
+                  <span className={`font-medium ${
+                    payment.isPaid ? 'text-green-700' : 
+                    payment.isPastDue ? 'text-gray-500' :
+                    'text-blue-700'
+                  }`}>
+                    ${Math.round(payment.amount).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+              
+              {federalOwed <= 0 && !allFederalPaid && (
+                <p className="text-sm text-gray-600 mt-2">
+                  No additional payments needed - you're on track for a refund.
+                </p>
+              )}
             </div>
           )}
         </div>
-      )}
+
+        {/* California Payments */}
+        {includeCaliforniaTax && (
+          <div>
+            <h4 className="font-medium mb-3">California (FTB)</h4>
+            
+            {allCaliforniaPaid && caOwed !== 0 ? (
+              <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
+                <p className="font-medium mb-2">
+                  All quarterly payments have been made.
+                </p>
+                <p className="text-sm">
+                  Based on current data, you would 
+                  {caOwed > 0 ? (
+                    <span className="font-medium text-red-600"> owe ${caOwed.toLocaleString()}</span>
+                  ) : (
+                    <span className="font-medium text-green-600"> be refunded ${Math.abs(caOwed).toLocaleString()}</span>
+                  )} when filing taxes.
+                </p>
+                <p className="text-xs text-gray-600 mt-2">
+                  This is an estimation only and not professional tax advice.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="space-y-2">
+                  {californiaSuggestions.map((payment) => (
+                    <div key={payment.quarter} className={`flex justify-between items-center p-3 rounded-md ${
+                      payment.isPaid ? 'bg-green-50 border border-green-200' : 
+                      payment.isPastDue ? 'bg-gray-50 border border-gray-200' :
+                      'bg-blue-50 border border-blue-200'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        {payment.isPaid && (
+                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        <span className={payment.isPaid ? 'font-medium' : payment.isPastDue ? 'text-gray-500' : ''}>
+                          {payment.quarter} - {payment.dueDate}
+                        </span>
+                        {payment.isPaid && <span className="text-sm text-green-600">(Paid)</span>}
+                        {payment.isPastDue && <span className="text-sm text-gray-500">(Past Due)</span>}
+                      </div>
+                      <span className={`font-medium ${
+                        payment.isPaid ? 'text-green-700' : 
+                        payment.isPastDue ? 'text-gray-500' :
+                        'text-blue-700'
+                      }`}>
+                        ${Math.round(payment.amount).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                  
+                  {caOwed <= 0 && !allCaliforniaPaid && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      No additional payments needed - you're on track for a refund.
+                    </p>
+                  )}
+                </div>
+                
+                {caOwed > 0 && !allCaliforniaPaid && (
+                  <p className="text-xs text-gray-600 mt-3">
+                    * California uses weighted percentages for estimated payments
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="flex justify-between mt-8">
         <button

@@ -142,9 +142,25 @@ The application will feature a clear, step-by-step flow to guide users through t
        * Total Estimated Payments Made YTD.  
        * Net Tax Owed / Overpaid.  
      * **Suggested Remaining Estimated Payments:**  
-       * **Federal:** If tax is owed, divide the remaining owed amount equally among the remaining due dates. Display each payment amount and its corresponding due date.  
-       * **California:** If tax is owed, calculate remaining payments based on CA's weighted schedule (30% Q1, 40% Q2, 30% Q4), considering payments already made. Display each payment amount and its corresponding due date \- *This section will be hidden if California State Tax is not selected.*  
-       * **Context:** Display suggested payments alongside payments already made to show the full picture.
+       * **Display Logic:**  
+         * Show all payment quarters with clear visual distinction:  
+           * Paid quarters: Green background with checkmark and "(Paid)" label  
+           * Future unpaid quarters: Blue background with suggested amount  
+           * Past due unpaid quarters: Gray background with $0 and "(Past Due)" label  
+         * Calculate suggested future payments only for unpaid quarters that haven't passed their due date  
+         * If all payments have been made, show final tax owed/overpaid amount with reminder that this is an estimation  
+       * **Federal Calculation:**  
+         * If tax is owed and unpaid quarters remain, divide the remaining owed amount equally among the unpaid quarterly due dates  
+         * Example: If Q1 is paid, divide remaining balance equally among Q2, Q3, and Q4  
+       * **California Calculation:**  
+         * If tax is owed and unpaid quarters remain, calculate remaining payments based on CA's weighted schedule, adjusting weights proportionally based on unpaid quarters  
+         * Original weights: Q1 (30%), Q2 (40%), Q4 (30%)  
+         * Example adjustments:  
+           * If only Q1 paid: Use 4:3 weight ratio for Q2:Q4 (57.1% Q2, 42.9% Q4)  
+           * If only Q2 paid: Use 1:1 weight ratio for Q1:Q4 (50% Q1, 50% Q4)  
+           * If Q1 and Q2 paid: 100% to Q4  
+         * *This section will be hidden if California State Tax is not selected.*  
+       * **Important Note:** When all payments are made, display: "Based on current data, you would [owe/be refunded] $X when filing taxes. This is an estimation only and not professional tax advice."
 
 ### **4.2. Navigation**
 
