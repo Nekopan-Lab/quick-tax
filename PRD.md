@@ -142,7 +142,7 @@ The application will feature a clear, step-by-step flow to guide users through t
 
 ### **4.3. Visual Design**
 
-* **Theme:** The application will utilize a dark theme for its user interface. This includes dark backgrounds, light text, and appropriately contrasting accent colors to ensure readability and a modern aesthetic.
+* **Theme:** The application will utilize a light theme for its user interface. This includes light backgrounds, dark text, and appropriately contrasting accent colors to ensure readability and a clean, professional aesthetic.
 
 ## **5\. Data Management**
 
@@ -164,7 +164,7 @@ The application will feature a clear, step-by-step flow to guide users through t
 ## **6\. Technical Considerations**
 
 * **Frontend Framework:** A modern JavaScript framework (e.g., React, Vue, Angular) is recommended for building a responsive and interactive single-page application.  
-* **Styling:** Tailwind CSS for rapid and consistent UI development, ensuring responsiveness across devices. The dark theme will be implemented using Tailwind's dark mode capabilities or custom CSS variables.  
+* **Styling:** Tailwind CSS for rapid and consistent UI development, ensuring responsiveness across devices. The light theme will be implemented using Tailwind's default light mode styling or custom CSS variables.  
 * **State Management:** Robust state management to handle real-time updates and data persistence (e.g., React Context API, Redux, Zustand).  
 * **Input Validation:** Client-side validation for all input fields to ensure data integrity (e.g., numeric inputs, date formats).  
 * **Calculations:** All tax calculations will be performed client-side using JavaScript.  
