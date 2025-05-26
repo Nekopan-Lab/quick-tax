@@ -77,32 +77,28 @@ Follow the deployment requirements in PRD Section 8:
 #### Local Testing After Code Changes
 **MANDATORY**: After ANY code change, you MUST test BEFORE committing:
 
-1. **Kill any existing dev server:**
+1. **Check if dev server is already running:**
    ```bash
-   lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+   curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/quick-tax/
    ```
 
-2. **Start development server:**
+2. **If server is NOT running (non-200 response), start it:**
    ```bash
    nohup npm run dev > dev.log 2>&1 & echo $!
+   sleep 3
    ```
 
-3. **Verify server is running:**
-   ```bash
-   sleep 3 && curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/quick-tax/
-   ```
-   - Should return HTTP 200 status code
-
-4. **Provide clickable link to user:**
+3. **Provide clickable link to user:**
    ```
    ✅ Development server running: http://localhost:5173/quick-tax/
    ```
+   Note: Vite's hot module replacement will automatically reload changes in the browser
 
-5. **Wait for user confirmation:** Only commit and push changes AFTER the user has tested and confirmed the changes work correctly.
+4. **Wait for user confirmation:** Only commit and push changes AFTER the user has tested and confirmed the changes work correctly.
 
-6. **IMPORTANT**: This testing step must happen BEFORE any git commits. The workflow is:
+5. **IMPORTANT**: This testing step must happen BEFORE any git commits. The workflow is:
    - Make code changes
-   - Start dev server and verify with curl
+   - Check if dev server is running (if not, start it)
    - Provide test link to user
    - Wait for user feedback
    - Only then commit and push if approved
