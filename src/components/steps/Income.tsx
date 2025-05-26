@@ -1,11 +1,10 @@
 import { useState } from 'react'
+import { useStore } from '../../store/useStore'
 
 interface IncomeProps {
   onNext: () => void
   onPrevious: () => void
 }
-
-type IncomeMode = 'simple' | 'detailed'
 
 interface FutureRSUVest {
   id: string
@@ -16,61 +15,43 @@ interface FutureRSUVest {
 
 export function Income({ onNext, onPrevious }: IncomeProps) {
   const [activeTab, setActiveTab] = useState<'user' | 'spouse'>('user')
-  const [incomeMode, setIncomeMode] = useState<IncomeMode>('detailed')
-  const showSpouseTab = false // TODO: Get from filing status
-
-  // Investment Income states
-  const [ordinaryDividends, setOrdinaryDividends] = useState('')
-  const [qualifiedDividends, setQualifiedDividends] = useState('')
-  const [interestIncome, setInterestIncome] = useState('')
-  const [shortTermGains, setShortTermGains] = useState('')
-  const [longTermGains, setLongTermGains] = useState('')
-
-  // YTD W2 states
-  const [ytdWage, setYtdWage] = useState('')
-  const [ytdFederalWithhold, setYtdFederalWithhold] = useState('')
-  const [ytdStateWithhold, setYtdStateWithhold] = useState('')
-
-  // Future Income - Simple Mode
-  const [futureWage, setFutureWage] = useState('')
-  const [futureFederalWithhold, setFutureFederalWithhold] = useState('')
-  const [futureStateWithhold, setFutureStateWithhold] = useState('')
-
-  // Future Income - Detailed Mode
-  const [paycheckWage, setPaycheckWage] = useState('')
-  const [paycheckFederal, setPaycheckFederal] = useState('')
-  const [paycheckState, setPaycheckState] = useState('')
-  const [payFrequency, setPayFrequency] = useState<'biweekly' | 'monthly'>('biweekly')
-  const [nextPayDate, setNextPayDate] = useState('')
-
-  const [rsuVestWage, setRsuVestWage] = useState('')
-  const [rsuVestFederal, setRsuVestFederal] = useState('')
-  const [rsuVestState, setRsuVestState] = useState('')
-  const [vestPrice, setVestPrice] = useState('')
-  const [futureRSUVests, setFutureRSUVests] = useState<FutureRSUVest[]>([])
+  const { filingStatus, userIncome, spouseIncome, setUserIncome, setSpouseIncome } = useStore()
+  const showSpouseTab = filingStatus === 'marriedFilingJointly'
+  
+  // Get the current income data based on active tab
+  const currentIncome = activeTab === 'user' ? userIncome : spouseIncome
+  const setCurrentIncome = activeTab === 'user' ? setUserIncome : setSpouseIncome
 
   // Calculate tax withholding percentages from last vest
-  const federalWithholdingRate = rsuVestWage && rsuVestFederal ? (Number(rsuVestFederal) / Number(rsuVestWage)) : 0.22
-  const stateWithholdingRate = rsuVestWage && rsuVestState ? (Number(rsuVestState) / Number(rsuVestWage)) : 0.1
+  const federalWithholdingRate = currentIncome.rsuVestWage && currentIncome.rsuVestFederal ? 
+    (Number(currentIncome.rsuVestFederal) / Number(currentIncome.rsuVestWage)) : 0.22
+  const stateWithholdingRate = currentIncome.rsuVestWage && currentIncome.rsuVestState ? 
+    (Number(currentIncome.rsuVestState) / Number(currentIncome.rsuVestWage)) : 0.1
 
   const addFutureRSUVest = () => {
     const newVest: FutureRSUVest = {
       id: Date.now().toString(),
       date: '',
       shares: '',
-      expectedPrice: vestPrice || ''
+      expectedPrice: currentIncome.vestPrice || ''
     }
-    setFutureRSUVests([...futureRSUVests, newVest])
+    setCurrentIncome({ 
+      futureRSUVests: [...currentIncome.futureRSUVests, newVest] 
+    })
   }
 
   const updateFutureRSUVest = (id: string, field: keyof FutureRSUVest, value: string) => {
-    setFutureRSUVests(futureRSUVests.map(vest => 
-      vest.id === id ? { ...vest, [field]: value } : vest
-    ))
+    setCurrentIncome({
+      futureRSUVests: currentIncome.futureRSUVests.map(vest => 
+        vest.id === id ? { ...vest, [field]: value } : vest
+      )
+    })
   }
 
   const removeFutureRSUVest = (id: string) => {
-    setFutureRSUVests(futureRSUVests.filter(vest => vest.id !== id))
+    setCurrentIncome({
+      futureRSUVests: currentIncome.futureRSUVests.filter(vest => vest.id !== id)
+    })
   }
 
   return (
@@ -118,8 +99,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   </label>
                   <input
                     type="number"
-                    value={ordinaryDividends}
-                    onChange={(e) => setOrdinaryDividends(e.target.value)}
+                    value={currentIncome.ordinaryDividends}
+                    onChange={(e) => setCurrentIncome({ ordinaryDividends: e.target.value })}
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
@@ -132,8 +113,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   </label>
                   <input
                     type="number"
-                    value={qualifiedDividends}
-                    onChange={(e) => setQualifiedDividends(e.target.value)}
+                    value={currentIncome.qualifiedDividends}
+                    onChange={(e) => setCurrentIncome({ qualifiedDividends: e.target.value })}
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
@@ -145,8 +126,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   </label>
                   <input
                     type="number"
-                    value={interestIncome}
-                    onChange={(e) => setInterestIncome(e.target.value)}
+                    value={currentIncome.interestIncome}
+                    onChange={(e) => setCurrentIncome({ interestIncome: e.target.value })}
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
@@ -163,8 +144,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     </label>
                     <input
                       type="number"
-                      value={shortTermGains}
-                      onChange={(e) => setShortTermGains(e.target.value)}
+                      value={currentIncome.shortTermGains}
+                      onChange={(e) => setCurrentIncome({ shortTermGains: e.target.value })}
                       placeholder="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     />
@@ -176,8 +157,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     </label>
                     <input
                       type="number"
-                      value={longTermGains}
-                      onChange={(e) => setLongTermGains(e.target.value)}
+                      value={currentIncome.longTermGains}
+                      onChange={(e) => setCurrentIncome({ longTermGains: e.target.value })}
                       placeholder="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     />
@@ -197,8 +178,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 </label>
                 <input
                   type="number"
-                  value={ytdWage}
-                  onChange={(e) => setYtdWage(e.target.value)}
+                  value={currentIncome.ytdWage}
+                  onChange={(e) => setCurrentIncome({ ytdWage: e.target.value })}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
@@ -210,8 +191,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 </label>
                 <input
                   type="number"
-                  value={ytdFederalWithhold}
-                  onChange={(e) => setYtdFederalWithhold(e.target.value)}
+                  value={currentIncome.ytdFederalWithhold}
+                  onChange={(e) => setCurrentIncome({ ytdFederalWithhold: e.target.value })}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
@@ -223,8 +204,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 </label>
                 <input
                   type="number"
-                  value={ytdStateWithhold}
-                  onChange={(e) => setYtdStateWithhold(e.target.value)}
+                  value={currentIncome.ytdStateWithhold}
+                  onChange={(e) => setCurrentIncome({ ytdStateWithhold: e.target.value })}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
@@ -242,8 +223,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 <input
                   type="radio"
                   value="simple"
-                  checked={incomeMode === 'simple'}
-                  onChange={() => setIncomeMode('simple')}
+                  checked={currentIncome.incomeMode === 'simple'}
+                  onChange={() => setCurrentIncome({ incomeMode: 'simple' })}
                   className="mr-2"
                 />
                 <span className="text-sm font-medium">Simple Estimation</span>
@@ -252,15 +233,15 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 <input
                   type="radio"
                   value="detailed"
-                  checked={incomeMode === 'detailed'}
-                  onChange={() => setIncomeMode('detailed')}
+                  checked={currentIncome.incomeMode === 'detailed'}
+                  onChange={() => setCurrentIncome({ incomeMode: 'detailed' })}
                   className="mr-2"
                 />
                 <span className="text-sm font-medium">Detailed (Paycheck/RSU)</span>
               </label>
             </div>
 
-            {incomeMode === 'simple' ? (
+            {currentIncome.incomeMode === 'simple' ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -268,8 +249,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   </label>
                   <input
                     type="number"
-                    value={futureWage}
-                    onChange={(e) => setFutureWage(e.target.value)}
+                    value={currentIncome.futureWage}
+                    onChange={(e) => setCurrentIncome({ futureWage: e.target.value })}
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
@@ -281,8 +262,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   </label>
                   <input
                     type="number"
-                    value={futureFederalWithhold}
-                    onChange={(e) => setFutureFederalWithhold(e.target.value)}
+                    value={currentIncome.futureFederalWithhold}
+                    onChange={(e) => setCurrentIncome({ futureFederalWithhold: e.target.value })}
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
@@ -294,8 +275,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   </label>
                   <input
                     type="number"
-                    value={futureStateWithhold}
-                    onChange={(e) => setFutureStateWithhold(e.target.value)}
+                    value={currentIncome.futureStateWithhold}
+                    onChange={(e) => setCurrentIncome({ futureStateWithhold: e.target.value })}
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
@@ -313,8 +294,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       </label>
                       <input
                         type="number"
-                        value={paycheckWage}
-                        onChange={(e) => setPaycheckWage(e.target.value)}
+                        value={currentIncome.paycheckWage}
+                        onChange={(e) => setCurrentIncome({ paycheckWage: e.target.value })}
                         placeholder="0"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       />
@@ -326,8 +307,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       </label>
                       <input
                         type="number"
-                        value={paycheckFederal}
-                        onChange={(e) => setPaycheckFederal(e.target.value)}
+                        value={currentIncome.paycheckFederal}
+                        onChange={(e) => setCurrentIncome({ paycheckFederal: e.target.value })}
                         placeholder="0"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       />
@@ -339,8 +320,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       </label>
                       <input
                         type="number"
-                        value={paycheckState}
-                        onChange={(e) => setPaycheckState(e.target.value)}
+                        value={currentIncome.paycheckState}
+                        onChange={(e) => setCurrentIncome({ paycheckState: e.target.value })}
                         placeholder="0"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       />
@@ -351,8 +332,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         Payment Frequency
                       </label>
                       <select
-                        value={payFrequency}
-                        onChange={(e) => setPayFrequency(e.target.value as 'biweekly' | 'monthly')}
+                        value={currentIncome.payFrequency}
+                        onChange={(e) => setCurrentIncome({ payFrequency: e.target.value as 'biweekly' | 'monthly' })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       >
                         <option value="biweekly">Bi-weekly</option>
@@ -366,8 +347,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       </label>
                       <input
                         type="date"
-                        value={nextPayDate}
-                        onChange={(e) => setNextPayDate(e.target.value)}
+                        value={currentIncome.nextPayDate}
+                        onChange={(e) => setCurrentIncome({ nextPayDate: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       />
                     </div>
@@ -401,8 +382,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         </label>
                         <input
                           type="number"
-                          value={rsuVestWage}
-                          onChange={(e) => setRsuVestWage(e.target.value)}
+                          value={currentIncome.rsuVestWage}
+                          onChange={(e) => setCurrentIncome({ rsuVestWage: e.target.value })}
                           placeholder="Optional"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
@@ -415,8 +396,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         </label>
                         <input
                           type="number"
-                          value={rsuVestFederal}
-                          onChange={(e) => setRsuVestFederal(e.target.value)}
+                          value={currentIncome.rsuVestFederal}
+                          onChange={(e) => setCurrentIncome({ rsuVestFederal: e.target.value })}
                           placeholder="Optional"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
@@ -429,8 +410,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         </label>
                         <input
                           type="number"
-                          value={rsuVestState}
-                          onChange={(e) => setRsuVestState(e.target.value)}
+                          value={currentIncome.rsuVestState}
+                          onChange={(e) => setCurrentIncome({ rsuVestState: e.target.value })}
                           placeholder="Optional"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
@@ -443,8 +424,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         </label>
                         <input
                           type="number"
-                          value={vestPrice}
-                          onChange={(e) => setVestPrice(e.target.value)}
+                          value={currentIncome.vestPrice}
+                          onChange={(e) => setCurrentIncome({ vestPrice: e.target.value })}
                           placeholder="Optional"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
@@ -464,13 +445,13 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       </button>
                     </div>
 
-                    {futureRSUVests.length === 0 ? (
+                    {currentIncome.futureRSUVests.length === 0 ? (
                       <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-md">
                         No future vests added. Click "Add Vest" to add upcoming RSU vesting events.
                       </p>
                     ) : (
                       <div className="space-y-4">
-                        {futureRSUVests.map((vest) => {
+                        {currentIncome.futureRSUVests.map((vest) => {
                           const vestValue = Number(vest.shares) * Number(vest.expectedPrice)
                           const estimatedFederal = vestValue * federalWithholdingRate
                           const estimatedState = vestValue * stateWithholdingRate
@@ -522,7 +503,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                     type="number"
                                     value={vest.expectedPrice}
                                     onChange={(e) => updateFutureRSUVest(vest.id, 'expectedPrice', e.target.value)}
-                                    placeholder={vestPrice || "0"}
+                                    placeholder={currentIncome.vestPrice || "0"}
                                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md"
                                   />
                                 </div>
@@ -558,7 +539,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       </div>
                     )}
                     
-                    {futureRSUVests.length > 0 && rsuVestWage && (
+                    {currentIncome.futureRSUVests.length > 0 && currentIncome.rsuVestWage && (
                       <div className="mt-3 p-3 bg-blue-50 rounded-md">
                         <p className="text-xs text-blue-800">
                           Tax withholding estimates are based on your last vest rates: 
