@@ -10,16 +10,12 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="bg-blue-600 px-8 py-6">
-          <h2 className="text-2xl font-bold text-white">Filing Status & Tax Scope</h2>
-          <p className="text-blue-100 mt-2">Let's start with your basic tax information</p>
-        </div>
-        
+      <h2 className="text-2xl font-semibold mb-6">Filing Status & Tax Scope</h2>
+      
+      <div className="bg-white rounded-lg shadow-sm">
         <div className="p-8 space-y-8">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">1</span>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Select Your Filing Status
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,8 +84,7 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="bg-blue-100 text-blue-600 rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm font-bold">2</span>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Select Tax Jurisdictions
             </h3>
             <div className="bg-gray-50 rounded-xl p-6">
@@ -129,20 +124,21 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
           </div>
         </div>
 
-        <div className="bg-gray-50 px-8 py-6 flex justify-between items-center">
-          <button
-            onClick={onPrevious}
-            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-white hover:shadow-sm transition-all font-medium"
-          >
-            Previous
-          </button>
-          <button
-            onClick={onNext}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium shadow-md hover:shadow-lg"
-          >
-            Continue to Deductions →
-          </button>
-        </div>
+      </div>
+
+      <div className="flex justify-between mt-8">
+        <button
+          onClick={onPrevious}
+          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+        >
+          Previous
+        </button>
+        <button
+          onClick={onNext}
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Next
+        </button>
       </div>
     </div>
   )

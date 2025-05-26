@@ -16,12 +16,9 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="bg-green-600 px-8 py-6">
-          <h2 className="text-2xl font-bold text-white">Deductions</h2>
-          <p className="text-green-100 mt-2">We'll help you maximize your tax deductions</p>
-        </div>
-        
+      <h2 className="text-2xl font-semibold mb-6">Deductions</h2>
+      
+      <div className="bg-white rounded-lg shadow-sm">
         <div className="p-8">
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
             <p className="text-sm text-blue-800">
@@ -138,21 +135,21 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="bg-gray-50 px-8 py-6 flex justify-between items-center">
-          <button
-            onClick={onPrevious}
-            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-white hover:shadow-sm transition-all font-medium"
-          >
-            ← Previous
-          </button>
-          <button
-            onClick={onNext}
-            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium shadow-md hover:shadow-lg"
-          >
-            Continue to Income →
-          </button>
-        </div>
+      <div className="flex justify-between mt-8">
+        <button
+          onClick={onPrevious}
+          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+        >
+          Previous
+        </button>
+        <button
+          onClick={onNext}
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Next
+        </button>
       </div>
     </div>
   )

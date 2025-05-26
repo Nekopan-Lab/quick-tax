@@ -20,7 +20,7 @@ export function Summary({ onPrevious }: SummaryProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6">Step 5: Summary & Actionable Insights</h2>
+      <h2 className="text-2xl font-semibold mb-6">Summary & Actionable Insights</h2>
       
       {/* Tax Owed/Overpaid Display */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

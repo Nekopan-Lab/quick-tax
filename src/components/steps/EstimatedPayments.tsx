@@ -24,7 +24,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6">Step 4: Estimated Tax Payments YTD</h2>
+      <h2 className="text-2xl font-semibold mb-6">Estimated Tax Payments YTD</h2>
       
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-8">
         <div className="bg-blue-50 p-4 rounded-md">
