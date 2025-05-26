@@ -213,7 +213,13 @@ function aggregateIndividualIncome(income: IncomeData): {
   const futureIncome = calculateFutureIncome(income)
 
   const totalWageIncome = ytdWage + futureIncome.totalWage
-  const totalInvestmentIncome = Object.values(investmentIncome).reduce((sum, value) => sum + value, 0)
+  // Don't double-count qualified dividends - they're already included in ordinary dividends
+  const totalInvestmentIncome = 
+    investmentIncome.ordinaryDividends + // This already includes qualified dividends
+    investmentIncome.interestIncome + 
+    investmentIncome.shortTermGains + 
+    investmentIncome.longTermGains
+    // Note: NOT adding qualifiedDividends separately as they're part of ordinaryDividends
 
   const result = {
     totalIncome: totalWageIncome + totalInvestmentIncome,
@@ -481,12 +487,18 @@ export function calculateComprehensiveTax(
   const deductionType: 'standard' | 'itemized' = federalItemized > standardDeductionFederal ? 'itemized' : 'standard'
 
   // Prepare income breakdown for federal tax calculation
+  // Note: Qualified dividends are a subset of ordinary dividends
+  // We need to subtract qualified from ordinary to get non-qualified dividends
+  const totalOrdinaryDividends = userAgg.investmentIncome.ordinaryDividends + spouseAgg.investmentIncome.ordinaryDividends
+  const totalQualifiedDividends = userAgg.investmentIncome.qualifiedDividends + spouseAgg.investmentIncome.qualifiedDividends
+  const nonQualifiedDividends = Math.max(0, totalOrdinaryDividends - totalQualifiedDividends)
+  
   const federalIncomeBreakdown = {
     ordinaryIncome: userAgg.wageIncome + spouseAgg.wageIncome + 
-      userAgg.investmentIncome.ordinaryDividends + spouseAgg.investmentIncome.ordinaryDividends +
+      nonQualifiedDividends + // Only non-qualified portion of dividends
       userAgg.investmentIncome.interestIncome + spouseAgg.investmentIncome.interestIncome +
       userAgg.investmentIncome.shortTermGains + spouseAgg.investmentIncome.shortTermGains,
-    qualifiedDividends: userAgg.investmentIncome.qualifiedDividends + spouseAgg.investmentIncome.qualifiedDividends,
+    qualifiedDividends: totalQualifiedDividends,
     longTermCapitalGains: userAgg.investmentIncome.longTermGains + spouseAgg.investmentIncome.longTermGains,
     shortTermCapitalGains: 0 // Already included in ordinary income
   }
