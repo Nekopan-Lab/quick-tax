@@ -103,15 +103,6 @@ function App() {
         </div>
       </header>
 
-      {/* Disclaimer Banner */}
-      <div className="bg-amber-50 border-b border-amber-200">
-        <div className="container mx-auto px-4 py-3">
-          <p className="text-sm text-amber-800 text-center">
-            <strong>⚠️ Disclaimer:</strong> This tool is for estimation purposes only and does not constitute professional tax advice.
-          </p>
-        </div>
-      </div>
-
       {/* Navigation */}
       {currentStep > 0 && (
         <StepNavigation currentStep={currentStep} onStepClick={handleStepClick} />
@@ -127,6 +118,20 @@ function App() {
       {/* Footer */}
       <footer className="mt-auto bg-gray-100 border-t border-gray-200">
         <div className="container mx-auto px-4 py-8">
+          {/* Prominent Disclaimer */}
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <span className="text-2xl mr-3">⚠️</span>
+              <div>
+                <h3 className="font-bold text-amber-900 mb-1">Important Disclaimer</h3>
+                <p className="text-sm text-amber-800">
+                  QuickTax is an <strong>estimation tool only</strong> and does not constitute professional tax advice or licensed tax preparation. 
+                  This tool is intended solely for planning purposes. Please consult a qualified tax professional for official tax filing.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-6">
               <button
@@ -159,7 +164,7 @@ function App() {
           </div>
           
           <div className="mt-6 text-center text-xs text-gray-500">
-            © 2025 QuickTax. This is an estimation tool only and does not constitute professional tax advice.
+            © 2025 QuickTax. For estimation purposes only.
           </div>
         </div>
       </footer>
