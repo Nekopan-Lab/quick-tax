@@ -62,30 +62,30 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-blue-400 mb-2">QuickTax</h1>
-          <p className="text-gray-400">2025 Tax Year Estimator</p>
+          <h1 className="text-3xl font-bold text-blue-600 mb-2">QuickTax</h1>
+          <p className="text-gray-600">2025 Tax Year Estimator</p>
         </header>
 
         {/* Disclaimer */}
         {showDisclaimer && (
-          <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-4 mb-6">
+          <div className="bg-yellow-50 border border-yellow-400 rounded-lg p-4 mb-6">
             <div className="flex items-start">
-              <svg className="w-6 h-6 text-yellow-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div className="flex-1">
-                <p className="text-sm text-yellow-200 font-medium mb-1">Important Disclaimer</p>
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-yellow-800 font-medium mb-1">Important Disclaimer</p>
+                <p className="text-sm text-gray-700">
                   QuickTax is intended solely as a planning tool for estimated tax payments and is not a substitute for professional tax advice, 
                   official tax filing software, or the services of a licensed tax preparer.
                 </p>
                 <button
                   onClick={() => setShowDisclaimer(false)}
-                  className="text-xs text-yellow-400 hover:text-yellow-300 mt-2"
+                  className="text-xs text-yellow-600 hover:text-yellow-700 mt-2"
                 >
                   Dismiss
                 </button>
@@ -98,7 +98,7 @@ function App() {
         <div className="flex justify-end mb-4">
           <button
             onClick={handleDeleteData}
-            className="text-sm text-red-400 hover:text-red-300 transition-colors"
+            className="text-sm text-red-600 hover:text-red-700 transition-colors"
           >
             Delete All Data
           </button>
@@ -111,7 +111,7 @@ function App() {
         <Navigation currentStep={currentStep} onStepClick={handleStepNavigation} />
 
         {/* Main Content */}
-        <main className="bg-gray-800/50 rounded-lg p-6">
+        <main className="bg-white rounded-lg shadow-lg p-6">
           {currentStep === 1 && (
             <Step1FilingStatus
               formData={formData}
@@ -159,7 +159,7 @@ function App() {
         <footer className="mt-8 text-center">
           <button
             onClick={() => setShowPrivacyPopup(true)}
-            className="text-sm text-gray-500 hover:text-gray-400 transition-colors"
+            className="text-sm text-gray-600 hover:text-gray-700 transition-colors"
           >
             Privacy Policy
           </button>
@@ -167,10 +167,10 @@ function App() {
 
         {/* Privacy Popup */}
         {showPrivacyPopup && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md">
               <h3 className="text-lg font-semibold mb-3">Privacy Policy</h3>
-              <p className="text-sm text-gray-300 mb-4">
+              <p className="text-sm text-gray-600 mb-4">
                 Your privacy is paramount. All data entered into QuickTax is stored only on your local device 
                 and is never sent to our servers. This allows you to pick up where you left off or update your 
                 estimates throughout the year. For complete privacy, you can delete all stored data at any time.

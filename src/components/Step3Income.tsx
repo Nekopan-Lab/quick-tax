@@ -1,5 +1,6 @@
 import React from 'react';
 import { TaxFormData, PersonIncome } from '../types';
+import { ToggleGroup } from './ToggleGroup';
 
 interface Step3IncomeProps {
   formData: TaxFormData;
@@ -51,15 +52,15 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-gray-100">{title}</h3>
+      <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
 
       {/* Investment Income */}
-      <div className="bg-gray-700/50 p-4 rounded-lg space-y-4">
-        <h4 className="text-lg font-medium text-gray-200">Investment Income (Full Year Estimates)</h4>
+      <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm space-y-4">
+        <h4 className="text-lg font-medium text-gray-900">Investment Income (Full Year Estimates)</h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Ordinary Dividends
             </label>
             <input
@@ -67,26 +68,26 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
               value={income.ordinaryDividends || ''}
               onChange={(e) => handleNumberChange('ordinaryDividends', e.target.value)}
               placeholder="0"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Qualified Dividends
-              <span className="text-xs text-gray-400 ml-1">(portion of ordinary)</span>
+              <span className="text-xs text-gray-500 ml-1">(portion of ordinary)</span>
             </label>
             <input
               type="number"
               value={income.qualifiedDividends || ''}
               onChange={(e) => handleNumberChange('qualifiedDividends', e.target.value)}
               placeholder="0"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Interest Income
             </label>
             <input
@@ -94,12 +95,12 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
               value={income.interestIncome || ''}
               onChange={(e) => handleNumberChange('interestIncome', e.target.value)}
               placeholder="0"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Short-Term Capital Gains/Losses
             </label>
             <input
@@ -107,12 +108,12 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
               value={income.shortTermCapitalGains || ''}
               onChange={(e) => handleNumberChange('shortTermCapitalGains', e.target.value)}
               placeholder="0"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Long-Term Capital Gains/Losses
             </label>
             <input
@@ -120,19 +121,19 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
               value={income.longTermCapitalGains || ''}
               onChange={(e) => handleNumberChange('longTermCapitalGains', e.target.value)}
               placeholder="0"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
       </div>
 
       {/* YTD W2 Income */}
-      <div className="bg-gray-700/50 p-4 rounded-lg space-y-4">
-        <h4 className="text-lg font-medium text-gray-200">YTD W2 Income</h4>
+      <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm space-y-4">
+        <h4 className="text-lg font-medium text-gray-900">YTD W2 Income</h4>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Taxable Wage (YTD)
             </label>
             <input
@@ -140,12 +141,12 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
               value={income.ytdTaxableWage || ''}
               onChange={(e) => handleNumberChange('ytdTaxableWage', e.target.value)}
               placeholder="0"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Federal Withhold (YTD)
             </label>
             <input
@@ -153,13 +154,13 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
               value={income.ytdFederalWithhold || ''}
               onChange={(e) => handleNumberChange('ytdFederalWithhold', e.target.value)}
               placeholder="0"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           {includeCaliforniaTax && (
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 State Withhold (YTD)
               </label>
               <input
@@ -167,7 +168,7 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                 value={income.ytdStateWithhold || ''}
                 onChange={(e) => handleNumberChange('ytdStateWithhold', e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           )}
@@ -175,38 +176,23 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
       </div>
 
       {/* Future Income Mode Selection */}
-      <div className="bg-gray-700/50 p-4 rounded-lg space-y-4">
-        <h4 className="text-lg font-medium text-gray-200">Future Income</h4>
+      <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm space-y-4">
+        <h4 className="text-lg font-medium text-gray-900">Future Income</h4>
         
-        <div className="flex space-x-4 mb-4">
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <input
-              type="radio"
-              name={`${title}-futureMode`}
-              value="simple"
-              checked={income.futureIncomeMode === 'simple'}
-              onChange={() => updateIncome({ futureIncomeMode: 'simple' })}
-              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600"
-            />
-            <span className="text-gray-200">Simple Estimation</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <input
-              type="radio"
-              name={`${title}-futureMode`}
-              value="detailed"
-              checked={income.futureIncomeMode === 'detailed'}
-              onChange={() => updateIncome({ futureIncomeMode: 'detailed' })}
-              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600"
-            />
-            <span className="text-gray-200">Detailed (Paycheck/RSU)</span>
-          </label>
-        </div>
+        <ToggleGroup
+          options={[
+            { value: 'simple', label: 'Simple Estimation' },
+            { value: 'detailed', label: 'Detailed (Paycheck/RSU)' }
+          ]}
+          value={income.futureIncomeMode}
+          onChange={(value) => updateIncome({ futureIncomeMode: value as 'simple' | 'detailed' })}
+          className="mb-4"
+        />
 
         {income.futureIncomeMode === 'simple' ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Est. Future Taxable Wage
               </label>
               <input
@@ -214,12 +200,12 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                 value={income.estimatedFutureTaxableWage || ''}
                 onChange={(e) => handleNumberChange('estimatedFutureTaxableWage', e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Est. Future Federal Withhold
               </label>
               <input
@@ -227,13 +213,13 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                 value={income.estimatedFutureFederalWithhold || ''}
                 onChange={(e) => handleNumberChange('estimatedFutureFederalWithhold', e.target.value)}
                 placeholder="0"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             
             {includeCaliforniaTax && (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Est. Future State Withhold
                 </label>
                 <input
@@ -241,7 +227,7 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                   value={income.estimatedFutureStateWithhold || ''}
                   onChange={(e) => handleNumberChange('estimatedFutureStateWithhold', e.target.value)}
                   placeholder="0"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             )}
@@ -250,10 +236,10 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
           <div className="space-y-4">
             {/* Paycheck Data */}
             <div>
-              <h5 className="text-md font-medium text-gray-300 mb-2">Most Recent Paycheck Data</h5>
+              <h5 className="text-md font-medium text-gray-700 mb-2">Most Recent Paycheck Data</h5>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Taxable Wage per Paycheck
                   </label>
                   <input
@@ -261,12 +247,12 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                     value={income.paycheckData?.taxableWagePerPaycheck || ''}
                     onChange={(e) => handlePaycheckChange('taxableWagePerPaycheck', parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Federal Withhold per Paycheck
                   </label>
                   <input
@@ -274,13 +260,13 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                     value={income.paycheckData?.federalWithholdPerPaycheck || ''}
                     onChange={(e) => handlePaycheckChange('federalWithholdPerPaycheck', parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 
                 {includeCaliforniaTax && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       State Withhold per Paycheck
                     </label>
                     <input
@@ -288,19 +274,19 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                       value={income.paycheckData?.stateWithholdPerPaycheck || ''}
                       onChange={(e) => handlePaycheckChange('stateWithholdPerPaycheck', parseFloat(e.target.value) || 0)}
                       placeholder="0"
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Payment Frequency
                   </label>
                   <select
                     value={income.paycheckData?.paymentFrequency || 'biweekly'}
                     onChange={(e) => handlePaycheckChange('paymentFrequency', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="biweekly">Bi-weekly</option>
                     <option value="monthly">Monthly</option>
@@ -308,14 +294,14 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Next Payment Date
                   </label>
                   <input
                     type="date"
                     value={income.paycheckData?.nextPaymentDate || ''}
                     onChange={(e) => handlePaycheckChange('nextPaymentDate', e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -323,10 +309,10 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
 
             {/* RSU Data */}
             <div>
-              <h5 className="text-md font-medium text-gray-300 mb-2">RSU Vest Data</h5>
+              <h5 className="text-md font-medium text-gray-700 mb-2">RSU Vest Data</h5>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Taxable Wage per Vest
                   </label>
                   <input
@@ -334,12 +320,12 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                     value={income.rsuVestData?.taxableWagePerVest || ''}
                     onChange={(e) => handleRSUChange('taxableWagePerVest', parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Federal Withhold per Vest
                   </label>
                   <input
@@ -347,13 +333,13 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                     value={income.rsuVestData?.federalWithholdPerVest || ''}
                     onChange={(e) => handleRSUChange('federalWithholdPerVest', parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 
                 {includeCaliforniaTax && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       State Withhold per Vest
                     </label>
                     <input
@@ -361,13 +347,13 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                       value={income.rsuVestData?.stateWithholdPerVest || ''}
                       onChange={(e) => handleRSUChange('stateWithholdPerVest', parseFloat(e.target.value) || 0)}
                       placeholder="0"
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Vest Price per Share
                   </label>
                   <input
@@ -375,14 +361,14 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                     value={income.rsuVestData?.vestPrice || ''}
                     onChange={(e) => handleRSUChange('vestPrice', parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Number of Future RSU Vests
                   </label>
                   <input
@@ -390,12 +376,12 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                     value={income.futureRSUVests?.numberOfVests || ''}
                     onChange={(e) => handleFutureRSUChange('numberOfVests', parseInt(e.target.value) || 0)}
                     placeholder="0"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Expected Vest Price
                   </label>
                   <input
@@ -403,7 +389,7 @@ function PersonIncomeForm({ title, income, updateIncome, includeCaliforniaTax }:
                     value={income.futureRSUVests?.expectedVestPrice || ''}
                     onChange={(e) => handleFutureRSUChange('expectedVestPrice', parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -424,7 +410,10 @@ export function Step3Income({
 }: Step3IncomeProps) {
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-gray-100">Step 3: Income</h2>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Step 3: Income</h2>
+        <p className="text-gray-600">Enter your income information for accurate tax calculations</p>
+      </div>
       
       <PersonIncomeForm
         title="User Income"
@@ -435,7 +424,7 @@ export function Step3Income({
       
       {formData.filingStatus === 'marriedFilingJointly' && formData.spouseIncome && (
         <>
-          <div className="border-t border-gray-700 my-8"></div>
+          <div className="border-t border-gray-200 my-8"></div>
           <PersonIncomeForm
             title="Spouse Income"
             income={formData.spouseIncome}
@@ -448,15 +437,15 @@ export function Step3Income({
       <div className="flex justify-between pt-4">
         <button
           onClick={onPrevious}
-          className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all shadow-sm hover:shadow-md font-medium"
         >
-          Previous
+          ← Previous
         </button>
         <button
           onClick={onNext}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-all shadow-sm hover:shadow-md font-medium"
         >
-          Next
+          Next →
         </button>
       </div>
     </div>

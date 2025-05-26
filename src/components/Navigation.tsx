@@ -22,16 +22,16 @@ export function Navigation({ currentStep, onStepClick }: NavigationProps) {
             <button
               onClick={() => onStepClick(step.number)}
               className={`flex items-center ${
-                currentStep >= step.number ? 'text-blue-400' : 'text-gray-500'
-              } hover:text-blue-300 transition-colors`}
+                currentStep >= step.number ? 'text-blue-600' : 'text-gray-400'
+              } hover:text-blue-500 transition-colors`}
             >
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   currentStep === step.number
                     ? 'bg-blue-600 text-white'
                     : currentStep > step.number
-                    ? 'bg-blue-900 text-blue-300'
-                    : 'bg-gray-700 text-gray-400'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-200 text-gray-500'
                 }`}
               >
                 {step.number}
@@ -43,7 +43,7 @@ export function Navigation({ currentStep, onStepClick }: NavigationProps) {
             {index < steps.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mx-2 ${
-                  currentStep > step.number ? 'bg-blue-600' : 'bg-gray-700'
+                  currentStep > step.number ? 'bg-blue-600' : 'bg-gray-300'
                 }`}
               />
             )}

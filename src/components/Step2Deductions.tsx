@@ -61,12 +61,22 @@ export function Step2Deductions({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-100">Step 2: Deductions</h2>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Step 2: Deductions</h2>
+        <p className="text-gray-600">Enter your estimated full-year deductions</p>
+      </div>
       
-      <div className="bg-gray-800 p-4 rounded-lg">
-        <p className="text-sm text-gray-400">
-          Enter your estimated full-year deductions. We'll automatically determine whether standard or itemized deduction is better for you.
-        </p>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 rounded-xl shadow-sm">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-sm text-gray-700">
+            We'll automatically determine whether standard or itemized deduction is better for you based on your entries.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -105,34 +115,54 @@ export function Step2Deductions({
       </div>
 
       <div className="space-y-4">
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-100 mb-3">Federal Deduction Analysis</h3>
-          <div className="space-y-2 text-sm">
-            <p className="text-gray-300">
-              Standard Deduction: <span className="text-gray-100 font-medium">${federalStandardDeduction.toLocaleString()}</span>
-            </p>
-            <p className="text-gray-300">
-              Total Itemized: <span className="text-gray-100 font-medium">${totalItemized.toLocaleString()}</span>
-            </p>
-            <p className="text-green-400 font-medium">
-              Using {federalDeductionType} deduction (${Math.max(federalStandardDeduction, totalItemized).toLocaleString()})
-            </p>
+        <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Federal Deduction Analysis</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <span className="text-gray-600">Standard Deduction</span>
+              <span className="text-gray-900 font-semibold">${federalStandardDeduction.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <span className="text-gray-600">Total Itemized</span>
+              <span className="text-gray-900 font-semibold">${totalItemized.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-gray-700 font-medium">Recommendation</span>
+              <div className="flex items-center space-x-2">
+                <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-green-600 font-semibold">
+                  {federalDeductionType === 'itemized' ? 'Itemized' : 'Standard'} (${Math.max(federalStandardDeduction, totalItemized).toLocaleString()})
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         {formData.includeCaliforniaTax && (
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-100 mb-3">California Deduction Analysis</h3>
-            <div className="space-y-2 text-sm">
-              <p className="text-gray-300">
-                Standard Deduction: <span className="text-gray-100 font-medium">${californiaStandardDeduction.toLocaleString()}</span>
-              </p>
-              <p className="text-gray-300">
-                Total Itemized: <span className="text-gray-100 font-medium">${totalItemized.toLocaleString()}</span>
-              </p>
-              <p className="text-green-400 font-medium">
-                Using {californiaDeductionType} deduction (${Math.max(californiaStandardDeduction, totalItemized).toLocaleString()})
-              </p>
+          <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">California Deduction Analysis</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-gray-600">Standard Deduction</span>
+                <span className="text-gray-900 font-semibold">${californiaStandardDeduction.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-gray-600">Total Itemized</span>
+                <span className="text-gray-900 font-semibold">${totalItemized.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-gray-700 font-medium">Recommendation</span>
+                <div className="flex items-center space-x-2">
+                  <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-green-600 font-semibold">
+                    {californiaDeductionType === 'itemized' ? 'Itemized' : 'Standard'} (${Math.max(californiaStandardDeduction, totalItemized).toLocaleString()})
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -141,20 +171,20 @@ export function Step2Deductions({
       <div className="flex justify-between">
         <button
           onClick={onPrevious}
-          className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all shadow-sm hover:shadow-md font-medium"
         >
-          Previous
+          ← Previous
         </button>
         <button
           onClick={onNext}
           disabled={!allInputsValid}
-          className={`px-6 py-2 text-white rounded-lg transition-colors ${
+          className={`px-6 py-3 text-white rounded-lg transition-all shadow-sm font-medium ${
             allInputsValid 
-              ? 'bg-blue-600 hover:bg-blue-700' 
-              : 'bg-gray-600 cursor-not-allowed opacity-50'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-md' 
+              : 'bg-gray-300 cursor-not-allowed'
           }`}
         >
-          Next
+          Next →
         </button>
       </div>
     </div>

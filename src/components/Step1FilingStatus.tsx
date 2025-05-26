@@ -1,5 +1,7 @@
 import React from 'react';
 import { TaxFormData } from '../types';
+import { ToggleGroup } from './ToggleGroup';
+import { Switch } from './Switch';
 
 interface Step1FilingStatusProps {
   formData: TaxFormData;
@@ -14,58 +16,44 @@ export function Step1FilingStatus({
   updateCaliforniaTaxScope,
   onNext,
 }: Step1FilingStatusProps) {
+  const filingStatusOptions = [
+    { value: 'single', label: 'Single' },
+    { value: 'marriedFilingJointly', label: 'Married Filing Jointly' }
+  ];
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-100">Step 1: Filing Status & Tax Scope</h2>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Filing Status & Tax Scope</h2>
+        <p className="text-gray-600">Let's start with your basic tax information</p>
+      </div>
       
-      <div className="space-y-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
             Filing Status
           </label>
-          <div className="space-y-2">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="radio"
-                name="filingStatus"
-                value="single"
-                checked={formData.filingStatus === 'single'}
-                onChange={() => updateFilingStatus('single')}
-                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 focus:ring-blue-500"
-              />
-              <span className="text-gray-100">Single</span>
-            </label>
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="radio"
-                name="filingStatus"
-                value="marriedFilingJointly"
-                checked={formData.filingStatus === 'marriedFilingJointly'}
-                onChange={() => updateFilingStatus('marriedFilingJointly')}
-                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 focus:ring-blue-500"
-              />
-              <span className="text-gray-100">Married Filing Jointly</span>
-            </label>
-          </div>
+          <ToggleGroup
+            options={filingStatusOptions}
+            value={formData.filingStatus}
+            onChange={(value) => updateFilingStatus(value as TaxFormData['filingStatus'])}
+          />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Tax Scope
-          </label>
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <p className="text-sm text-gray-400 mb-3">
-              Federal tax calculation is always included
-            </p>
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
+        <div className="border-t pt-6">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Tax Calculations</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <span className="text-sm font-medium text-gray-700">Federal Tax (IRS)</span>
+              <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded">Always Included</span>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <Switch
                 checked={formData.includeCaliforniaTax}
-                onChange={(e) => updateCaliforniaTaxScope(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                onChange={updateCaliforniaTaxScope}
+                label="California State Tax (FTB)"
               />
-              <span className="text-gray-100">Include California State Tax (FTB)</span>
-            </label>
+            </div>
           </div>
         </div>
       </div>
@@ -73,9 +61,9 @@ export function Step1FilingStatus({
       <div className="flex justify-end">
         <button
           onClick={onNext}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg"
         >
-          Next
+          Continue →
         </button>
       </div>
     </div>
