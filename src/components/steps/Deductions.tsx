@@ -1,0 +1,159 @@
+import { useState } from 'react'
+
+interface DeductionsProps {
+  onNext: () => void
+  onPrevious: () => void
+}
+
+export function Deductions({ onNext, onPrevious }: DeductionsProps) {
+  const [propertyTax, setPropertyTax] = useState('')
+  const [mortgageInterest, setMortgageInterest] = useState('')
+  const [donations, setDonations] = useState('')
+
+  const federalStandardDeduction = 15000 // TODO: Get from filing status
+  const caStandardDeduction = 5540 // TODO: Get from filing status
+  const totalItemized = Number(propertyTax) + Number(mortgageInterest) + Number(donations)
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-green-600 px-8 py-6">
+          <h2 className="text-2xl font-bold text-white">Deductions</h2>
+          <p className="text-green-100 mt-2">We'll help you maximize your tax deductions</p>
+        </div>
+        
+        <div className="p-8">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
+            <p className="text-sm text-blue-800">
+              ℹ️ Enter your estimated <strong>full-year</strong> amounts below. We'll automatically determine whether standard or itemized deductions are better for you.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                🏠 Property Tax (Full Year)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={propertyTax}
+                  onChange={(e) => setPropertyTax(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                />
+              </div>
+            </div>
+
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                🏦 Mortgage Interest (Full Year)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={mortgageInterest}
+                  onChange={(e) => setMortgageInterest(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                />
+              </div>
+            </div>
+
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                💝 Charitable Donations (Full Year)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={donations}
+                  onChange={(e) => setDonations(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 bg-gray-50 rounded-xl p-6">
+            <h3 className="font-bold text-lg text-gray-900 mb-6">
+              📊 Deduction Comparison
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-600">Your Itemized Deductions:</span>
+                  <span className="text-2xl font-bold text-gray-900">${totalItemized.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={`rounded-lg p-5 border-2 transition-all ${
+                  totalItemized > federalStandardDeduction 
+                    ? 'bg-green-50 border-green-300' 
+                    : 'bg-white border-gray-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-semibold text-gray-900">Federal (IRS)</span>
+                    {totalItemized > federalStandardDeduction ? (
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">ITEMIZED</span>
+                    ) : (
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">STANDARD</span>
+                    )}
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    ${Math.max(totalItemized, federalStandardDeduction).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Standard: ${federalStandardDeduction.toLocaleString()}
+                  </div>
+                </div>
+
+                <div className={`rounded-lg p-5 border-2 transition-all ${
+                  totalItemized > caStandardDeduction 
+                    ? 'bg-green-50 border-green-300' 
+                    : 'bg-white border-gray-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-semibold text-gray-900">California (FTB)</span>
+                    {totalItemized > caStandardDeduction ? (
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">ITEMIZED</span>
+                    ) : (
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">STANDARD</span>
+                    )}
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    ${Math.max(totalItemized, caStandardDeduction).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Standard: ${caStandardDeduction.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 px-8 py-6 flex justify-between items-center">
+          <button
+            onClick={onPrevious}
+            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-white hover:shadow-sm transition-all font-medium"
+          >
+            ← Previous
+          </button>
+          <button
+            onClick={onNext}
+            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium shadow-md hover:shadow-lg"
+          >
+            Continue to Income →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
