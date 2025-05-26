@@ -2,264 +2,246 @@ import { describe, it, expect } from 'vitest'
 import { calculateCaliforniaTax, getCaliforniaStandardDeduction } from '@/calculators/california/calculator'
 import { FilingStatus, TaxYear } from '@/types'
 
+// Test data for different tax years
+const CA_TAX_YEAR_DATA = {
+  2025: {
+    standardDeductions: {
+      single: 5540,
+      marriedFilingJointly: 11080
+    },
+    mentalHealthThreshold: 1000000,
+    singleTaxTests: [
+      {
+        name: 'income below standard deduction',
+        income: 5000,
+        expected: { taxableIncome: 0, baseTax: 0, mentalHealthTax: 0, totalTax: 0 }
+      },
+      {
+        name: 'low income',
+        income: 20000,
+        expected: { taxableIncome: 14460, baseTax: 181.64, mentalHealthTax: 0, totalTax: 181.64 }
+      },
+      {
+        name: 'middle income',
+        income: 75000,
+        expected: { taxableIncome: 69460, baseTax: 3017.04, mentalHealthTax: 0, totalTax: 3017.04 }
+      },
+      {
+        name: 'high income with all brackets',
+        income: 500000,
+        expected: { taxableIncome: 494460, baseTax: 44481.88, mentalHealthTax: 0, totalTax: 44481.88 }
+      },
+      {
+        name: 'income over $1 million (mental health tax)',
+        income: 1200000,
+        expected: { taxableIncome: 1194460, mentalHealthTax: 1944.60 }
+      }
+    ],
+    marriedTaxTests: [
+      {
+        name: 'correct brackets for married filing jointly',
+        income: 100000,
+        expected: { taxableIncome: 88920, baseTax: 2490.32, mentalHealthTax: 0, totalTax: 2490.32 }
+      },
+      {
+        name: 'high income married couple',
+        income: 800000,
+        expected: { taxableIncome: 788920, baseTax: 67130.30, mentalHealthTax: 0, totalTax: 67130.30 }
+      },
+      {
+        name: 'married couple over $1 million (mental health tax)',
+        income: 2000000,
+        expected: { taxableIncome: 1988920, mentalHealthTax: 9889.20, baseTax: 207426.68 }
+      }
+    ]
+  },
+  2026: {
+    standardDeductions: {
+      single: 5670,
+      marriedFilingJointly: 11340
+    },
+    mentalHealthThreshold: 1000000,
+    singleTaxTests: [
+      {
+        name: 'income below standard deduction',
+        income: 5000,
+        expected: { taxableIncome: 0, baseTax: 0, mentalHealthTax: 0, totalTax: 0 }
+      },
+      {
+        name: 'low income',
+        income: 20000,
+        expected: { taxableIncome: 14330, baseTax: 176.60, mentalHealthTax: 0, totalTax: 176.60 }
+      }
+    ],
+    marriedTaxTests: [
+      {
+        name: 'correct brackets for married filing jointly',
+        income: 100000,
+        expected: { taxableIncome: 88660, baseTax: 2407.60, mentalHealthTax: 0, totalTax: 2407.60 }
+      }
+    ]
+  }
+} as const
+
 describe('California Tax Calculator', () => {
   describe('getCaliforniaStandardDeduction', () => {
-    it('should return correct standard deduction for single filer in 2025', () => {
-      expect(getCaliforniaStandardDeduction(2025, 'single')).toBe(5540)
-    })
+    const testCases: Array<{ year: TaxYear; filingStatus: FilingStatus; expected: number }> = [
+      { year: 2025, filingStatus: 'single', expected: 5540 },
+      { year: 2025, filingStatus: 'marriedFilingJointly', expected: 11080 },
+      { year: 2026, filingStatus: 'single', expected: 5670 },
+      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 11340 }
+    ]
 
-    it('should return correct standard deduction for married filing jointly in 2025', () => {
-      expect(getCaliforniaStandardDeduction(2025, 'marriedFilingJointly')).toBe(11080)
-    })
-
-    it('should return correct standard deduction for single filer in 2026', () => {
-      expect(getCaliforniaStandardDeduction(2026, 'single')).toBe(5670)
-    })
-
-    it('should return correct standard deduction for married filing jointly in 2026', () => {
-      expect(getCaliforniaStandardDeduction(2026, 'marriedFilingJointly')).toBe(11340)
+    testCases.forEach(({ year, filingStatus, expected }) => {
+      it(`should return correct standard deduction for ${filingStatus} in ${year}`, () => {
+        expect(getCaliforniaStandardDeduction(year, filingStatus)).toBe(expected)
+      })
     })
   })
 
-  describe('calculateCaliforniaTax - Single Filer', () => {
-    const filingStatus: FilingStatus = 'single'
-    const taxYear: TaxYear = 2025
-    const standardDeduction = 5540
+  // Test each year's data
+  Object.entries(CA_TAX_YEAR_DATA).forEach(([year, yearData]) => {
+    const taxYear = parseInt(year) as TaxYear
+    const standardDeductionSingle = yearData.standardDeductions.single
+    const standardDeductionMarried = yearData.standardDeductions.marriedFilingJointly
 
-    it('should calculate zero tax for income below standard deduction', () => {
-      const result = calculateCaliforniaTax(
-        5000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
+    describe(`calculateCaliforniaTax - ${year} Tax Year`, () => {
+      describe('Single Filer', () => {
+        yearData.singleTaxTests.forEach((testCase) => {
+          it(`should calculate tax correctly for ${testCase.name}`, () => {
+            const result = calculateCaliforniaTax(
+              testCase.income,
+              standardDeductionSingle,
+              'single',
+              taxYear
+            )
 
-      expect(result.taxableIncome).toBe(0)
-      expect(result.baseTax).toBe(0)
-      expect(result.mentalHealthTax).toBe(0)
-      expect(result.totalTax).toBe(0)
-    })
+            expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
+            if (testCase.expected.baseTax !== undefined) {
+              expect(result.baseTax).toBe(testCase.expected.baseTax)
+            }
+            if (testCase.expected.mentalHealthTax !== undefined) {
+              expect(result.mentalHealthTax).toBe(testCase.expected.mentalHealthTax)
+            }
+            if (testCase.expected.totalTax !== undefined) {
+              expect(result.totalTax).toBe(testCase.expected.totalTax)
+            } else {
+              // For cases where we only specify some values, ensure basic consistency
+              expect(result.totalTax).toBe(result.baseTax + result.mentalHealthTax)
+            }
+          })
+        })
+      })
 
-    it('should calculate tax for low income', () => {
-      // $20,000 income - $5,540 deduction = $14,460 taxable
-      // First $10,756 at 1% = $107.56
-      // Next $3,704 at 2% = $74.08
-      // Total = $181.64
-      const result = calculateCaliforniaTax(
-        20000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
+      describe('Married Filing Jointly', () => {
+        yearData.marriedTaxTests.forEach((testCase) => {
+          it(`should calculate tax correctly for ${testCase.name}`, () => {
+            const result = calculateCaliforniaTax(
+              testCase.income,
+              standardDeductionMarried,
+              'marriedFilingJointly',
+              taxYear
+            )
 
-      expect(result.taxableIncome).toBe(14460)
-      expect(result.baseTax).toBe(181.64)
-      expect(result.mentalHealthTax).toBe(0)
-      expect(result.totalTax).toBe(181.64)
-    })
-
-    it('should calculate tax for middle income', () => {
-      // $75,000 income - $5,540 deduction = $69,460 taxable
-      // Tax calculation through brackets:
-      // $10,756 at 1% = $107.56
-      // $14,743 at 2% = $294.86
-      // $14,746 at 4% = $589.84
-      // $15,621 at 6% = $937.26
-      // $13,594 at 8% = $1,087.52
-      // Total = $3,017.04
-      const result = calculateCaliforniaTax(
-        75000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(69460)
-      expect(result.baseTax).toBe(3017.04)
-      expect(result.mentalHealthTax).toBe(0)
-      expect(result.totalTax).toBe(3017.04)
-    })
-
-    it('should calculate tax for high income with all brackets', () => {
-      // $500,000 income - $5,540 deduction = $494,460 taxable
-      const result = calculateCaliforniaTax(
-        500000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(494460)
-      // Tax through brackets:
-      // $10,756 at 1% = $107.56
-      // $14,743 at 2% = $294.86
-      // $14,746 at 4% = $589.84
-      // $15,621 at 6% = $937.26
-      // $14,740 at 8% = $1,179.20
-      // $290,053 at 9.3% = $26,974.93
-      // $72,128 at 10.3% = $7,429.18
-      // $61,673 at 11.3% = $6,969.05
-      // Total = $44,481.88
-      expect(result.baseTax).toBe(44481.88)
-      expect(result.mentalHealthTax).toBe(0)
-      expect(result.totalTax).toBe(44481.88)
-    })
-
-    it('should apply mental health tax for income over $1 million', () => {
-      // $1,200,000 income - $5,540 deduction = $1,194,460 taxable
-      // Mental health tax: ($1,194,460 - $1,000,000) * 1% = $1,944.60
-      const result = calculateCaliforniaTax(
-        1200000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(1194460)
-      expect(result.mentalHealthTax).toBe(1944.60)
-      expect(result.totalTax).toBe(result.baseTax + 1944.60)
+            expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
+            if (testCase.expected.baseTax !== undefined) {
+              expect(result.baseTax).toBe(testCase.expected.baseTax)
+            }
+            if (testCase.expected.mentalHealthTax !== undefined) {
+              expect(result.mentalHealthTax).toBe(testCase.expected.mentalHealthTax)
+            }
+            if (testCase.expected.totalTax !== undefined) {
+              expect(result.totalTax).toBe(testCase.expected.totalTax)
+            } else {
+              // For cases where we only specify some values, ensure basic consistency
+              expect(result.totalTax).toBe(result.baseTax + result.mentalHealthTax)
+            }
+          })
+        })
+      })
     })
   })
 
-  describe('calculateCaliforniaTax - Married Filing Jointly', () => {
-    const filingStatus: FilingStatus = 'marriedFilingJointly'
-    const taxYear: TaxYear = 2025
-    const standardDeduction = 11080
+  describe('California Tax - All Income Types Treated Same (All Years)', () => {
+    const testYears: TaxYear[] = [2025, 2026]
 
-    it('should apply correct brackets for married filing jointly', () => {
-      // $100,000 income - $11,080 deduction = $88,920 taxable
-      // Tax calculation through brackets:
-      // $21,512 at 1% = $215.12
-      // $29,486 at 2% = $589.72
-      // $29,492 at 4% = $1,179.68
-      // $8,430 at 6% = $505.80
-      // Total = $2,490.32
-      const result = calculateCaliforniaTax(
-        100000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
+    testYears.forEach((year) => {
+      it(`should tax capital gains the same as ordinary income in ${year}`, () => {
+        // Unlike federal tax, CA treats all income types the same
+        const incomeAmount = 100000
+        const deduction = CA_TAX_YEAR_DATA[year].standardDeductions.single
+        
+        const result = calculateCaliforniaTax(
+          incomeAmount,
+          deduction,
+          'single',
+          year
+        )
 
-      expect(result.taxableIncome).toBe(88920)
-      expect(result.baseTax).toBe(2490.32)
-      expect(result.mentalHealthTax).toBe(0)
-      expect(result.totalTax).toBe(2490.32)
-    })
-
-    it('should calculate tax for high income married couple', () => {
-      // $800,000 income - $11,080 deduction = $788,920 taxable
-      const result = calculateCaliforniaTax(
-        800000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(788920)
-      // Verify tax is calculated correctly through all brackets
-      // $21,512 at 1% = $215.12
-      // $29,486 at 2% = $589.72
-      // $29,492 at 4% = $1,179.68
-      // $31,242 at 6% = $1,874.52
-      // $29,480 at 8% = $2,358.40
-      // $580,106 at 9.3% = $53,949.86
-      // $67,602 at 10.3% = $6,963.01
-      // Total = $67,130.31
-      expect(result.baseTax).toBe(67130.30)
-      expect(result.mentalHealthTax).toBe(0)
-      expect(result.totalTax).toBe(67130.30)
-    })
-
-    it('should apply mental health tax for married couple over $1 million', () => {
-      // $2,000,000 income - $11,080 deduction = $1,988,920 taxable
-      // Mental health tax: ($1,988,920 - $1,000,000) * 1% = $9,889.20
-      const result = calculateCaliforniaTax(
-        2000000,
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(1988920)
-      expect(result.mentalHealthTax).toBe(9889.20)
-      
-      // Base tax through all brackets including 12.3% bracket
-      // The exact calculation would go through all brackets
-      const expectedBaseTax = 207426.68 // Calculated through all brackets
-      expect(result.baseTax).toBe(expectedBaseTax)
-      expect(result.totalTax).toBe(expectedBaseTax + 9889.20)
+        // Verify the calculation is the same regardless of income type
+        expect(result.taxableIncome).toBe(incomeAmount - deduction)
+        expect(result.totalTax).toBeGreaterThan(0)
+      })
     })
   })
 
-  describe('California Tax - All Income Types Treated Same', () => {
-    it('should tax capital gains the same as ordinary income', () => {
-      // Unlike federal tax, CA treats all income types the same
-      const incomeAmount = 100000
-      const deduction = 5540
-      
-      const result = calculateCaliforniaTax(
-        incomeAmount,
-        deduction,
-        'single',
-        2025
-      )
+  describe('Edge Cases (All Years)', () => {
+    const edgeCases = [
+      {
+        name: 'zero income',
+        income: 0,
+        deduction: 5540,
+        filingStatus: 'single' as FilingStatus,
+        expected: { taxableIncome: 0, totalTax: 0 }
+      },
+      {
+        name: 'deductions larger than income',
+        income: 10000,
+        deduction: 20000,
+        filingStatus: 'single' as FilingStatus,
+        expected: { taxableIncome: 0, totalTax: 0 }
+      },
+      {
+        name: 'exactly $1 million income (mental health tax threshold)',
+        income: 1000000,
+        deduction: 5540,
+        filingStatus: 'single' as FilingStatus,
+        expected: { taxableIncome: 994460, mentalHealthTax: 0 }
+      },
+      {
+        name: 'very high income',
+        income: 5000000,
+        deduction: 11080,
+        filingStatus: 'marriedFilingJointly' as FilingStatus,
+        expected: { taxableIncome: 4988920, mentalHealthTax: 39889.20 }
+      }
+    ]
 
-      // Verify the calculation is the same regardless of income type
-      expect(result.taxableIncome).toBe(94460)
-      expect(result.totalTax).toBeGreaterThan(0)
-    })
-  })
+    const testYears: TaxYear[] = [2025, 2026]
 
-  describe('Edge Cases', () => {
-    it('should handle zero income', () => {
-      const result = calculateCaliforniaTax(
-        0,
-        5540,
-        'single',
-        2025
-      )
+    testYears.forEach((year) => {
+      describe(`${year} Edge Cases`, () => {
+        edgeCases.forEach((testCase) => {
+          it(`should handle ${testCase.name}`, () => {
+            const result = calculateCaliforniaTax(
+              testCase.income,
+              testCase.deduction,
+              testCase.filingStatus,
+              year
+            )
 
-      expect(result.taxableIncome).toBe(0)
-      expect(result.totalTax).toBe(0)
-    })
-
-    it('should handle deductions larger than income', () => {
-      const result = calculateCaliforniaTax(
-        10000,
-        20000,
-        'single',
-        2025
-      )
-
-      expect(result.taxableIncome).toBe(0)
-      expect(result.totalTax).toBe(0)
-    })
-
-    it('should handle exactly $1 million income (mental health tax threshold)', () => {
-      const result = calculateCaliforniaTax(
-        1000000,
-        5540,
-        'single',
-        2025
-      )
-
-      expect(result.taxableIncome).toBe(994460)
-      expect(result.mentalHealthTax).toBe(0) // No mental health tax at exactly $1M taxable
-    })
-
-    it('should handle very high income correctly', () => {
-      const result = calculateCaliforniaTax(
-        5000000,
-        11080,
-        'marriedFilingJointly',
-        2025
-      )
-
-      expect(result.taxableIncome).toBe(4988920)
-      // Mental health tax: ($4,988,920 - $1,000,000) * 1% = $39,889.20
-      expect(result.mentalHealthTax).toBe(39889.20)
-      expect(result.totalTax).toBeGreaterThan(39889.20)
+            expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
+            if (testCase.expected.mentalHealthTax !== undefined) {
+              expect(result.mentalHealthTax).toBe(testCase.expected.mentalHealthTax)
+            }
+            if (testCase.expected.totalTax !== undefined) {
+              expect(result.totalTax).toBe(testCase.expected.totalTax)
+            } else {
+              expect(result.totalTax).toBeGreaterThanOrEqual(0)
+            }
+          })
+        })
+      })
     })
   })
 })

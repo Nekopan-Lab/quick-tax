@@ -2,317 +2,218 @@ import { describe, it, expect } from 'vitest'
 import { calculateFederalTax, getFederalStandardDeduction } from '@/calculators/federal/calculator'
 import { FilingStatus, TaxYear } from '@/types'
 
+// Test data for different tax years
+const TAX_YEAR_DATA = {
+  2025: {
+    standardDeductions: {
+      single: 15000,
+      marriedFilingJointly: 30000
+    },
+    singleTaxTests: [
+      {
+        name: 'income below standard deduction',
+        income: { ordinaryIncome: 10000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 0, ordinaryIncomeTax: 0, capitalGainsTax: 0, totalTax: 0 }
+      },
+      {
+        name: 'ordinary income only',
+        income: { ordinaryIncome: 50000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 35000, ordinaryIncomeTax: 3961.50, capitalGainsTax: 0, totalTax: 3961.50 }
+      },
+      {
+        name: 'short-term capital gains as ordinary income',
+        income: { ordinaryIncome: 30000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 20000 },
+        expected: { taxableIncome: 35000, ordinaryIncomeTax: 3961.50, capitalGainsTax: 0, totalTax: 3961.50 }
+      },
+      {
+        name: '0% capital gains rate for low income',
+        income: { ordinaryIncome: 20000, qualifiedDividends: 0, longTermCapitalGains: 10000, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 15000, ordinaryIncomeTax: 500, capitalGainsTax: 0, totalTax: 500 }
+      },
+      {
+        name: '15% capital gains rate for middle income',
+        income: { ordinaryIncome: 60000, qualifiedDividends: 0, longTermCapitalGains: 20000, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 65000, ordinaryIncomeTax: 5161.50, capitalGainsTax: 2497.50, totalTax: 7659 }
+      },
+      {
+        name: 'qualified dividends like long-term capital gains',
+        income: { ordinaryIncome: 60000, qualifiedDividends: 10000, longTermCapitalGains: 10000, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 65000, ordinaryIncomeTax: 5161.50, capitalGainsTax: 2497.50, totalTax: 7659 }
+      },
+      {
+        name: '20% capital gains rate for high income',
+        income: { ordinaryIncome: 550000, qualifiedDividends: 0, longTermCapitalGains: 50000, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 585000, capitalGainsTax: 10000 } // Only testing capital gains tax here
+      }
+    ],
+    marriedTaxTests: [
+      {
+        name: 'correct brackets for married filing jointly',
+        income: { ordinaryIncome: 100000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 70000, ordinaryIncomeTax: 7923, capitalGainsTax: 0, totalTax: 7923 }
+      },
+      {
+        name: 'correct capital gains brackets for married filing jointly',
+        income: { ordinaryIncome: 80000, qualifiedDividends: 0, longTermCapitalGains: 30000, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 80000, capitalGainsTax: 0 }
+      },
+      {
+        name: 'mixed income types correctly',
+        income: { ordinaryIncome: 150000, qualifiedDividends: 20000, longTermCapitalGains: 30000, shortTermCapitalGains: 10000 },
+        expected: { taxableIncome: 180000, ordinaryIncomeTax: 18428, capitalGainsTax: 7500, totalTax: 25928 }
+      }
+    ]
+  },
+  2026: {
+    standardDeductions: {
+      single: 15350,
+      marriedFilingJointly: 30700
+    },
+    singleTaxTests: [
+      {
+        name: 'income below standard deduction',
+        income: { ordinaryIncome: 10000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 0, ordinaryIncomeTax: 0, capitalGainsTax: 0, totalTax: 0 }
+      },
+      {
+        name: 'ordinary income only',
+        income: { ordinaryIncome: 50000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 34650, ordinaryIncomeTax: 3914, capitalGainsTax: 0, totalTax: 3914 }
+      }
+    ],
+    marriedTaxTests: [
+      {
+        name: 'correct brackets for married filing jointly',
+        income: { ordinaryIncome: 100000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        expected: { taxableIncome: 69300, ordinaryIncomeTax: 7828, capitalGainsTax: 0, totalTax: 7828 }
+      }
+    ]
+  }
+} as const
+
 describe('Federal Tax Calculator', () => {
   describe('getFederalStandardDeduction', () => {
-    it('should return correct standard deduction for single filer in 2025', () => {
-      expect(getFederalStandardDeduction(2025, 'single')).toBe(15000)
-    })
+    const testCases: Array<{ year: TaxYear; filingStatus: FilingStatus; expected: number }> = [
+      { year: 2025, filingStatus: 'single', expected: 15000 },
+      { year: 2025, filingStatus: 'marriedFilingJointly', expected: 30000 },
+      { year: 2026, filingStatus: 'single', expected: 15350 },
+      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 30700 }
+    ]
 
-    it('should return correct standard deduction for married filing jointly in 2025', () => {
-      expect(getFederalStandardDeduction(2025, 'marriedFilingJointly')).toBe(30000)
-    })
-
-    it('should return correct standard deduction for single filer in 2026', () => {
-      expect(getFederalStandardDeduction(2026, 'single')).toBe(15350)
-    })
-
-    it('should return correct standard deduction for married filing jointly in 2026', () => {
-      expect(getFederalStandardDeduction(2026, 'marriedFilingJointly')).toBe(30700)
+    testCases.forEach(({ year, filingStatus, expected }) => {
+      it(`should return correct standard deduction for ${filingStatus} in ${year}`, () => {
+        expect(getFederalStandardDeduction(year, filingStatus)).toBe(expected)
+      })
     })
   })
 
-  describe('calculateFederalTax - Single Filer', () => {
-    const filingStatus: FilingStatus = 'single'
-    const taxYear: TaxYear = 2025
-    const standardDeduction = 15000
+  // Test each year's data
+  Object.entries(TAX_YEAR_DATA).forEach(([year, yearData]) => {
+    const taxYear = parseInt(year) as TaxYear
+    const standardDeductionSingle = yearData.standardDeductions.single
+    const standardDeductionMarried = yearData.standardDeductions.marriedFilingJointly
 
-    it('should calculate zero tax for income below standard deduction', () => {
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 10000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 0,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
+    describe(`calculateFederalTax - ${year} Tax Year`, () => {
+      describe('Single Filer', () => {
+        yearData.singleTaxTests.forEach((testCase) => {
+          it(`should calculate tax correctly for ${testCase.name}`, () => {
+            const result = calculateFederalTax(
+              testCase.income,
+              standardDeductionSingle,
+              'single',
+              taxYear
+            )
 
-      expect(result.taxableIncome).toBe(0)
-      expect(result.ordinaryIncomeTax).toBe(0)
-      expect(result.capitalGainsTax).toBe(0)
-      expect(result.totalTax).toBe(0)
-    })
+            expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
+            if (testCase.expected.ordinaryIncomeTax !== undefined) {
+              expect(result.ordinaryIncomeTax).toBe(testCase.expected.ordinaryIncomeTax)
+            }
+            if (testCase.expected.capitalGainsTax !== undefined) {
+              expect(result.capitalGainsTax).toBe(testCase.expected.capitalGainsTax)
+            }
+            if (testCase.expected.totalTax !== undefined) {
+              expect(result.totalTax).toBe(testCase.expected.totalTax)
+            }
+          })
+        })
+      })
 
-    it('should calculate tax for ordinary income only', () => {
-      // $50,000 income - $15,000 deduction = $35,000 taxable
-      // First $11,925 at 10% = $1,192.50
-      // Next $23,075 at 12% = $2,769
-      // Total = $3,961.50
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 50000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 0,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
+      describe('Married Filing Jointly', () => {
+        yearData.marriedTaxTests.forEach((testCase) => {
+          it(`should calculate tax correctly for ${testCase.name}`, () => {
+            const result = calculateFederalTax(
+              testCase.income,
+              standardDeductionMarried,
+              'marriedFilingJointly',
+              taxYear
+            )
 
-      expect(result.taxableIncome).toBe(35000)
-      expect(result.ordinaryIncomeTax).toBe(3961.50)
-      expect(result.capitalGainsTax).toBe(0)
-      expect(result.totalTax).toBe(3961.50)
-    })
-
-    it('should tax short-term capital gains as ordinary income', () => {
-      // $30,000 ordinary + $20,000 STCG = $50,000 total ordinary income
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 30000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 0,
-          shortTermCapitalGains: 20000
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(35000)
-      expect(result.ordinaryIncomeTax).toBe(3961.50)
-      expect(result.capitalGainsTax).toBe(0)
-      expect(result.totalTax).toBe(3961.50)
-    })
-
-    it('should apply 0% capital gains rate for low income', () => {
-      // $20,000 ordinary income - $15,000 deduction = $5,000 taxable ordinary
-      // $10,000 LTCG, total taxable = $15,000
-      // Since total is under $48,350, LTCG rate is 0%
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 20000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 10000,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(15000)
-      expect(result.ordinaryIncomeTax).toBe(500) // $5,000 at 10%
-      expect(result.capitalGainsTax).toBe(0) // 0% rate applies
-      expect(result.totalTax).toBe(500)
-    })
-
-    it('should apply 15% capital gains rate for middle income', () => {
-      // $60,000 ordinary income - $15,000 deduction = $45,000 taxable ordinary
-      // $20,000 LTCG, total taxable = $65,000
-      // Ordinary tax: First $11,925 at 10% + $33,075 at 12% = $5,161.50
-      // LTCG: $45,000 ordinary puts us near the 0% cap of $48,350
-      // So first $3,350 of LTCG at 0%, remaining $16,650 at 15% = $2,497.50
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 60000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 20000,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(65000)
-      expect(result.ordinaryIncomeTax).toBe(5161.50)
-      expect(result.capitalGainsTax).toBe(2497.50)
-      expect(result.totalTax).toBe(7659)
-    })
-
-    it('should treat qualified dividends like long-term capital gains', () => {
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 60000,
-          qualifiedDividends: 10000,
-          longTermCapitalGains: 10000,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(65000)
-      expect(result.ordinaryIncomeTax).toBe(5161.50)
-      expect(result.capitalGainsTax).toBe(2497.50)
-      expect(result.totalTax).toBe(7659)
-    })
-
-    it('should apply 20% capital gains rate for high income', () => {
-      // $550,000 ordinary income - $15,000 deduction = $535,000 taxable ordinary
-      // This puts us over the $533,400 threshold for 20% LTCG rate
-      // $50,000 LTCG all taxed at 20% = $10,000
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 550000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 50000,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(585000)
-      // Verify capital gains tax is at 20%
-      expect(result.capitalGainsTax).toBe(10000)
+            expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
+            if (testCase.expected.ordinaryIncomeTax !== undefined) {
+              expect(result.ordinaryIncomeTax).toBe(testCase.expected.ordinaryIncomeTax)
+            }
+            if (testCase.expected.capitalGainsTax !== undefined) {
+              expect(result.capitalGainsTax).toBe(testCase.expected.capitalGainsTax)
+            }
+            if (testCase.expected.totalTax !== undefined) {
+              expect(result.totalTax).toBe(testCase.expected.totalTax)
+            }
+          })
+        })
+      })
     })
   })
 
-  describe('calculateFederalTax - Married Filing Jointly', () => {
-    const filingStatus: FilingStatus = 'marriedFilingJointly'
-    const taxYear: TaxYear = 2025
-    const standardDeduction = 30000
+  describe('Edge Cases (All Years)', () => {
+    const edgeCases = [
+      {
+        name: 'zero income',
+        income: { ordinaryIncome: 0, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        deduction: 15000,
+        filingStatus: 'single' as FilingStatus,
+        expected: { taxableIncome: 0, totalTax: 0 }
+      },
+      {
+        name: 'itemized deductions larger than income',
+        income: { ordinaryIncome: 20000, qualifiedDividends: 5000, longTermCapitalGains: 5000, shortTermCapitalGains: 0 },
+        deduction: 50000,
+        filingStatus: 'single' as FilingStatus,
+        expected: { taxableIncome: 0, totalTax: 0 }
+      },
+      {
+        name: 'very high income',
+        income: { ordinaryIncome: 1000000, qualifiedDividends: 100000, longTermCapitalGains: 200000, shortTermCapitalGains: 50000 },
+        deduction: 30000,
+        filingStatus: 'marriedFilingJointly' as FilingStatus,
+        expected: { taxableIncome: 1320000, capitalGainsTax: 60000 }
+      }
+    ]
 
-    it('should apply correct brackets for married filing jointly', () => {
-      // $100,000 income - $30,000 deduction = $70,000 taxable
-      // First $23,850 at 10% = $2,385
-      // Next $46,150 at 12% = $5,538
-      // Total = $7,923
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 100000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 0,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
+    const testYears: TaxYear[] = [2025, 2026]
 
-      expect(result.taxableIncome).toBe(70000)
-      expect(result.ordinaryIncomeTax).toBe(7923)
-      expect(result.capitalGainsTax).toBe(0)
-      expect(result.totalTax).toBe(7923)
-    })
+    testYears.forEach((year) => {
+      describe(`${year} Edge Cases`, () => {
+        edgeCases.forEach((testCase) => {
+          it(`should handle ${testCase.name}`, () => {
+            const result = calculateFederalTax(
+              testCase.income,
+              testCase.deduction,
+              testCase.filingStatus,
+              year
+            )
 
-    it('should apply correct capital gains brackets for married filing jointly', () => {
-      // $80,000 ordinary income - $30,000 deduction = $50,000 taxable ordinary
-      // $30,000 LTCG, total taxable = $80,000
-      // Since total is under $96,700, all LTCG at 0%
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 80000,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 30000,
-          shortTermCapitalGains: 0
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      expect(result.taxableIncome).toBe(80000)
-      expect(result.capitalGainsTax).toBe(0) // All at 0% rate
-    })
-
-    it('should handle mixed income types correctly', () => {
-      // Complex scenario with all income types
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 150000,
-          qualifiedDividends: 20000,
-          longTermCapitalGains: 30000,
-          shortTermCapitalGains: 10000
-        },
-        standardDeduction,
-        filingStatus,
-        taxYear
-      )
-
-      const totalIncome = 210000
-      expect(result.taxableIncome).toBe(totalIncome - standardDeduction)
-      
-      // Verify that short-term gains are taxed as ordinary income
-      const ordinaryForTax = 150000 + 10000 // includes STCG
-      const ordinaryTaxable = ordinaryForTax - standardDeduction // $130,000
-      
-      // Calculate expected ordinary tax on $130,000
-      // First $23,850 at 10% = $2,385
-      // Next $73,100 at 12% = $8,772
-      // Next $33,050 at 22% = $7,271
-      // Total = $18,428
-      expect(result.ordinaryIncomeTax).toBe(18428)
-      
-      // LTCG + Qualified Dividends = $50,000
-      // Starting point is $130,000 (ordinary taxable)
-      // All $50,000 is in the 15% bracket (between $96,700 and $600,050)
-      expect(result.capitalGainsTax).toBe(7500)
-      
-      expect(result.totalTax).toBe(25928)
-    })
-  })
-
-  describe('Edge Cases', () => {
-    it('should handle zero income', () => {
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 0,
-          qualifiedDividends: 0,
-          longTermCapitalGains: 0,
-          shortTermCapitalGains: 0
-        },
-        15000,
-        'single',
-        2025
-      )
-
-      expect(result.taxableIncome).toBe(0)
-      expect(result.totalTax).toBe(0)
-    })
-
-    it('should handle itemized deductions larger than income', () => {
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 20000,
-          qualifiedDividends: 5000,
-          longTermCapitalGains: 5000,
-          shortTermCapitalGains: 0
-        },
-        50000, // Large itemized deductions
-        'single',
-        2025
-      )
-
-      expect(result.taxableIncome).toBe(0)
-      expect(result.totalTax).toBe(0)
-    })
-
-    it('should handle very high income correctly', () => {
-      const result = calculateFederalTax(
-        {
-          ordinaryIncome: 1000000,
-          qualifiedDividends: 100000,
-          longTermCapitalGains: 200000,
-          shortTermCapitalGains: 50000
-        },
-        30000,
-        'marriedFilingJointly',
-        2025
-      )
-
-      expect(result.taxableIncome).toBe(1320000)
-      expect(result.totalTax).toBeGreaterThan(0)
-      
-      // Verify 20% capital gains rate applies
-      expect(result.capitalGainsTax).toBe(60000) // (100k + 200k) * 0.20
+            expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
+            if (testCase.expected.capitalGainsTax !== undefined) {
+              expect(result.capitalGainsTax).toBe(testCase.expected.capitalGainsTax)
+            }
+            if (testCase.expected.totalTax !== undefined) {
+              expect(result.totalTax).toBe(testCase.expected.totalTax)
+            } else {
+              expect(result.totalTax).toBeGreaterThanOrEqual(0)
+            }
+          })
+        })
+      })
     })
   })
 })

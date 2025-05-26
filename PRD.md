@@ -389,6 +389,40 @@ To add support for a new tax year (e.g., 2027):
 * **California Data:** Based on California FTB publications and state-specific adjustments
 * **Update Process:** When official brackets are released, placeholder data can be easily replaced with accurate values
 
+### **9.5. Testing Guidelines for New Tax Years**
+
+The test framework is designed to automatically support new tax years with minimal effort:
+
+#### **Test Architecture**
+* **Parameterized Tests:** All tests run automatically for each supported tax year
+* **Data-Driven Testing:** Test scenarios are defined in structured data objects by year
+* **Flexible Assertions:** Tests can validate full results or specific fields as needed
+
+#### **Adding Tests for New Tax Years**
+
+When adding a new tax year (e.g., 2027):
+
+1. **Update Test Constants:** Add the new year to `SUPPORTED_TAX_YEARS` in `/tests/calculators/test-utils.ts`
+2. **Federal Test Data:** Add 2027 data to `TAX_YEAR_DATA` in `/tests/calculators/federal/calculator.test.ts`
+   - Include standard deductions for both filing statuses
+   - Add test scenarios for single and married filing jointly
+   - Calculate expected values based on new tax brackets
+3. **California Test Data:** Add 2027 data to `CA_TAX_YEAR_DATA` in `/tests/calculators/california/calculator.test.ts`
+   - Include standard deductions and mental health tax threshold
+   - Add test scenarios covering various income levels
+4. **Run Tests:** Execute `npm test` to verify all scenarios pass for the new year
+
+#### **Test Coverage**
+* **Standard Deductions:** Automatic testing for all filing statuses and years
+* **Tax Calculations:** Comprehensive scenarios including edge cases, capital gains, and high income
+* **Edge Cases:** Zero income, large deductions, and mental health tax thresholds
+* **Multi-Year Validation:** All tests run for each supported tax year simultaneously
+
+#### **Expected Value Calculation**
+* Use online tax calculators or official IRS/FTB worksheets to calculate expected values
+* Verify calculations manually for at least one test case per year
+* Round values consistently with the calculator implementation (to 2 decimal places)
+
 ## **10\. Future Considerations**
 
 * **Additional Filing Statuses:** Expand support for Head of Household, Married Filing Separately, etc.  
