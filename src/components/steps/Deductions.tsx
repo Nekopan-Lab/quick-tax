@@ -1,4 +1,7 @@
 import { useStore } from '../../store/useStore'
+import { getFederalStandardDeduction } from '../../calculators/federal/calculator'
+import { getCaliforniaStandardDeduction } from '../../calculators/california/calculator'
+import { TaxYear } from '../../types'
 
 interface DeductionsProps {
   onNext: () => void
@@ -9,13 +12,16 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
   const { 
     includeCaliforniaTax, 
     filingStatus, 
+    taxYear,
     deductions, 
     setDeductions 
   } = useStore()
 
-  // Standard deduction values based on filing status
-  const federalStandardDeduction = filingStatus === 'marriedFilingJointly' ? 30000 : 15000
-  const caStandardDeduction = filingStatus === 'marriedFilingJointly' ? 11080 : 5540
+  // Standard deduction values based on filing status and tax year
+  const federalStandardDeduction = filingStatus ? 
+    getFederalStandardDeduction(taxYear as TaxYear, filingStatus) : 0
+  const caStandardDeduction = filingStatus ? 
+    getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus) : 0
   
   const totalItemized = 
     Number(deductions.propertyTax) + 

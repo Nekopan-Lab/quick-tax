@@ -1,24 +1,57 @@
 import { useStore } from '../../store/useStore'
+import { calculateComprehensiveTax } from '../../utils/taxCalculations'
+import { TaxYear } from '../../types'
 
 interface SummaryProps {
   onPrevious: () => void
 }
 
 export function Summary({ onPrevious }: SummaryProps) {
-  const { includeCaliforniaTax } = useStore()
+  const { 
+    taxYear,
+    filingStatus,
+    includeCaliforniaTax,
+    deductions,
+    userIncome,
+    spouseIncome,
+    estimatedPayments
+  } = useStore()
 
-  // Mock data for display
-  const federalOwed = 15000
-  const caOwed = 5000
-  const totalIncome = 250000
-  const agi = 245000
-  const deductionType = 'Standard'
-  const deductionAmount = 30000
-  const taxableIncome = 215000
-  const federalTaxLiability = 45000
-  const caTaxLiability = 15000
-  const totalWithholdings = 30000
-  const totalEstimatedPayments = 0
+  // Calculate real tax data
+  const taxResults = calculateComprehensiveTax(
+    taxYear as TaxYear,
+    filingStatus,
+    includeCaliforniaTax,
+    deductions,
+    userIncome,
+    spouseIncome,
+    estimatedPayments
+  )
+
+  // Show message if calculations can't be performed
+  if (!taxResults) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-2xl font-semibold mb-6">Summary & Actionable Insights</h2>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <p className="text-yellow-800">
+            Please complete the previous steps (Filing Status) to see your tax calculation summary.
+          </p>
+        </div>
+        <div className="flex justify-between mt-8">
+          <button
+            onClick={onPrevious}
+            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Previous
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const federalOwed = taxResults.federalOwedOrRefund
+  const caOwed = taxResults.californiaOwedOrRefund || 0
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -64,22 +97,22 @@ export function Summary({ onPrevious }: SummaryProps) {
         <div className="space-y-3">
           <div className="flex justify-between py-2 border-b">
             <span>Total Income</span>
-            <span className="font-medium">${totalIncome.toLocaleString()}</span>
+            <span className="font-medium">${taxResults.totalIncome.toLocaleString()}</span>
           </div>
           
           <div className="flex justify-between py-2 border-b">
             <span>Adjusted Gross Income (AGI)</span>
-            <span className="font-medium">${agi.toLocaleString()}</span>
+            <span className="font-medium">${taxResults.adjustedGrossIncome.toLocaleString()}</span>
           </div>
           
           <div className="flex justify-between py-2 border-b">
-            <span>Deduction Applied ({deductionType})</span>
-            <span className="font-medium">${deductionAmount.toLocaleString()}</span>
+            <span>Deduction Applied ({taxResults.deductionType})</span>
+            <span className="font-medium">${taxResults.deductionAmount.toLocaleString()}</span>
           </div>
           
           <div className="flex justify-between py-2 border-b">
             <span>Taxable Income</span>
-            <span className="font-medium">${taxableIncome.toLocaleString()}</span>
+            <span className="font-medium">${taxResults.taxableIncome.toLocaleString()}</span>
           </div>
         </div>
 
@@ -89,19 +122,19 @@ export function Summary({ onPrevious }: SummaryProps) {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Tax Liability (before withholdings)</span>
-              <span className="font-medium">${federalTaxLiability.toLocaleString()}</span>
+              <span className="font-medium">${taxResults.federalTax.totalTax.toLocaleString()}</span>
             </div>
             <div className="pl-4 space-y-1 text-gray-600">
-              <div>• Ordinary Income Tax: $40,000</div>
-              <div>• Long-Term Capital Gains Tax: $5,000</div>
+              <div>• Ordinary Income Tax: ${taxResults.federalTax.ordinaryIncomeTax.toLocaleString()}</div>
+              <div>• Long-Term Capital Gains Tax: ${taxResults.federalTax.capitalGainsTax.toLocaleString()}</div>
             </div>
             <div className="flex justify-between pt-2">
               <span>Total Withholdings</span>
-              <span className="font-medium">-${totalWithholdings.toLocaleString()}</span>
+              <span className="font-medium">-${taxResults.totalWithholdings.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>Estimated Payments Made</span>
-              <span className="font-medium">-${totalEstimatedPayments.toLocaleString()}</span>
+              <span className="font-medium">-${taxResults.totalEstimatedPayments.toLocaleString()}</span>
             </div>
             <div className="flex justify-between pt-2 border-t font-medium">
               <span>Net Tax Owed/Overpaid</span>
@@ -113,24 +146,27 @@ export function Summary({ onPrevious }: SummaryProps) {
         </div>
 
         {/* California Tax Details */}
-        {includeCaliforniaTax && (
+        {includeCaliforniaTax && taxResults.californiaTax && (
           <div className="mt-6 pt-4 border-t">
             <h4 className="font-medium mb-3">California Tax Details</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Tax Liability (before withholdings)</span>
-                <span className="font-medium">${caTaxLiability.toLocaleString()}</span>
+                <span className="font-medium">${taxResults.californiaTax.totalTax.toLocaleString()}</span>
               </div>
               <div className="pl-4 space-y-1 text-gray-600">
-                <div>• All income taxed at CA marginal rates</div>
+                <div>• Base CA Tax: ${taxResults.californiaTax.baseTax.toLocaleString()}</div>
+                {taxResults.californiaTax.mentalHealthTax > 0 && (
+                  <div>• Mental Health Tax (1%): ${taxResults.californiaTax.mentalHealthTax.toLocaleString()}</div>
+                )}
               </div>
               <div className="flex justify-between pt-2">
                 <span>Total Withholdings</span>
-                <span className="font-medium">-$10,000</span>
+                <span className="font-medium">-${(taxResults.totalWithholdings - (taxResults.totalWithholdings * 0.7)).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span>Estimated Payments Made</span>
-                <span className="font-medium">-$0</span>
+                <span className="font-medium">-${((parseFloat(estimatedPayments.californiaQ1) || 0) + (parseFloat(estimatedPayments.californiaQ2) || 0) + (parseFloat(estimatedPayments.californiaQ4) || 0)).toLocaleString()}</span>
               </div>
               <div className="flex justify-between pt-2 border-t font-medium">
                 <span>Net Tax Owed/Overpaid</span>

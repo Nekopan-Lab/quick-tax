@@ -48,6 +48,18 @@ interface DeductionsData {
   donations: string
 }
 
+interface EstimatedPaymentsData {
+  // Federal estimated payments by quarter
+  federalQ1: string
+  federalQ2: string
+  federalQ3: string
+  federalQ4: string
+  // California estimated payments by quarter (Q3 is 0)
+  californiaQ1: string
+  californiaQ2: string
+  californiaQ4: string
+}
+
 interface TaxStore {
   // Tax Year
   taxYear: number
@@ -70,6 +82,10 @@ interface TaxStore {
   spouseIncome: IncomeData
   setUserIncome: (income: Partial<IncomeData>) => void
   setSpouseIncome: (income: Partial<IncomeData>) => void
+  
+  // Estimated Payments
+  estimatedPayments: EstimatedPaymentsData
+  setEstimatedPayments: (payments: Partial<EstimatedPaymentsData>) => void
   
   // Clear all data
   clearAllData: () => void
@@ -115,6 +131,16 @@ const initialDeductionsData: DeductionsData = {
   donations: '',
 }
 
+const initialEstimatedPaymentsData: EstimatedPaymentsData = {
+  federalQ1: '',
+  federalQ2: '',
+  federalQ3: '',
+  federalQ4: '',
+  californiaQ1: '',
+  californiaQ2: '',
+  californiaQ4: '',
+}
+
 export const useStore = create<TaxStore>()(
   persist(
     (set) => ({
@@ -125,6 +151,7 @@ export const useStore = create<TaxStore>()(
       deductions: { ...initialDeductionsData },
       userIncome: { ...initialIncomeData },
       spouseIncome: { ...initialIncomeData },
+      estimatedPayments: { ...initialEstimatedPaymentsData },
       
       // Actions
       setTaxYear: (year) => set({ taxYear: year }),
@@ -143,6 +170,10 @@ export const useStore = create<TaxStore>()(
         spouseIncome: { ...state.spouseIncome, ...income }
       })),
       
+      setEstimatedPayments: (payments) => set((state) => ({
+        estimatedPayments: { ...state.estimatedPayments, ...payments }
+      })),
+      
       clearAllData: () => set({
         taxYear: 2025,
         filingStatus: null,
@@ -150,6 +181,7 @@ export const useStore = create<TaxStore>()(
         deductions: { ...initialDeductionsData },
         userIncome: { ...initialIncomeData },
         spouseIncome: { ...initialIncomeData },
+        estimatedPayments: { ...initialEstimatedPaymentsData },
       }),
     }),
     {

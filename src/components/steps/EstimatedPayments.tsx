@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useStore } from '../../store/useStore'
 
 interface EstimatedPaymentsProps {
@@ -7,21 +6,18 @@ interface EstimatedPaymentsProps {
 }
 
 export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps) {
-  const { includeCaliforniaTax } = useStore()
+  const { includeCaliforniaTax, estimatedPayments, setEstimatedPayments } = useStore()
+
+  const totalFederal = 
+    Number(estimatedPayments.federalQ1) + 
+    Number(estimatedPayments.federalQ2) + 
+    Number(estimatedPayments.federalQ3) + 
+    Number(estimatedPayments.federalQ4)
   
-  // Federal estimated payments
-  const [fedQ1, setFedQ1] = useState('')
-  const [fedQ2, setFedQ2] = useState('')
-  const [fedQ3, setFedQ3] = useState('')
-  const [fedQ4, setFedQ4] = useState('')
-
-  // California estimated payments
-  const [caQ1, setCaQ1] = useState('')
-  const [caQ2, setCaQ2] = useState('')
-  const [caQ4, setCaQ4] = useState('')
-
-  const totalFederal = Number(fedQ1) + Number(fedQ2) + Number(fedQ3) + Number(fedQ4)
-  const totalCA = Number(caQ1) + Number(caQ2) + Number(caQ4)
+  const totalCA = 
+    Number(estimatedPayments.californiaQ1) + 
+    Number(estimatedPayments.californiaQ2) + 
+    Number(estimatedPayments.californiaQ4)
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -45,8 +41,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
               </label>
               <input
                 type="number"
-                value={fedQ1}
-                onChange={(e) => setFedQ1(e.target.value)}
+                value={estimatedPayments.federalQ1}
+                onChange={(e) => setEstimatedPayments({ federalQ1: e.target.value })}
                 placeholder="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
@@ -58,8 +54,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
               </label>
               <input
                 type="number"
-                value={fedQ2}
-                onChange={(e) => setFedQ2(e.target.value)}
+                value={estimatedPayments.federalQ2}
+                onChange={(e) => setEstimatedPayments({ federalQ2: e.target.value })}
                 placeholder="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
@@ -71,8 +67,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
               </label>
               <input
                 type="number"
-                value={fedQ3}
-                onChange={(e) => setFedQ3(e.target.value)}
+                value={estimatedPayments.federalQ3}
+                onChange={(e) => setEstimatedPayments({ federalQ3: e.target.value })}
                 placeholder="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
@@ -84,8 +80,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
               </label>
               <input
                 type="number"
-                value={fedQ4}
-                onChange={(e) => setFedQ4(e.target.value)}
+                value={estimatedPayments.federalQ4}
+                onChange={(e) => setEstimatedPayments({ federalQ4: e.target.value })}
                 placeholder="0"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
@@ -116,8 +112,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                 </label>
                 <input
                   type="number"
-                  value={caQ1}
-                  onChange={(e) => setCaQ1(e.target.value)}
+                  value={estimatedPayments.californiaQ1}
+                  onChange={(e) => setEstimatedPayments({ californiaQ1: e.target.value })}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
@@ -130,8 +126,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                 </label>
                 <input
                   type="number"
-                  value={caQ2}
-                  onChange={(e) => setCaQ2(e.target.value)}
+                  value={estimatedPayments.californiaQ2}
+                  onChange={(e) => setEstimatedPayments({ californiaQ2: e.target.value })}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
@@ -157,8 +153,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                 </label>
                 <input
                   type="number"
-                  value={caQ4}
-                  onChange={(e) => setCaQ4(e.target.value)}
+                  value={estimatedPayments.californiaQ4}
+                  onChange={(e) => setEstimatedPayments({ californiaQ4: e.target.value })}
                   placeholder="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />

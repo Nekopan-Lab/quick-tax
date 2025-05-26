@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useStore } from './store/useStore'
+import { calculateComprehensiveTax } from './utils/taxCalculations'
+import { TaxYear } from './types'
 import { StepNavigation } from './components/layout/StepNavigation'
 import { Welcome } from './components/steps/Welcome'
 import { FilingStatus } from './components/steps/FilingStatus'
@@ -10,14 +12,32 @@ import { Summary } from './components/steps/Summary'
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1) // Start at Step 1
-  const { clearAllData } = useStore()
   const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   
-  // TODO: These will be calculated from actual tax data
-  // For demo purposes, showing example values
-  const [federalOwed] = useState(15000)
-  const [californiaOwed] = useState(5000)
-  const { includeCaliforniaTax } = useStore()
+  const { 
+    clearAllData,
+    taxYear,
+    filingStatus,
+    includeCaliforniaTax,
+    deductions,
+    userIncome,
+    spouseIncome,
+    estimatedPayments
+  } = useStore()
+
+  // Calculate real-time tax results
+  const taxResults = calculateComprehensiveTax(
+    taxYear as TaxYear,
+    filingStatus,
+    includeCaliforniaTax,
+    deductions,
+    userIncome,
+    spouseIncome,
+    estimatedPayments
+  )
+
+  const federalOwed = taxResults?.federalOwedOrRefund || 0
+  const californiaOwed = taxResults?.californiaOwedOrRefund || 0
 
   const handleNext = () => {
     if (currentStep < 5) {
