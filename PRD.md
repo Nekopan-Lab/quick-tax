@@ -298,7 +298,50 @@ California requires 3 payments for estimated tax, with specific percentages of t
 * **Q3 (June 1 to August 31):** September 15, 2025 (0% \- no payment due)  
 * **Q4 (September 1 to December 31):** January 15, 2026 (30% of total estimated tax)
 
-## **8\. Future Considerations**
+## **8\. Deployment Requirements**
+
+### **8.1. Hosting Platform**
+
+* **Platform:** GitHub Pages
+* **Type:** Static website hosting
+* **Requirements:** The application must be built as a static single-page application (SPA) with all assets served directly from the repository
+
+### **8.2. Build Process**
+
+* **Build Output:** The build process must generate static HTML, CSS, and JavaScript files
+* **Entry Point:** The root directory must contain `index.html` as the main entry point
+* **Asset Structure:** All static assets (JS, CSS, images) must be properly referenced with relative paths
+* **No Server Dependencies:** The application must not require any server-side processing or API endpoints
+
+### **8.3. Deployment Steps**
+
+1. **Development Build:**
+   * Run `npm run build` to generate production-ready assets in the `dist/` directory
+   * Ensure all assets are optimized and minified for production
+
+2. **GitHub Pages Setup:**
+   * Copy `dist/index.html` to the root directory as `index.html`
+   * Copy the `dist/assets/` folder to the root directory as `assets/`
+   * Ensure all file paths in `index.html` correctly reference the `assets/` folder
+
+3. **Version Control:**
+   * Commit both the source code and the built assets to the repository
+   * Push changes to the main branch to trigger GitHub Pages deployment
+
+### **8.4. Local Testing**
+
+* **Testing Method:** Use a simple static web server to test the deployment locally
+* **Recommended:** Run `python3 -m http.server 8000` from the root directory
+* **Access:** Navigate to `http://localhost:8000` to verify the application works correctly
+* **Important:** Do not use development server (`npm run dev`) for deployment testing as it may behave differently
+
+### **8.5. Continuous Deployment**
+
+* **Automation:** Consider setting up GitHub Actions to automatically build and deploy on push to main
+* **Build Verification:** Ensure the build process completes successfully before deployment
+* **Asset Integrity:** Verify that all static assets are correctly referenced and accessible
+
+## **9\. Future Considerations**
 
 * **Support for Additional Tax Years:** Implement a mechanism to easily update tax brackets, standard deductions, and rules for future tax years (e.g., through a configuration file or a simple data update process).  
 * **Additional Filing Statuses:** Expand support for Head of Household, Married Filing Separately, etc.  
