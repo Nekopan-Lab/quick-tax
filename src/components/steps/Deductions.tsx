@@ -76,58 +76,58 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
             </div>
           </div>
 
-          <div className="mt-10 bg-gray-50 rounded-xl p-6">
-            <h3 className="font-bold text-lg text-gray-900 mb-6">
+          <div className="mt-8 bg-gray-50 rounded-xl p-4 sm:p-6">
+            <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-4">
               Deduction Comparison
             </h3>
             
-            <div className="space-y-4">
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">Your Itemized Deductions:</span>
-                  <span className="text-2xl font-bold text-gray-900">${totalItemized.toLocaleString()}</span>
+            <div className="space-y-3">
+              <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm sm:text-base text-gray-600">Your Itemized Deductions:</span>
+                  <span className="text-lg sm:text-2xl font-bold text-gray-900">${totalItemized.toLocaleString()}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className={`rounded-lg p-5 border-2 transition-all ${
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className={`rounded-lg p-3 sm:p-4 border-2 transition-all ${
                   totalItemized > federalStandardDeduction 
                     ? 'bg-green-50 border-green-300' 
                     : 'bg-white border-gray-200'
                 }`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold text-gray-900">Federal (IRS)</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-sm sm:text-base text-gray-900">Federal (IRS)</span>
                     {totalItemized > federalStandardDeduction ? (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">ITEMIZED</span>
+                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">ITEMIZED</span>
                     ) : (
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">STANDARD</span>
+                      <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-semibold">STANDARD</span>
                     )}
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">
                     ${Math.max(totalItemized, federalStandardDeduction).toLocaleString()}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1">
                     Standard: ${federalStandardDeduction.toLocaleString()}
                   </div>
                 </div>
 
-                <div className={`rounded-lg p-5 border-2 transition-all ${
+                <div className={`rounded-lg p-3 sm:p-4 border-2 transition-all ${
                   totalItemized > caStandardDeduction 
                     ? 'bg-green-50 border-green-300' 
                     : 'bg-white border-gray-200'
                 }`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold text-gray-900">California (FTB)</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-sm sm:text-base text-gray-900">California (FTB)</span>
                     {totalItemized > caStandardDeduction ? (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">ITEMIZED</span>
+                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">ITEMIZED</span>
                     ) : (
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">STANDARD</span>
+                      <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-semibold">STANDARD</span>
                     )}
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">
                     ${Math.max(totalItemized, caStandardDeduction).toLocaleString()}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="text-xs sm:text-sm text-gray-600 mt-1">
                     Standard: ${caStandardDeduction.toLocaleString()}
                   </div>
                 </div>
