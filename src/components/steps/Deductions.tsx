@@ -22,14 +22,14 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
         <div className="p-8">
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
             <p className="text-sm text-blue-800">
-              ℹ️ Enter your estimated <strong>full-year</strong> amounts below. We'll automatically determine whether standard or itemized deductions are better for you.
+              Enter your estimated <strong>full-year</strong> amounts below. We'll automatically determine whether standard or itemized deductions are better for you.
             </p>
           </div>
 
           <div className="space-y-6">
             <div className="group">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                🏠 Property Tax (Full Year)
+                Property Tax (Full Year)
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -45,7 +45,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
 
             <div className="group">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                🏦 Mortgage Interest (Full Year)
+                Mortgage Interest (Full Year)
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -61,7 +61,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
 
             <div className="group">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                💝 Charitable Donations (Full Year)
+                Charitable Donations (Full Year)
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -78,7 +78,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
 
           <div className="mt-10 bg-gray-50 rounded-xl p-6">
             <h3 className="font-bold text-lg text-gray-900 mb-6">
-              📊 Deduction Comparison
+              Deduction Comparison
             </h3>
             
             <div className="space-y-4">
