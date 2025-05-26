@@ -11,6 +11,13 @@ import { Summary } from './components/steps/Summary'
 function App() {
   const [currentStep, setCurrentStep] = useState(1) // Start at Step 1
   const { clearAllData } = useStore()
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+  
+  // TODO: These will be calculated from actual tax data
+  // For demo purposes, showing example values
+  const [federalOwed] = useState(15000)
+  const [californiaOwed] = useState(5000)
+  const [showCalifornia] = useState(true)
 
   const handleNext = () => {
     if (currentStep < 5) {
@@ -53,7 +60,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
@@ -62,16 +69,36 @@ function App() {
               <h1 className="text-2xl font-bold text-gray-900">QuickTax</h1>
               <p className="text-sm text-gray-600">2025 Tax Year Estimator</p>
             </div>
-            <button
-              onClick={() => {
-                if (confirm('Are you sure you want to delete all stored data?')) {
-                  handleClearData()
-                }
-              }}
-              className="text-sm text-red-600 hover:text-red-700 font-medium"
-            >
-              Clear All Data
-            </button>
+            
+            {/* Tax Status Display */}
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-xs text-gray-500 mb-1">Federal Tax</div>
+                {federalOwed > 0 ? (
+                  <div className="text-lg font-bold text-red-600">${federalOwed.toLocaleString()} Owed</div>
+                ) : federalOwed < 0 ? (
+                  <div className="text-lg font-bold text-green-600">${Math.abs(federalOwed).toLocaleString()} Overpaid</div>
+                ) : (
+                  <div className="text-lg font-bold text-gray-600">$0 Balanced</div>
+                )}
+              </div>
+              
+              {showCalifornia && (
+                <>
+                  <div className="w-px h-10 bg-gray-300" />
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500 mb-1">California Tax</div>
+                    {californiaOwed > 0 ? (
+                      <div className="text-lg font-bold text-red-600">${californiaOwed.toLocaleString()} Owed</div>
+                    ) : californiaOwed < 0 ? (
+                      <div className="text-lg font-bold text-green-600">${Math.abs(californiaOwed).toLocaleString()} Overpaid</div>
+                    ) : (
+                      <div className="text-lg font-bold text-gray-600">$0 Balanced</div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -92,10 +119,80 @@ function App() {
       
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <main>
+        <main className="min-h-[60vh]">
           {renderStep()}
         </main>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-auto bg-gray-100 border-t border-gray-200">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={() => setShowPrivacyModal(true)}
+                className="text-sm text-gray-600 hover:text-gray-900 underline"
+              >
+                Privacy Policy
+              </button>
+              <span className="text-sm text-gray-400">•</span>
+              <a
+                href="https://github.com/denehs/quick-tax"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-600 hover:text-gray-900 underline"
+              >
+                GitHub
+              </a>
+            </div>
+            
+            <button
+              onClick={() => {
+                if (confirm('Are you sure you want to delete all stored data? This cannot be undone.')) {
+                  handleClearData()
+                }
+              }}
+              className="text-sm text-red-600 hover:text-red-700 font-medium border border-red-300 rounded-md px-4 py-2 hover:bg-red-50 transition-colors"
+            >
+              Clear All Data
+            </button>
+          </div>
+          
+          <div className="mt-6 text-center text-xs text-gray-500">
+            © 2025 QuickTax. This is an estimation tool only and does not constitute professional tax advice.
+          </div>
+        </div>
+      </footer>
+
+      {/* Privacy Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Privacy Policy</h3>
+            <div className="text-gray-700 space-y-3 mb-6">
+              <p>
+                Your privacy is paramount. All data entered into QuickTax is stored 
+                <strong> only</strong> on your local device and is never sent to our servers.
+              </p>
+              <p>
+                This allows you to pick up where you left off or update your estimates 
+                throughout the year. For complete privacy, you can delete all stored data 
+                at any time using the "Clear All Data" button.
+              </p>
+              <p>
+                We do not collect, store, or transmit any of your financial information. 
+                All tax calculations are performed entirely within your browser.
+              </p>
+            </div>
+            <button 
+              className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+              onClick={() => setShowPrivacyModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
