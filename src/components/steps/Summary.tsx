@@ -1,9 +1,11 @@
+import { useStore } from '../../store/useStore'
+
 interface SummaryProps {
   onPrevious: () => void
 }
 
 export function Summary({ onPrevious }: SummaryProps) {
-  const includeCA = true // TODO: Get from store
+  const { includeCaliforniaTax } = useStore()
 
   // Mock data for display
   const federalOwed = 15000
@@ -38,7 +40,7 @@ export function Summary({ onPrevious }: SummaryProps) {
           <p className="text-sm text-gray-600">As of current date</p>
         </div>
 
-        {includeCA && (
+        {includeCaliforniaTax && (
           <div className={`bg-white rounded-lg shadow-sm p-6 border-2 ${
             caOwed > 0 ? 'border-red-200' : 'border-green-200'
           }`}>
@@ -111,7 +113,7 @@ export function Summary({ onPrevious }: SummaryProps) {
         </div>
 
         {/* California Tax Details */}
-        {includeCA && (
+        {includeCaliforniaTax && (
           <div className="mt-6 pt-4 border-t">
             <h4 className="font-medium mb-3">California Tax Details</h4>
             <div className="space-y-2 text-sm">
@@ -166,7 +168,7 @@ export function Summary({ onPrevious }: SummaryProps) {
             </div>
           )}
 
-          {includeCA && caOwed > 0 && (
+          {includeCaliforniaTax && caOwed > 0 && (
             <div>
               <h4 className="font-medium mb-3">California (FTB)</h4>
               <div className="bg-blue-50 p-4 rounded-md space-y-2">

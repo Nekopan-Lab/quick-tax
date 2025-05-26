@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useStore } from '../../store/useStore'
 
 interface EstimatedPaymentsProps {
   onNext: () => void
@@ -6,6 +7,8 @@ interface EstimatedPaymentsProps {
 }
 
 export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps) {
+  const { includeCaliforniaTax } = useStore()
+  
   // Federal estimated payments
   const [fedQ1, setFedQ1] = useState('')
   const [fedQ2, setFedQ2] = useState('')
@@ -16,8 +19,6 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
   const [caQ1, setCaQ1] = useState('')
   const [caQ2, setCaQ2] = useState('')
   const [caQ4, setCaQ4] = useState('')
-
-  const includeCA = true // TODO: Get from store
 
   const totalFederal = Number(fedQ1) + Number(fedQ2) + Number(fedQ3) + Number(fedQ4)
   const totalCA = Number(caQ1) + Number(caQ2) + Number(caQ4)
@@ -98,7 +99,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
         </div>
 
         {/* California Estimated Payments */}
-        {includeCA && (
+        {includeCaliforniaTax && (
           <div>
             <h3 className="text-lg font-medium mb-4">California (FTB) Estimated Tax Payments</h3>
             <div className="bg-amber-50 p-3 rounded-md mb-4">

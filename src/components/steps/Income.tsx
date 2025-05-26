@@ -15,7 +15,7 @@ interface FutureRSUVest {
 
 export function Income({ onNext, onPrevious }: IncomeProps) {
   const [activeTab, setActiveTab] = useState<'user' | 'spouse'>('user')
-  const { filingStatus, userIncome, spouseIncome, setUserIncome, setSpouseIncome } = useStore()
+  const { filingStatus, includeCaliforniaTax, userIncome, spouseIncome, setUserIncome, setSpouseIncome } = useStore()
   const showSpouseTab = filingStatus === 'marriedFilingJointly'
   
   // Get the current income data based on active tab
@@ -198,18 +198,20 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State Withhold (YTD)
-                </label>
-                <input
-                  type="number"
-                  value={currentIncome.ytdStateWithhold}
-                  onChange={(e) => setCurrentIncome({ ytdStateWithhold: e.target.value })}
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
+              {includeCaliforniaTax && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    State Withhold (YTD)
+                  </label>
+                  <input
+                    type="number"
+                    value={currentIncome.ytdStateWithhold}
+                    onChange={(e) => setCurrentIncome({ ytdStateWithhold: e.target.value })}
+                    placeholder="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -269,18 +271,20 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Estimated Future State Withhold
-                  </label>
-                  <input
-                    type="number"
-                    value={currentIncome.futureStateWithhold}
-                    onChange={(e) => setCurrentIncome({ futureStateWithhold: e.target.value })}
-                    placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
+                {includeCaliforniaTax && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Estimated Future State Withhold
+                    </label>
+                    <input
+                      type="number"
+                      value={currentIncome.futureStateWithhold}
+                      onChange={(e) => setCurrentIncome({ futureStateWithhold: e.target.value })}
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-6">
@@ -314,18 +318,20 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        State Withhold (per paycheck)
-                      </label>
-                      <input
-                        type="number"
-                        value={currentIncome.paycheckState}
-                        onChange={(e) => setCurrentIncome({ paycheckState: e.target.value })}
-                        placeholder="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
+                    {includeCaliforniaTax && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          State Withhold (per paycheck)
+                        </label>
+                        <input
+                          type="number"
+                          value={currentIncome.paycheckState}
+                          onChange={(e) => setCurrentIncome({ paycheckState: e.target.value })}
+                          placeholder="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -403,19 +409,21 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          State Withhold per Vest
-                          <span className="text-xs text-gray-500 block">Optional - from last vest</span>
-                        </label>
-                        <input
-                          type="number"
-                          value={currentIncome.rsuVestState}
-                          onChange={(e) => setCurrentIncome({ rsuVestState: e.target.value })}
-                          placeholder="Optional"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        />
-                      </div>
+                      {includeCaliforniaTax && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            State Withhold per Vest
+                            <span className="text-xs text-gray-500 block">Optional - from last vest</span>
+                          </label>
+                          <input
+                            type="number"
+                            value={currentIncome.rsuVestState}
+                            onChange={(e) => setCurrentIncome({ rsuVestState: e.target.value })}
+                            placeholder="Optional"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          />
+                        </div>
+                      )}
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -523,13 +531,15 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                         <span className="text-gray-500 ml-1">({(federalWithholdingRate * 100).toFixed(0)}%)</span>
                                       </span>
                                     </div>
-                                    <div>
-                                      <span className="text-gray-600">Est. State Tax Withhold:</span>
-                                      <span className="ml-1 font-medium text-red-600">
-                                        ${Math.round(estimatedState).toLocaleString()}
-                                        <span className="text-gray-500 ml-1">({(stateWithholdingRate * 100).toFixed(0)}%)</span>
-                                      </span>
-                                    </div>
+                                    {includeCaliforniaTax && (
+                                      <div>
+                                        <span className="text-gray-600">Est. State Tax Withhold:</span>
+                                        <span className="ml-1 font-medium text-red-600">
+                                          ${Math.round(estimatedState).toLocaleString()}
+                                          <span className="text-gray-500 ml-1">({(stateWithholdingRate * 100).toFixed(0)}%)</span>
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -543,8 +553,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       <div className="mt-3 p-3 bg-blue-50 rounded-md">
                         <p className="text-xs text-blue-800">
                           Tax withholding estimates are based on your last vest rates: 
-                          Federal {(federalWithholdingRate * 100).toFixed(1)}%, 
-                          State {(stateWithholdingRate * 100).toFixed(1)}%
+                          Federal {(federalWithholdingRate * 100).toFixed(1)}%{includeCaliforniaTax && `, State ${(stateWithholdingRate * 100).toFixed(1)}%`}
                         </p>
                       </div>
                     )}

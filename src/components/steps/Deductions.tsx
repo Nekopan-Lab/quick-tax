@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useStore } from '../../store/useStore'
 
 interface DeductionsProps {
   onNext: () => void
@@ -6,6 +7,7 @@ interface DeductionsProps {
 }
 
 export function Deductions({ onNext, onPrevious }: DeductionsProps) {
+  const { includeCaliforniaTax } = useStore()
   const [propertyTax, setPropertyTax] = useState('')
   const [mortgageInterest, setMortgageInterest] = useState('')
   const [donations, setDonations] = useState('')
@@ -89,7 +91,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className={`grid gap-3 ${includeCaliforniaTax ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
                 <div className={`rounded-lg p-3 sm:p-4 border-2 transition-all ${
                   totalItemized > federalStandardDeduction 
                     ? 'bg-green-50 border-green-300' 
@@ -111,26 +113,28 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                   </div>
                 </div>
 
-                <div className={`rounded-lg p-3 sm:p-4 border-2 transition-all ${
-                  totalItemized > caStandardDeduction 
-                    ? 'bg-green-50 border-green-300' 
-                    : 'bg-white border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-sm sm:text-base text-gray-900">California (FTB)</span>
-                    {totalItemized > caStandardDeduction ? (
-                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">ITEMIZED</span>
-                    ) : (
-                      <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-semibold">STANDARD</span>
-                    )}
+                {includeCaliforniaTax && (
+                  <div className={`rounded-lg p-3 sm:p-4 border-2 transition-all ${
+                    totalItemized > caStandardDeduction 
+                      ? 'bg-green-50 border-green-300' 
+                      : 'bg-white border-gray-200'
+                  }`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-sm sm:text-base text-gray-900">California (FTB)</span>
+                      {totalItemized > caStandardDeduction ? (
+                        <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">ITEMIZED</span>
+                      ) : (
+                        <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-semibold">STANDARD</span>
+                      )}
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-gray-900">
+                      ${Math.max(totalItemized, caStandardDeduction).toLocaleString()}
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-600 mt-1">
+                      Standard: ${caStandardDeduction.toLocaleString()}
+                    </div>
                   </div>
-                  <div className="text-xl sm:text-2xl font-bold text-gray-900">
-                    ${Math.max(totalItemized, caStandardDeduction).toLocaleString()}
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-600 mt-1">
-                    Standard: ${caStandardDeduction.toLocaleString()}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

@@ -17,7 +17,7 @@ function App() {
   // For demo purposes, showing example values
   const [federalOwed] = useState(15000)
   const [californiaOwed] = useState(5000)
-  const [showCalifornia] = useState(true)
+  const { includeCaliforniaTax } = useStore()
 
   const handleNext = () => {
     if (currentStep < 5) {
@@ -83,7 +83,7 @@ function App() {
                 )}
               </div>
               
-              {showCalifornia && (
+              {includeCaliforniaTax && (
                 <>
                   <div className="w-px h-10 bg-gray-300" />
                   <div className="text-right">
