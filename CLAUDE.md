@@ -39,38 +39,33 @@ Follow the deployment requirements in PRD Section 8:
 3. Copy `dist/assets/` to root as `assets/`
 4. Commit and push all changes
 
-#### CRITICAL: Deployment Testing After Code Changes
-**You MUST test the deployment locally after EVERY code change to ensure GitHub Pages compatibility:**
+#### CRITICAL: Deployment Build Verification
+**You MUST verify the build works after EVERY code change to ensure GitHub Pages compatibility:**
 
-1. **Build the project:**
+1. **Test with dev server first:**
+   - Use the dev server workflow above to test functionality
+   - Ensure no console errors or warnings
+
+2. **Verify production build:**
    ```bash
    npm run build
    ```
-   
-2. **Verify build output:**
-   - Check that `dist/` directory exists
-   - Ensure `dist/index.html` exists
-   - Verify `dist/assets/` contains JS/CSS files
-   - Check that asset paths in `index.html` are relative (e.g., `./assets/index-xxx.js`)
+   - Must complete without errors
+   - Check that `dist/` directory is created
+   - Verify `dist/index.html` exists
+   - Ensure `dist/assets/` contains JS/CSS files
 
-3. **Test locally as static site:**
-   ```bash
-   # From project root after build
-   python3 -m http.server 8000 --directory dist
-   ```
-   Then open `http://localhost:8000/quick-tax/` (note the `/quick-tax/` path to match GitHub Pages)
-
-4. **Common deployment issues to check:**
-   - Missing `index.html` in repository root
-   - Incorrect asset paths (should be relative)
-   - Build errors that prevent `dist/` generation
-   - Missing dependencies in `package.json`
+3. **Common deployment issues to watch for:**
    - TypeScript errors that block the build
+   - Missing dependencies in `package.json`
+   - Import path errors that work in dev but fail in build
+   - Asset references that don't resolve correctly
 
-5. **Before pushing:**
-   - Ensure `npm run build` completes without errors
-   - Verify the app loads correctly at `http://localhost:8000/quick-tax/`
-   - Check browser console for any 404 errors or missing resources
+4. **Before pushing:**
+   - Ensure `npm run build` succeeds
+   - All tests pass (`npm test -- --run`)
+   - No TypeScript errors
+   - Dev server shows no console errors
 
 ### Development Guidelines
 
