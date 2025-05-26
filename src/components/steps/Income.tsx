@@ -556,11 +556,41 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
 
           {/* Total Income Display */}
           <div className="border-t pt-4">
-            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
-              <span className="font-medium">Calculated Total Income:</span>
-              <span className="text-lg font-semibold">$0</span>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
+                <span className="font-medium">
+                  {activeTab === 'user' ? 'Your' : 'Spouse'} Calculated Total Income:
+                </span>
+                <span className="text-lg font-semibold">$0</span>
+              </div>
+              {showSpouseTab && (
+                <div className="text-sm text-gray-600 text-center">
+                  Combined household income will be shown in the summary
+                </div>
+              )}
             </div>
           </div>
+          
+          {/* Spouse Income Reminder Button - Only show on Your Income tab when filing jointly */}
+          {showSpouseTab && activeTab === 'user' && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => {
+                  setActiveTab('spouse')
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add Spouse Income (Optional)
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                Only needed if your spouse has income
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

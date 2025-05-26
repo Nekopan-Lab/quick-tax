@@ -103,6 +103,10 @@ Follow the deployment requirements in PRD Section 8:
 - Format: "As requested: '[user prompt]'"
 - When PRD is updated: "Updated PRD.md to reflect: [change]"
 
+#### Auto-commit on Approval
+- When user says "looks good" after testing changes, automatically commit and push
+- No need to ask for permission to commit after "looks good" confirmation
+
 #### Code Standards
 - Follow existing patterns and conventions
 - Ensure alignment with PRD specifications

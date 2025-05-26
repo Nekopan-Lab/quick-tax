@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useStore } from '../../store/useStore'
 
 interface FilingStatusProps {
   onNext: () => void
@@ -6,8 +6,7 @@ interface FilingStatusProps {
 }
 
 export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
-  const [filingStatus, setFilingStatus] = useState<'single' | 'married' | ''>('single')
-  const [includeCA, setIncludeCA] = useState(true)
+  const { filingStatus, setFilingStatus, includeCaliforniaTax, setIncludeCaliforniaTax } = useStore()
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -26,7 +25,7 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className={`
                 relative flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all
-                ${filingStatus === 'single' 
+                ${filingStatus === 'single'
                   ? 'border-blue-500 bg-blue-50 shadow-md' 
                   : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }
@@ -35,16 +34,16 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
                   type="radio"
                   name="filingStatus"
                   value="single"
-                  checked={filingStatus === 'single'}
-                  onChange={(e) => setFilingStatus(e.target.value as 'single')}
+                  checked={filingStatus === 'single' || !filingStatus}
+                  onChange={() => setFilingStatus('single')}
                   className="sr-only"
                 />
                 <div className="flex items-center">
                   <div className={`
                     w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center
-                    ${filingStatus === 'single' ? 'border-blue-500' : 'border-gray-300'}
+                    ${filingStatus === 'single' || !filingStatus ? 'border-blue-500' : 'border-gray-300'}
                   `}>
-                    {filingStatus === 'single' && (
+                    {(filingStatus === 'single' || !filingStatus) && (
                       <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     )}
                   </div>
@@ -57,7 +56,7 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
               
               <label className={`
                 relative flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all
-                ${filingStatus === 'married' 
+                ${filingStatus === 'marriedFilingJointly' 
                   ? 'border-blue-500 bg-blue-50 shadow-md' 
                   : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }
@@ -65,17 +64,17 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
                 <input
                   type="radio"
                   name="filingStatus"
-                  value="married"
-                  checked={filingStatus === 'married'}
-                  onChange={(e) => setFilingStatus(e.target.value as 'married')}
+                  value="marriedFilingJointly"
+                  checked={filingStatus === 'marriedFilingJointly'}
+                  onChange={() => setFilingStatus('marriedFilingJointly')}
                   className="sr-only"
                 />
                 <div className="flex items-center">
                   <div className={`
                     w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center
-                    ${filingStatus === 'married' ? 'border-blue-500' : 'border-gray-300'}
+                    ${filingStatus === 'marriedFilingJointly' ? 'border-blue-500' : 'border-gray-300'}
                   `}>
-                    {filingStatus === 'married' && (
+                    {filingStatus === 'marriedFilingJointly' && (
                       <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     )}
                   </div>
@@ -110,17 +109,17 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
                   <div className="relative">
                     <input
                       type="checkbox"
-                      checked={includeCA}
-                      onChange={(e) => setIncludeCA(e.target.checked)}
+                      checked={includeCaliforniaTax}
+                      onChange={(e) => setIncludeCaliforniaTax(e.target.checked)}
                       className="sr-only"
                     />
                     <div className={`
                       w-14 h-8 rounded-full transition-colors duration-200 relative
-                      ${includeCA ? 'bg-blue-600' : 'bg-gray-300'}
+                      ${includeCaliforniaTax ? 'bg-blue-600' : 'bg-gray-300'}
                     `}>
                       <div className={`
                         absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200
-                        ${includeCA ? 'translate-x-7' : 'translate-x-1'}
+                        ${includeCaliforniaTax ? 'translate-x-7' : 'translate-x-1'}
                       `} />
                     </div>
                   </div>
