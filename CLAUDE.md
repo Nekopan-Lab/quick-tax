@@ -32,12 +32,19 @@ The following line imports all product specifications and requirements from the 
 
 ### Deployment Process & Testing
 
-#### Build and Deploy Steps
-Follow the deployment requirements in PRD Section 8:
-1. Run `npm run build`
-2. Copy `dist/index.html` to root as `index.html`
-3. Copy `dist/assets/` to root as `assets/`
-4. Commit and push all changes
+#### Automated GitHub Actions Deployment
+The project uses GitHub Actions for automated deployment to GitHub Pages:
+1. Push changes to the `main` branch
+2. GitHub Actions automatically:
+   - Runs tests
+   - Builds the project
+   - Deploys to GitHub Pages at https://quicktax.denehs.me
+3. No manual file copying required - the workflow handles everything
+
+#### Custom Domain Configuration
+- Domain: https://quicktax.denehs.me
+- CNAME file in repository root contains the custom domain
+- Vite config uses `base: '/'` for custom domain compatibility
 
 #### CRITICAL: Deployment Build Verification
 **You MUST verify the build works after EVERY code change to ensure GitHub Pages compatibility:**
@@ -74,7 +81,7 @@ Follow the deployment requirements in PRD Section 8:
 
 1. **Check if dev server is already running:**
    ```bash
-   curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/quick-tax/
+   curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/
    ```
 
 2. **If server is NOT running (non-200 response), start it:**
@@ -85,7 +92,7 @@ Follow the deployment requirements in PRD Section 8:
 
 3. **Provide clickable link to user:**
    ```
-   ✅ Development server running: http://localhost:5173/quick-tax/
+   ✅ Development server running: http://localhost:5173/
    ```
    Note: Vite's hot module replacement will automatically reload changes in the browser
 
