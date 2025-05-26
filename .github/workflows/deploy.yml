@@ -32,15 +32,14 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Copy build files to root
-        run: |
-          cp dist/index.html ./index.html
-          cp -r dist/assets ./assets
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
 
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add index.html assets
-          git diff --staged --quiet || git commit -m "Deploy to GitHub Pages"
-          git push
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
