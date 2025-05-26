@@ -82,9 +82,9 @@ export function calculateFutureIncome(income: IncomeData): {
 } {
   if (income.incomeMode === 'simple') {
     return {
-      totalWage: parseFloat(income.futureWage) || 0,
-      totalFederalWithhold: parseFloat(income.futureFederalWithhold) || 0,
-      totalStateWithhold: parseFloat(income.futureStateWithhold) || 0
+      totalWage: Math.round(parseFloat(income.futureWage) || 0),
+      totalFederalWithhold: Math.round(parseFloat(income.futureFederalWithhold) || 0),
+      totalStateWithhold: Math.round(parseFloat(income.futureStateWithhold) || 0)
     }
   }
 
@@ -132,9 +132,9 @@ export function calculateFutureIncome(income: IncomeData): {
   }
 
   const paycheckTotal = {
-    wage: paycheckAmount * paychecksRemaining,
-    federal: paycheckFederal * paychecksRemaining,
-    state: paycheckState * paychecksRemaining
+    wage: Math.round(paycheckAmount * paychecksRemaining),
+    federal: Math.round(paycheckFederal * paychecksRemaining),
+    state: Math.round(paycheckState * paychecksRemaining)
   }
   
 
@@ -157,13 +157,13 @@ export function calculateFutureIncome(income: IncomeData): {
         const stateRate = rsuVestState / rsuVestWage
         
         acc.wage += vestValue
-        acc.federal += vestValue * federalRate
-        acc.state += vestValue * stateRate
+        acc.federal += Math.round(vestValue * federalRate)
+        acc.state += Math.round(vestValue * stateRate)
       } else {
         acc.wage += vestValue
         // Default withholding rates if no historical data
-        acc.federal += vestValue * 0.24 // Estimate 24% federal
-        acc.state += vestValue * 0.10 // Estimate 10% state
+        acc.federal += Math.round(vestValue * 0.24) // Estimate 24% federal
+        acc.state += Math.round(vestValue * 0.10) // Estimate 10% state
       }
     }
     
@@ -171,9 +171,9 @@ export function calculateFutureIncome(income: IncomeData): {
   }, { wage: 0, federal: 0, state: 0 })
 
   const result = {
-    totalWage: paycheckTotal.wage + rsuTotals.wage,
-    totalFederalWithhold: paycheckTotal.federal + rsuTotals.federal,
-    totalStateWithhold: paycheckTotal.state + rsuTotals.state
+    totalWage: Math.round(paycheckTotal.wage + rsuTotals.wage),
+    totalFederalWithhold: Math.round(paycheckTotal.federal + rsuTotals.federal),
+    totalStateWithhold: Math.round(paycheckTotal.state + rsuTotals.state)
   }
   
   
@@ -560,10 +560,10 @@ export function calculateComprehensiveTax(
 
   // Calculate what's owed or refund for each jurisdiction
   const federalPayments = userAgg.totalWithholdings.federal + spouseAgg.totalWithholdings.federal + federalEstimatedPayments
-  const federalOwedOrRefund = federalTaxResult.totalTax - federalPayments
+  const federalOwedOrRefund = Math.round(federalTaxResult.totalTax - federalPayments)
 
   const californiaOwedOrRefund = californiaTaxResult ? 
-    californiaTaxResult.totalTax - (userAgg.totalWithholdings.state + spouseAgg.totalWithholdings.state + californiaEstimatedPayments) : 
+    Math.round(californiaTaxResult.totalTax - (userAgg.totalWithholdings.state + spouseAgg.totalWithholdings.state + californiaEstimatedPayments)) : 
     undefined
 
   return {

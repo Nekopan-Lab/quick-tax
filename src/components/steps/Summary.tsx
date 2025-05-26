@@ -65,7 +65,7 @@ export function Summary({ onPrevious }: SummaryProps) {
   const userFutureIncome = calculateFutureIncome(userIncome)
   const spouseFutureIncome = filingStatus === 'marriedFilingJointly' ? calculateFutureIncome(spouseIncome) : { totalFederalWithhold: 0, totalStateWithhold: 0 }
   
-  const federalWithholdings = (
+  const federalWithholdings = Math.round(
     (parseFloat(userIncome.ytdFederalWithhold) || 0) +
     (parseFloat(spouseIncome.ytdFederalWithhold) || 0) +
     userFutureIncome.totalFederalWithhold +
