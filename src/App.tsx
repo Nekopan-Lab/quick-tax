@@ -3,7 +3,9 @@ import { useStore } from './store/useStore'
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0)
-  const { filingStatus, setFilingStatus } = useStore()
+  const { clearAllData } = useStore()
+  
+  console.log('Current step:', currentStep) // TODO: Implement step navigation
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,8 +37,23 @@ function App() {
                 Start New Estimation
               </button>
               
-              <button className="w-full py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+              <button 
+                className="w-full py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                onClick={() => window.location.reload()}
+              >
                 Load Previous Data
+              </button>
+              
+              <button 
+                className="w-full py-3 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete all data?')) {
+                    clearAllData()
+                    window.location.reload()
+                  }
+                }}
+              >
+                Delete All Data
               </button>
             </div>
           </div>

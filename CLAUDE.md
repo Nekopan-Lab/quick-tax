@@ -30,12 +30,47 @@ The following line imports all product specifications and requirements from the 
 - Comprehensive unit tests for all tax calculation functions
 - Test coverage must include all scenarios in PRD Section 7
 
-### Deployment Process
+### Deployment Process & Testing
+
+#### Build and Deploy Steps
 Follow the deployment requirements in PRD Section 8:
 1. Run `npm run build`
 2. Copy `dist/index.html` to root as `index.html`
 3. Copy `dist/assets/` to root as `assets/`
 4. Commit and push all changes
+
+#### CRITICAL: Deployment Testing After Code Changes
+**You MUST test the deployment locally after EVERY code change to ensure GitHub Pages compatibility:**
+
+1. **Build the project:**
+   ```bash
+   npm run build
+   ```
+   
+2. **Verify build output:**
+   - Check that `dist/` directory exists
+   - Ensure `dist/index.html` exists
+   - Verify `dist/assets/` contains JS/CSS files
+   - Check that asset paths in `index.html` are relative (e.g., `./assets/index-xxx.js`)
+
+3. **Test locally as static site:**
+   ```bash
+   # From project root after build
+   python3 -m http.server 8000 --directory dist
+   ```
+   Then open `http://localhost:8000/quick-tax/` (note the `/quick-tax/` path to match GitHub Pages)
+
+4. **Common deployment issues to check:**
+   - Missing `index.html` in repository root
+   - Incorrect asset paths (should be relative)
+   - Build errors that prevent `dist/` generation
+   - Missing dependencies in `package.json`
+   - TypeScript errors that block the build
+
+5. **Before pushing:**
+   - Ensure `npm run build` completes without errors
+   - Verify the app loads correctly at `http://localhost:8000/quick-tax/`
+   - Check browser console for any 404 errors or missing resources
 
 ### Development Guidelines
 
