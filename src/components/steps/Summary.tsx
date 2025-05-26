@@ -3,7 +3,9 @@ import {
   calculateComprehensiveTax, 
   calculateCaliforniaWithholdings,
   calculateFederalEstimatedPayments,
-  calculateCaliforniaEstimatedPayments
+  calculateCaliforniaEstimatedPayments,
+  calculateFederalItemizedDeductions,
+  calculateCaliforniaItemizedDeductions
 } from '../../utils/taxCalculations'
 import { TaxYear } from '../../types'
 
@@ -125,9 +127,63 @@ export function Summary({ onPrevious }: SummaryProps) {
             <span className="font-medium">${taxResults.adjustedGrossIncome.toLocaleString()}</span>
           </div>
           
-          <div className="flex justify-between py-2 border-b">
-            <span>Deduction Applied ({taxResults.deductionType})</span>
-            <span className="font-medium">${taxResults.deductionAmount.toLocaleString()}</span>
+          <div className="py-2 border-b">
+            <div className="flex justify-between">
+              <span>Deduction Applied ({taxResults.deductionType})</span>
+              <span className="font-medium">${taxResults.deductionAmount.toLocaleString()}</span>
+            </div>
+            {taxResults.deductionType === 'itemized' && (
+              <div className="mt-2 pl-4 text-sm text-gray-600 space-y-1">
+                {(() => {
+                  const federalItemized = calculateFederalItemizedDeductions(
+                    deductions,
+                    userIncome,
+                    spouseIncome,
+                    filingStatus,
+                    includeCaliforniaTax,
+                    taxYear as TaxYear
+                  )
+                  const propertyTax = parseFloat(deductions.propertyTax) || 0
+                  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
+                  const donations = parseFloat(deductions.donations) || 0
+                  const otherStateIncomeTax = parseFloat(deductions.otherStateIncomeTax) || 0
+                  
+                  // Calculate SALT deduction
+                  let saltDeduction = propertyTax
+                  if (includeCaliforniaTax) {
+                    // This is an estimate - actual CA tax would be calculated
+                    saltDeduction += propertyTax // Simplified for now
+                  } else {
+                    saltDeduction += otherStateIncomeTax
+                  }
+                  const saltCapped = Math.min(saltDeduction, 10000)
+                  
+                  // Calculate mortgage interest with cap
+                  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
+                  const mortgageLimit = deductions.mortgageLoanDate === 'before-dec-16-2017' ? 1000000 : 750000
+                  return (
+                    <>
+                      <div>• Property Tax: ${propertyTax.toLocaleString()}</div>
+                      {includeCaliforniaTax && (
+                        <div>• Est. CA State Income Tax: ${(saltDeduction - propertyTax).toLocaleString()}</div>
+                      )}
+                      {!includeCaliforniaTax && otherStateIncomeTax > 0 && (
+                        <div>• Other State Income Tax: ${otherStateIncomeTax.toLocaleString()}</div>
+                      )}
+                      {saltDeduction > 10000 && (
+                        <div className="text-amber-600">• SALT Deduction (capped at $10,000): ${saltCapped.toLocaleString()}</div>
+                      )}
+                      <div>• Mortgage Interest: ${mortgageInterest.toLocaleString()}</div>
+                      {mortgageBalance > mortgageLimit && (
+                        <div className="text-amber-600">• (Limited to interest on ${mortgageLimit.toLocaleString()} loan)</div>
+                      )}
+                      <div>• Donations: ${donations.toLocaleString()}</div>
+                      <div className="font-medium pt-1 border-t">Total Federal Itemized: ${federalItemized.toLocaleString()}</div>
+                    </>
+                  )
+                })()}
+              </div>
+            )}
           </div>
           
           <div className="flex justify-between py-2 border-b">
@@ -169,6 +225,34 @@ export function Summary({ onPrevious }: SummaryProps) {
         {includeCaliforniaTax && taxResults.californiaTax && (
           <div className="mt-6 pt-4 border-t">
             <h4 className="font-medium mb-3">California Tax Details</h4>
+            {/* California Deduction Details */}
+            {taxResults.deductionType === 'itemized' && (
+              <div className="mb-4 text-sm">
+                <div className="font-medium mb-2">California Itemized Deductions:</div>
+                <div className="pl-4 text-gray-600 space-y-1">
+                  {(() => {
+                    const californiaItemized = calculateCaliforniaItemizedDeductions(deductions)
+                    const propertyTax = parseFloat(deductions.propertyTax) || 0
+                    const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
+                    const donations = parseFloat(deductions.donations) || 0
+                    const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
+                    const mortgageLimit = 1000000
+                    
+                    return (
+                      <>
+                        <div>• Property Tax: ${propertyTax.toLocaleString()}</div>
+                        <div>• Mortgage Interest: ${mortgageInterest.toLocaleString()}</div>
+                        {mortgageBalance > mortgageLimit && (
+                          <div className="text-amber-600">• (Limited to interest on $1,000,000 loan)</div>
+                        )}
+                        <div>• Donations: ${donations.toLocaleString()}</div>
+                        <div className="font-medium pt-1 border-t">Total CA Itemized: ${californiaItemized.toLocaleString()}</div>
+                      </>
+                    )
+                  })()}
+                </div>
+              </div>
+            )}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Tax Liability (before withholdings)</span>

@@ -37,6 +37,9 @@ interface DeductionsData {
   propertyTax: string
   mortgageInterest: string
   donations: string
+  mortgageLoanDate: 'before-dec-16-2017' | 'after-dec-15-2017' | ''
+  mortgageBalance: string
+  otherStateIncomeTax: string
 }
 
 interface EstimatedPaymentsData {
@@ -198,6 +201,93 @@ export function calculateIndividualTotalIncome(income: IncomeData): number {
 }
 
 /**
+ * Calculate estimated California state tax for SALT deduction
+ */
+export function calculateEstimatedCAStateTax(
+  userIncome: IncomeData,
+  spouseIncome: IncomeData,
+  filingStatus: FilingStatus | null,
+  taxYear: TaxYear
+): number {
+  if (!filingStatus) return 0
+  
+  const userAgg = aggregateIndividualIncome(userIncome)
+  const spouseAgg = filingStatus === 'marriedFilingJointly' 
+    ? aggregateIndividualIncome(spouseIncome) 
+    : { totalIncome: 0, investmentIncome: {
+        ordinaryDividends: 0, qualifiedDividends: 0, interestIncome: 0,
+        shortTermGains: 0, longTermGains: 0
+      }, wageIncome: 0, totalWithholdings: { federal: 0, state: 0 } }
+  
+  const totalIncome = userAgg.totalIncome + spouseAgg.totalIncome
+  
+  // Simplified CA tax calculation for SALT estimation
+  const standardDeduction = getCaliforniaStandardDeduction(taxYear, filingStatus)
+  
+  const caResult = calculateCaliforniaTax(totalIncome, standardDeduction, filingStatus, taxYear)
+  return caResult.totalTax
+}
+
+/**
+ * Calculate federal itemized deductions with SALT cap and mortgage interest limits
+ */
+export function calculateFederalItemizedDeductions(
+  deductions: DeductionsData,
+  userIncome: IncomeData,
+  spouseIncome: IncomeData,
+  filingStatus: FilingStatus | null,
+  includeCaliforniaTax: boolean,
+  taxYear: TaxYear
+): number {
+  const propertyTax = parseFloat(deductions.propertyTax) || 0
+  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
+  const donations = parseFloat(deductions.donations) || 0
+  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
+  
+  // Calculate state income tax for SALT
+  const stateIncomeTax = includeCaliforniaTax 
+    ? calculateEstimatedCAStateTax(userIncome, spouseIncome, filingStatus, taxYear)
+    : parseFloat(deductions.otherStateIncomeTax) || 0
+  
+  // Apply SALT cap ($10,000 for both single and married filing jointly)
+  const saltDeduction = Math.min(propertyTax + stateIncomeTax, 10000)
+  
+  // Calculate mortgage interest deduction with limits
+  let deductibleMortgageInterest = mortgageInterest
+  if (mortgageBalance > 0 && deductions.mortgageLoanDate) {
+    const mortgageLimit = deductions.mortgageLoanDate === 'before-dec-16-2017' ? 1000000 : 750000
+    if (mortgageBalance > mortgageLimit) {
+      deductibleMortgageInterest = mortgageInterest * (mortgageLimit / mortgageBalance)
+    }
+  }
+  
+  return saltDeduction + deductibleMortgageInterest + donations
+}
+
+/**
+ * Calculate California itemized deductions (no SALT cap, always $1M mortgage limit)
+ */
+export function calculateCaliforniaItemizedDeductions(
+  deductions: DeductionsData
+): number {
+  const propertyTax = parseFloat(deductions.propertyTax) || 0
+  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
+  const donations = parseFloat(deductions.donations) || 0
+  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
+  
+  // California doesn't have SALT cap for property tax
+  // Note: CA state income tax cannot be deducted on CA return
+  
+  // Calculate mortgage interest deduction with CA's $1M limit
+  let deductibleMortgageInterest = mortgageInterest
+  if (mortgageBalance > 1000000) {
+    deductibleMortgageInterest = mortgageInterest * (1000000 / mortgageBalance)
+  }
+  
+  return propertyTax + deductibleMortgageInterest + donations
+}
+
+/**
  * Calculate just California withholdings from all sources
  */
 export function calculateCaliforniaWithholdings(
@@ -329,23 +419,29 @@ export function calculateComprehensiveTax(
   const totalIncome = userAgg.totalIncome + spouseAgg.totalIncome
   const adjustedGrossIncome = totalIncome // Simplified - no adjustments for now
 
-  // Calculate deductions
-  const itemizedDeductions = 
-    (parseFloat(deductions.propertyTax) || 0) +
-    (parseFloat(deductions.mortgageInterest) || 0) +
-    (parseFloat(deductions.donations) || 0)
+  // Calculate deductions with SALT cap and mortgage limits
+  const federalItemized = calculateFederalItemizedDeductions(
+    deductions,
+    userIncome,
+    spouseIncome,
+    filingStatus,
+    includeCaliforniaTax,
+    taxYear
+  )
+  
+  const californiaItemized = calculateCaliforniaItemizedDeductions(deductions)
 
   const standardDeductionFederal = getFederalStandardDeduction(taxYear, filingStatus)
   const standardDeductionCA = includeCaliforniaTax 
     ? getCaliforniaStandardDeduction(taxYear, filingStatus) 
     : 0
 
-  const federalDeduction = Math.max(itemizedDeductions, standardDeductionFederal)
+  const federalDeduction = Math.max(federalItemized, standardDeductionFederal)
   const californiaDeduction = includeCaliforniaTax 
-    ? Math.max(itemizedDeductions, standardDeductionCA) 
+    ? Math.max(californiaItemized, standardDeductionCA) 
     : 0
 
-  const deductionType: 'standard' | 'itemized' = itemizedDeductions > standardDeductionFederal ? 'itemized' : 'standard'
+  const deductionType: 'standard' | 'itemized' = federalItemized > standardDeductionFederal ? 'itemized' : 'standard'
 
   // Prepare income breakdown for federal tax calculation
   const federalIncomeBreakdown = {

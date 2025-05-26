@@ -64,18 +64,7 @@ The application will feature a clear, step-by-step flow to guide users through t
    * **Action:**  
      * Based on the Filing Status selection, the application will apply the correct federal and state tax rules.  
      * If "California State Tax (FTB)" is *not* checked, all California-specific UX elements (e.g., state-specific income fields, state estimated payment inputs, state tax breakdown) will be hidden or disabled.  
-3. **Deductions:**  
-   * **Input:**  
-     * Estimated full-year Property Tax.  
-     * Estimated full-year Mortgage Interest.  
-     * Estimated full-year Donations.  
-   * **Guidance:** A clear explanation that these are *full-year estimations*.  
-   * **Logic & Display:**  
-     * Calculate total itemized deductions.  
-     * Compare total itemized deductions to the applicable standard deduction for the selected filing status (Federal and California separately, if CA tax is selected).  
-     * Automatically select and display which deduction method (Standard or Itemized) is more beneficial for the user for *each* jurisdiction, explaining why.  
-     * The higher deduction amount will be used in subsequent tax calculations.  
-4. **Income:**  
+3. **Income:**  
    * **Structure:** Tab-based interface with "Your Income" and "Spouse Income" tabs when filing status is Married Filing Jointly. For Single filers, only the user income section is shown.  
    * **Spouse Income UI:** When Married Filing Jointly is selected:  
      * Default view shows only "Your Income" tab  
@@ -119,6 +108,37 @@ The application will feature a clear, step-by-step flow to guide users through t
            * "Add RSU Vest" button to add additional vests  
            * "Remove" button for each vest to delete it  
    * **Real-time Display:** As income fields are updated, the "Calculated Total Income" for the user and spouse will update in real-time.  
+4. **Deductions:**  
+   * **Input:**  
+     * Estimated full-year Property Tax.  
+     * Estimated full-year Mortgage Interest.  
+     * Mortgage-related fields (shown only when Mortgage Interest > 0):
+       * Mortgage Loan Date: Radio buttons for "Before Dec 16, 2017" or "After Dec 15, 2017"
+       * Mortgage Balance: Input field for current mortgage balance
+     * Estimated full-year Donations.  
+     * Other State Income Tax (shown only when California State Tax is NOT selected).
+   * **Guidance:** A clear explanation that these are *full-year estimations*.  
+   * **Logic & Display:**  
+     * Calculate federal itemized deductions with the following limits:
+       * **SALT Cap**: State and Local Tax (SALT) deduction is capped at $10,000 for federal taxes. This includes property tax plus either:
+         * Estimated California state income tax (when CA tax is selected), or
+         * Other state income tax entered manually (when CA tax is not selected)
+       * **Mortgage Interest Limits**: Based on loan origination date:
+         * Loans before Dec 16, 2017: Interest deductible on up to $1,000,000 of mortgage debt
+         * Loans after Dec 15, 2017: Interest deductible on up to $750,000 of mortgage debt
+         * If mortgage balance exceeds the limit, interest is prorated proportionally
+     * Calculate California itemized deductions (when CA tax is selected):
+       * No SALT cap for California
+       * Mortgage interest limit is always $1,000,000 regardless of loan date
+       * California does not allow deduction of California state income tax on CA return
+     * Compare total itemized deductions to the applicable standard deduction for the selected filing status (Federal and California separately, if CA tax is selected).  
+     * Automatically select and display which deduction method (Standard or Itemized) is more beneficial for the user for *each* jurisdiction, explaining why.  
+     * The higher deduction amount will be used in subsequent tax calculations.
+     * Show expandable breakdowns for itemized deductions (always available to show why standard/itemized was chosen):
+       * Federal breakdown shows: Property tax, estimated CA state tax (or other state tax), SALT cap application, mortgage interest with limit application, and donations
+       * California breakdown shows: Property tax, mortgage interest with $1M limit application, and donations
+       * When itemized is less than standard deduction, show explanatory text
+       * Clearly illustrate when caps/limits are applied with visual indicators and calculations
 5. **Estimated Tax Payments YTD:**  
    * **Input:**  
      * Separate input fields for payments made for each IRS estimated tax due date.  
@@ -165,7 +185,7 @@ The application will feature a clear, step-by-step flow to guide users through t
 ### **4.2. Navigation**
 
 * **Step-by-Step Flow:** Clear "Next" and "Previous" buttons to guide users sequentially.  
-* **Quick Navigation:** A persistent top navigation bar with clickable links to each major step (e.g., "Filing Status," "Deductions," "Income," etc.) for quick access and editing. Step numbers are not displayed in the navigation.  
+* **Quick Navigation:** A persistent top navigation bar with clickable links to each major step (e.g., "Filing Status," "Income," "Deductions," etc.) for quick access and editing. Step numbers are not displayed in the navigation.  
 * **Responsive Behavior:** On mobile devices, the navigation bar is horizontally scrollable to accommodate all steps without wrapping.
 
 ### **4.3. Visual Design**

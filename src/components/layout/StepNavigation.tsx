@@ -5,8 +5,8 @@ interface StepNavigationProps {
 
 const steps = [
   { id: 1, name: 'Filing Status' },
-  { id: 2, name: 'Deductions' },
-  { id: 3, name: 'Income' },
+  { id: 2, name: 'Income' },
+  { id: 3, name: 'Deductions' },
   { id: 4, name: 'Estimated Payments' },
   { id: 5, name: 'Summary' }
 ]

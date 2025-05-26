@@ -46,6 +46,13 @@ interface DeductionsData {
   propertyTax: string
   mortgageInterest: string
   donations: string
+  
+  // New mortgage-related fields
+  mortgageLoanDate: 'before-dec-16-2017' | 'after-dec-15-2017' | ''
+  mortgageBalance: string
+  
+  // State tax field (for users not using CA tax)
+  otherStateIncomeTax: string
 }
 
 interface EstimatedPaymentsData {
@@ -129,6 +136,9 @@ const initialDeductionsData: DeductionsData = {
   propertyTax: '',
   mortgageInterest: '',
   donations: '',
+  mortgageLoanDate: '',
+  mortgageBalance: '',
+  otherStateIncomeTax: '',
 }
 
 const initialEstimatedPaymentsData: EstimatedPaymentsData = {
