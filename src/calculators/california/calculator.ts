@@ -1,9 +1,10 @@
 import { FilingStatus } from '@/types'
+import { TaxYear } from '../federal/constants'
 import { 
-  CALIFORNIA_TAX_BRACKETS, 
-  CALIFORNIA_STANDARD_DEDUCTION,
-  CALIFORNIA_MENTAL_HEALTH_TAX_THRESHOLD,
-  CALIFORNIA_MENTAL_HEALTH_TAX_RATE
+  getCaliforniaTaxBrackets,
+  getCaliforniaStandardDeduction,
+  getCaliforniaMentalHealthTaxThreshold,
+  getCaliforniaMentalHealthTaxRate
 } from './constants'
 import { calculateProgressiveTax } from '../utils/taxBrackets'
 
@@ -24,12 +25,14 @@ export interface CaliforniaTaxResult {
  * @param income - Total income amount
  * @param deductions - Total deduction amount (standard or itemized)
  * @param filingStatus - Filing status (single or marriedFilingJointly)
+ * @param taxYear - Tax year for calculations
  * @returns California tax calculation result
  */
 export function calculateCaliforniaTax(
   income: number,
   deductions: number,
-  filingStatus: FilingStatus
+  filingStatus: FilingStatus,
+  taxYear: TaxYear
 ): CaliforniaTaxResult {
   // Calculate taxable income after deductions
   const taxableIncome = Math.max(0, income - deductions)
@@ -37,13 +40,15 @@ export function calculateCaliforniaTax(
   // Calculate base California tax using progressive brackets
   const baseTax = calculateProgressiveTax(
     taxableIncome,
-    CALIFORNIA_TAX_BRACKETS[filingStatus]
+    getCaliforniaTaxBrackets(taxYear, filingStatus)
   )
   
   // Calculate mental health services tax (1% on income over $1M)
   let mentalHealthTax = 0
-  if (taxableIncome > CALIFORNIA_MENTAL_HEALTH_TAX_THRESHOLD) {
-    mentalHealthTax = (taxableIncome - CALIFORNIA_MENTAL_HEALTH_TAX_THRESHOLD) * CALIFORNIA_MENTAL_HEALTH_TAX_RATE
+  const threshold = getCaliforniaMentalHealthTaxThreshold(taxYear)
+  const rate = getCaliforniaMentalHealthTaxRate(taxYear)
+  if (taxableIncome > threshold) {
+    mentalHealthTax = (taxableIncome - threshold) * rate
   }
   
   return {
@@ -54,11 +59,5 @@ export function calculateCaliforniaTax(
   }
 }
 
-/**
- * Get the California standard deduction for a given filing status
- * @param filingStatus - Filing status
- * @returns Standard deduction amount
- */
-export function getCaliforniaStandardDeduction(filingStatus: FilingStatus): number {
-  return CALIFORNIA_STANDARD_DEDUCTION[filingStatus]
-}
+// Re-export the helper function for backwards compatibility
+export { getCaliforniaStandardDeduction }

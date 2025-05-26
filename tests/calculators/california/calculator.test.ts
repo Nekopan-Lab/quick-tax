@@ -1,27 +1,37 @@
 import { describe, it, expect } from 'vitest'
 import { calculateCaliforniaTax, getCaliforniaStandardDeduction } from '@/calculators/california/calculator'
-import { FilingStatus } from '@/types'
+import { FilingStatus, TaxYear } from '@/types'
 
 describe('California Tax Calculator', () => {
   describe('getCaliforniaStandardDeduction', () => {
-    it('should return correct standard deduction for single filer', () => {
-      expect(getCaliforniaStandardDeduction('single')).toBe(5540)
+    it('should return correct standard deduction for single filer in 2025', () => {
+      expect(getCaliforniaStandardDeduction(2025, 'single')).toBe(5540)
     })
 
-    it('should return correct standard deduction for married filing jointly', () => {
-      expect(getCaliforniaStandardDeduction('marriedFilingJointly')).toBe(11080)
+    it('should return correct standard deduction for married filing jointly in 2025', () => {
+      expect(getCaliforniaStandardDeduction(2025, 'marriedFilingJointly')).toBe(11080)
+    })
+
+    it('should return correct standard deduction for single filer in 2026', () => {
+      expect(getCaliforniaStandardDeduction(2026, 'single')).toBe(5670)
+    })
+
+    it('should return correct standard deduction for married filing jointly in 2026', () => {
+      expect(getCaliforniaStandardDeduction(2026, 'marriedFilingJointly')).toBe(11340)
     })
   })
 
   describe('calculateCaliforniaTax - Single Filer', () => {
     const filingStatus: FilingStatus = 'single'
+    const taxYear: TaxYear = 2025
     const standardDeduction = 5540
 
     it('should calculate zero tax for income below standard deduction', () => {
       const result = calculateCaliforniaTax(
         5000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(0)
@@ -38,7 +48,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         20000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(14460)
@@ -59,7 +70,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         75000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(69460)
@@ -73,7 +85,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         500000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(494460)
@@ -98,7 +111,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         1200000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(1194460)
@@ -109,6 +123,7 @@ describe('California Tax Calculator', () => {
 
   describe('calculateCaliforniaTax - Married Filing Jointly', () => {
     const filingStatus: FilingStatus = 'marriedFilingJointly'
+    const taxYear: TaxYear = 2025
     const standardDeduction = 11080
 
     it('should apply correct brackets for married filing jointly', () => {
@@ -122,7 +137,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         100000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(88920)
@@ -136,7 +152,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         800000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(788920)
@@ -160,7 +177,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         2000000,
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(1988920)
@@ -183,7 +201,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         incomeAmount,
         deduction,
-        'single'
+        'single',
+        2025
       )
 
       // Verify the calculation is the same regardless of income type
@@ -197,7 +216,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         0,
         5540,
-        'single'
+        'single',
+        2025
       )
 
       expect(result.taxableIncome).toBe(0)
@@ -208,7 +228,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         10000,
         20000,
-        'single'
+        'single',
+        2025
       )
 
       expect(result.taxableIncome).toBe(0)
@@ -219,7 +240,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         1000000,
         5540,
-        'single'
+        'single',
+        2025
       )
 
       expect(result.taxableIncome).toBe(994460)
@@ -230,7 +252,8 @@ describe('California Tax Calculator', () => {
       const result = calculateCaliforniaTax(
         5000000,
         11080,
-        'marriedFilingJointly'
+        'marriedFilingJointly',
+        2025
       )
 
       expect(result.taxableIncome).toBe(4988920)

@@ -1,20 +1,29 @@
 import { describe, it, expect } from 'vitest'
 import { calculateFederalTax, getFederalStandardDeduction } from '@/calculators/federal/calculator'
-import { FilingStatus } from '@/types'
+import { FilingStatus, TaxYear } from '@/types'
 
 describe('Federal Tax Calculator', () => {
   describe('getFederalStandardDeduction', () => {
-    it('should return correct standard deduction for single filer', () => {
-      expect(getFederalStandardDeduction('single')).toBe(15000)
+    it('should return correct standard deduction for single filer in 2025', () => {
+      expect(getFederalStandardDeduction(2025, 'single')).toBe(15000)
     })
 
-    it('should return correct standard deduction for married filing jointly', () => {
-      expect(getFederalStandardDeduction('marriedFilingJointly')).toBe(30000)
+    it('should return correct standard deduction for married filing jointly in 2025', () => {
+      expect(getFederalStandardDeduction(2025, 'marriedFilingJointly')).toBe(30000)
+    })
+
+    it('should return correct standard deduction for single filer in 2026', () => {
+      expect(getFederalStandardDeduction(2026, 'single')).toBe(15350)
+    })
+
+    it('should return correct standard deduction for married filing jointly in 2026', () => {
+      expect(getFederalStandardDeduction(2026, 'marriedFilingJointly')).toBe(30700)
     })
   })
 
   describe('calculateFederalTax - Single Filer', () => {
     const filingStatus: FilingStatus = 'single'
+    const taxYear: TaxYear = 2025
     const standardDeduction = 15000
 
     it('should calculate zero tax for income below standard deduction', () => {
@@ -26,7 +35,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(0)
@@ -48,7 +58,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(35000)
@@ -67,7 +78,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 20000
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(35000)
@@ -88,7 +100,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(15000)
@@ -111,7 +124,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(65000)
@@ -129,7 +143,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(65000)
@@ -150,7 +165,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(585000)
@@ -161,6 +177,7 @@ describe('Federal Tax Calculator', () => {
 
   describe('calculateFederalTax - Married Filing Jointly', () => {
     const filingStatus: FilingStatus = 'marriedFilingJointly'
+    const taxYear: TaxYear = 2025
     const standardDeduction = 30000
 
     it('should apply correct brackets for married filing jointly', () => {
@@ -176,7 +193,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(70000)
@@ -197,7 +215,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       expect(result.taxableIncome).toBe(80000)
@@ -214,7 +233,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 10000
         },
         standardDeduction,
-        filingStatus
+        filingStatus,
+        taxYear
       )
 
       const totalIncome = 210000
@@ -250,7 +270,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         15000,
-        'single'
+        'single',
+        2025
       )
 
       expect(result.taxableIncome).toBe(0)
@@ -266,7 +287,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 0
         },
         50000, // Large itemized deductions
-        'single'
+        'single',
+        2025
       )
 
       expect(result.taxableIncome).toBe(0)
@@ -282,7 +304,8 @@ describe('Federal Tax Calculator', () => {
           shortTermCapitalGains: 50000
         },
         30000,
-        'marriedFilingJointly'
+        'marriedFilingJointly',
+        2025
       )
 
       expect(result.taxableIncome).toBe(1320000)

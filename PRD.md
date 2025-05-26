@@ -357,11 +357,43 @@ California requires 3 payments for estimated tax, with specific percentages of t
 * **Build Verification:** Ensure the build process completes successfully before deployment
 * **Asset Integrity:** Verify that all static assets are correctly referenced and accessible
 
-## **9\. Future Considerations**
+## **9\. Multi-Year Tax Support**
 
-* **Support for Additional Tax Years:** Implement a mechanism to easily update tax brackets, standard deductions, and rules for future tax years (e.g., through a configuration file or a simple data update process).  
+### **9.1. Tax Year Architecture**
+
+The application is designed with a flexible, multi-year architecture that supports easy addition of new tax years:
+
+* **Modular Data Structure:** Tax brackets, standard deductions, and rates are organized by year in dedicated data structures
+* **Year-Based Constants:** All tax calculation constants are stored in year-specific objects that can be easily updated or extended
+* **Calculator APIs:** All tax calculation functions accept a tax year parameter, allowing calculations for any supported year
+* **Type Safety:** TypeScript types ensure only supported tax years can be used throughout the application
+
+### **9.2. Currently Supported Tax Years**
+
+* **2025:** Full implementation with official IRS and California FTB tax brackets and rates
+* **2026:** Preliminary implementation with estimated brackets (to be updated when official rates are released)
+
+### **9.3. Adding New Tax Years**
+
+To add support for a new tax year (e.g., 2027):
+
+1. **Update Type Definitions:** Add the new year to the `TaxYear` type in `/src/types/index.ts`
+2. **Federal Tax Data:** Add the new year's data to `FEDERAL_TAX_DATA` in `/src/calculators/federal/constants.ts`
+3. **California Tax Data:** Add the new year's data to `CALIFORNIA_TAX_DATA` in `/src/calculators/california/constants.ts`
+4. **Testing:** Add test cases for the new year in the respective test files
+5. **UI Updates:** Update the tax year selector to include the new year
+
+### **9.4. Data Sources and Updates**
+
+* **Federal Data:** Based on IRS publications and inflation adjustments
+* **California Data:** Based on California FTB publications and state-specific adjustments
+* **Update Process:** When official brackets are released, placeholder data can be easily replaced with accurate values
+
+## **10\. Future Considerations**
+
 * **Additional Filing Statuses:** Expand support for Head of Household, Married Filing Separately, etc.  
 * **More Deduction/Credit Types:** Incorporate common tax credits (e.g., Child Tax Credit, Education Credits) and other deduction types.  
 * **Self-Employment Income:** Add sections for business income and expenses, and calculation of self-employment tax.  
-* **Internationalization/Localization:** Support for other states or countries if the product expands.  
+* **Additional States:** Support for states other than California if the product expands.  
 * **Reporting:** Generate a printable summary report of the estimation.
+* **Historical Tax Years:** Support for calculating taxes for previous years (2024, 2023, etc.).

@@ -1,8 +1,9 @@
 import { FilingStatus } from '@/types'
 import { 
-  FEDERAL_TAX_BRACKETS, 
-  FEDERAL_STANDARD_DEDUCTION, 
-  FEDERAL_CAPITAL_GAINS_BRACKETS 
+  TaxYear,
+  getFederalTaxBrackets,
+  getFederalStandardDeduction,
+  getFederalCapitalGainsBrackets
 } from './constants'
 import { calculateProgressiveTax } from '../utils/taxBrackets'
 
@@ -25,12 +26,14 @@ export interface FederalTaxResult {
  * @param income - Breakdown of different income types
  * @param deductions - Total deduction amount (standard or itemized)
  * @param filingStatus - Filing status (single or marriedFilingJointly)
+ * @param taxYear - Tax year for calculations
  * @returns Federal tax calculation result
  */
 export function calculateFederalTax(
   income: FederalIncomeBreakdown,
   deductions: number,
-  filingStatus: FilingStatus
+  filingStatus: FilingStatus,
+  taxYear: TaxYear
 ): FederalTaxResult {
   // Calculate total income
   const totalIncome = 
@@ -51,7 +54,7 @@ export function calculateFederalTax(
   // Calculate tax on ordinary income
   const ordinaryIncomeTax = calculateProgressiveTax(
     ordinaryTaxableIncome,
-    FEDERAL_TAX_BRACKETS[filingStatus]
+    getFederalTaxBrackets(taxYear, filingStatus)
   )
 
   // Calculate capital gains and qualified dividends tax
@@ -68,7 +71,7 @@ export function calculateFederalTax(
   let capitalGainsTax = 0
   
   if (taxableCapitalGainsAndDividends > 0) {
-    const brackets = FEDERAL_CAPITAL_GAINS_BRACKETS[filingStatus]
+    const brackets = getFederalCapitalGainsBrackets(taxYear, filingStatus)
     let remainingCapGains = taxableCapitalGainsAndDividends
     let currentIncome = ordinaryTaxableIncome // Start from where ordinary income ends
     
@@ -93,11 +96,5 @@ export function calculateFederalTax(
   }
 }
 
-/**
- * Get the federal standard deduction for a given filing status
- * @param filingStatus - Filing status
- * @returns Standard deduction amount
- */
-export function getFederalStandardDeduction(filingStatus: FilingStatus): number {
-  return FEDERAL_STANDARD_DEDUCTION[filingStatus]
-}
+// Re-export the helper function for backwards compatibility
+export { getFederalStandardDeduction }
