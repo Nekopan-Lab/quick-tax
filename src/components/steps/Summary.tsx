@@ -5,7 +5,8 @@ import {
   calculateFederalEstimatedPayments,
   calculateCaliforniaEstimatedPayments,
   calculateFederalItemizedDeductions,
-  calculateCaliforniaItemizedDeductions
+  calculateCaliforniaItemizedDeductions,
+  calculateFutureIncome
 } from '../../utils/taxCalculations'
 import { TaxYear } from '../../types'
 
@@ -60,7 +61,17 @@ export function Summary({ onPrevious }: SummaryProps) {
   const federalOwed = taxResults.federalOwedOrRefund
   const caOwed = taxResults.californiaOwedOrRefund || 0
   
-  // Calculate California withholdings separately for display
+  // Calculate withholdings separately for display
+  const userFutureIncome = calculateFutureIncome(userIncome)
+  const spouseFutureIncome = filingStatus === 'marriedFilingJointly' ? calculateFutureIncome(spouseIncome) : { totalFederalWithhold: 0, totalStateWithhold: 0 }
+  
+  const federalWithholdings = (
+    (parseFloat(userIncome.ytdFederalWithhold) || 0) +
+    (parseFloat(spouseIncome.ytdFederalWithhold) || 0) +
+    userFutureIncome.totalFederalWithhold +
+    spouseFutureIncome.totalFederalWithhold
+  )
+  
   const californiaWithholdings = includeCaliforniaTax 
     ? calculateCaliforniaWithholdings(userIncome, spouseIncome, filingStatus)
     : 0
@@ -206,11 +217,16 @@ export function Summary({ onPrevious }: SummaryProps) {
             </div>
             <div className="flex justify-between pt-2">
               <span>Total Withholdings</span>
-              <span className="font-medium">-${taxResults.totalWithholdings.toLocaleString()}</span>
+              <span className="font-medium">-${federalWithholdings.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>Estimated Payments Made</span>
-              <span className="font-medium">-${taxResults.totalEstimatedPayments.toLocaleString()}</span>
+              <span className="font-medium">-${(
+                (parseFloat(estimatedPayments.federalQ1) || 0) +
+                (parseFloat(estimatedPayments.federalQ2) || 0) +
+                (parseFloat(estimatedPayments.federalQ3) || 0) +
+                (parseFloat(estimatedPayments.federalQ4) || 0)
+              ).toLocaleString()}</span>
             </div>
             <div className="flex justify-between pt-2 border-t font-medium">
               <span>Net Tax Owed/Overpaid</span>

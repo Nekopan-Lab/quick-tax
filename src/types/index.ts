@@ -21,15 +21,5 @@ export interface W2Income {
   stateWithhold: number
 }
 
-export interface TaxCalculationResult {
-  totalIncome: number
-  adjustedGrossIncome: number
-  deductionAmount: number
-  deductionType: 'standard' | 'itemized'
-  taxableIncome: number
-  federalTax: number
-  californiaTax?: number
-  totalWithholdings: number
-  totalEstimatedPayments: number
-  taxOwedOrRefund: number // negative = refund, positive = owed
-}
+// Note: TaxCalculationResult interface is defined in utils/taxCalculations.ts
+// as it's only used there and has a more complex structure

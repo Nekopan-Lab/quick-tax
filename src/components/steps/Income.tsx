@@ -32,6 +32,36 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
   const stateWithholdingRate = currentIncome.rsuVestWage && currentIncome.rsuVestState ? 
     (Number(currentIncome.rsuVestState) / Number(currentIncome.rsuVestWage)) : 0.1
 
+  // Calculate remaining paychecks for projection display
+  const calculateRemainingPaychecks = () => {
+    if (!currentIncome.nextPayDate) return 0
+    
+    const nextPayDate = new Date(currentIncome.nextPayDate)
+    const yearEnd = new Date(nextPayDate.getFullYear(), 11, 31)
+    
+    if (nextPayDate > yearEnd) return 0
+    
+    if (currentIncome.payFrequency === 'biweekly') {
+      const daysRemaining = Math.max(0, (yearEnd.getTime() - nextPayDate.getTime()) / (24 * 60 * 60 * 1000))
+      return Math.floor(daysRemaining / 14) + 1
+    } else {
+      let count = 0
+      let currentMonth = nextPayDate.getMonth()
+      let currentYear = nextPayDate.getFullYear()
+      
+      while (currentYear === nextPayDate.getFullYear() && currentMonth <= 11) {
+        count++
+        currentMonth++
+      }
+      return count
+    }
+  }
+  
+  const remainingPaychecks = calculateRemainingPaychecks()
+  const projectedPaycheckIncome = remainingPaychecks * (Number(currentIncome.paycheckWage) || 0)
+  const projectedPaycheckFederal = remainingPaychecks * (Number(currentIncome.paycheckFederal) || 0)
+  const projectedPaycheckState = remainingPaychecks * (Number(currentIncome.paycheckState) || 0)
+
   const addFutureRSUVest = () => {
     const newVest: FutureRSUVest = {
       id: Date.now().toString(),
@@ -230,7 +260,19 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   type="radio"
                   value="simple"
                   checked={currentIncome.incomeMode === 'simple'}
-                  onChange={() => setCurrentIncome({ incomeMode: 'simple' })}
+                  onChange={() => setCurrentIncome({ 
+                    incomeMode: 'simple',
+                    // Clear detailed mode fields
+                    paycheckWage: '',
+                    paycheckFederal: '',
+                    paycheckState: '',
+                    nextPayDate: '',
+                    rsuVestWage: '',
+                    rsuVestFederal: '',
+                    rsuVestState: '',
+                    vestPrice: '',
+                    futureRSUVests: []
+                  })}
                   className="mr-2"
                 />
                 <span className="text-sm font-medium">Simple Estimation</span>
@@ -240,7 +282,13 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   type="radio"
                   value="detailed"
                   checked={currentIncome.incomeMode === 'detailed'}
-                  onChange={() => setCurrentIncome({ incomeMode: 'detailed' })}
+                  onChange={() => setCurrentIncome({ 
+                    incomeMode: 'detailed',
+                    // Clear simple mode fields
+                    futureWage: '',
+                    futureFederalWithhold: '',
+                    futureStateWithhold: ''
+                  })}
                   className="mr-2"
                 />
                 <span className="text-sm font-medium">Detailed (Paycheck/RSU)</span>
@@ -363,6 +411,29 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       />
                     </div>
                   </div>
+                  
+                  {/* Paycheck Projection Display */}
+                  {currentIncome.nextPayDate && currentIncome.paycheckWage && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                      <h5 className="text-sm font-medium text-blue-900 mb-2">Paycheck Projection</h5>
+                      <div className="space-y-1 text-sm text-blue-800">
+                        <p>
+                          <span className="font-medium">{remainingPaychecks}</span> {currentIncome.payFrequency === 'biweekly' ? 'bi-weekly' : 'monthly'} paychecks remaining in {new Date().getFullYear()}
+                        </p>
+                        <p>
+                          Projected Income: <span className="font-medium">${projectedPaycheckIncome.toLocaleString()}</span>
+                        </p>
+                        <p>
+                          Projected Federal Withholding: <span className="font-medium">${projectedPaycheckFederal.toLocaleString()}</span>
+                        </p>
+                        {includeCaliforniaTax && (
+                          <p>
+                            Projected State Withholding: <span className="font-medium">${projectedPaycheckState.toLocaleString()}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* RSU Data */}

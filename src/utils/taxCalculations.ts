@@ -68,9 +68,6 @@ export interface TaxCalculationResult {
     mentalHealthTax: number
     totalTax: number
   }
-  totalWithholdings: number
-  totalEstimatedPayments: number
-  taxOwedOrRefund: number // negative = refund, positive = owed
   federalOwedOrRefund: number
   californiaOwedOrRefund?: number
 }
@@ -78,7 +75,7 @@ export interface TaxCalculationResult {
 /**
  * Calculate total future income based on user's selected mode
  */
-function calculateFutureIncome(income: IncomeData): {
+export function calculateFutureIncome(income: IncomeData): {
   totalWage: number
   totalFederalWithhold: number
   totalStateWithhold: number
@@ -96,54 +93,91 @@ function calculateFutureIncome(income: IncomeData): {
   const paycheckFederal = parseFloat(income.paycheckFederal) || 0
   const paycheckState = parseFloat(income.paycheckState) || 0
   
-  // Calculate remaining paychecks for the year (simplified - could be more sophisticated)
-  const currentDate = new Date()
-  const yearEnd = new Date(currentDate.getFullYear(), 11, 31)
-  const weeksRemaining = Math.max(0, Math.ceil((yearEnd.getTime() - currentDate.getTime()) / (7 * 24 * 60 * 60 * 1000)))
   
-  const paychecksRemaining = income.payFrequency === 'biweekly' 
-    ? Math.ceil(weeksRemaining / 2) 
-    : Math.ceil(weeksRemaining / 4.33) // Approximate weeks per month
+  // Calculate remaining paychecks for the year based on next payment date
+  let paychecksRemaining = 0
+  
+  if (income.nextPayDate) {
+    const nextPayDate = new Date(income.nextPayDate)
+    const yearEnd = new Date(nextPayDate.getFullYear(), 11, 31)
+    
+    if (nextPayDate <= yearEnd) {
+      // Count paychecks from next payment date to year end
+      if (income.payFrequency === 'biweekly') {
+        // Every 2 weeks = 14 days
+        const daysRemaining = Math.max(0, (yearEnd.getTime() - nextPayDate.getTime()) / (24 * 60 * 60 * 1000))
+        paychecksRemaining = Math.floor(daysRemaining / 14) + 1 // +1 to include the next payment
+      } else {
+        // Monthly payments
+        let currentMonth = nextPayDate.getMonth()
+        let currentYear = nextPayDate.getFullYear()
+        paychecksRemaining = 0
+        
+        // Count months from next payment to December
+        while (currentYear === nextPayDate.getFullYear() && currentMonth <= 11) {
+          paychecksRemaining++
+          currentMonth++
+        }
+      }
+    }
+  } else {
+    // Fallback if no next payment date specified
+    const currentDate = new Date()
+    const yearEnd = new Date(currentDate.getFullYear(), 11, 31)
+    const weeksRemaining = Math.max(0, Math.ceil((yearEnd.getTime() - currentDate.getTime()) / (7 * 24 * 60 * 60 * 1000)))
+    
+    paychecksRemaining = income.payFrequency === 'biweekly' 
+      ? Math.ceil(weeksRemaining / 2) 
+      : Math.ceil(weeksRemaining / 4.33) // Approximate weeks per month
+  }
 
   const paycheckTotal = {
     wage: paycheckAmount * paychecksRemaining,
     federal: paycheckFederal * paychecksRemaining,
     state: paycheckState * paychecksRemaining
   }
+  
 
   // Add RSU vests
-  const rsuTotals = income.futureRSUVests.reduce((acc, vest) => {
+  const rsuTotals = (income.futureRSUVests || []).reduce((acc, vest) => {
     const shares = parseFloat(vest.shares) || 0
     const price = parseFloat(vest.expectedPrice) || 0
     const vestValue = shares * price
     
-    // Estimate withholdings based on most recent RSU vest data if available
-    const rsuVestWage = parseFloat(income.rsuVestWage) || 0
-    const rsuVestFederal = parseFloat(income.rsuVestFederal) || 0
-    const rsuVestState = parseFloat(income.rsuVestState) || 0
     
-    if (rsuVestWage > 0) {
-      const federalRate = rsuVestFederal / rsuVestWage
-      const stateRate = rsuVestState / rsuVestWage
+    // Only process if there's actual vest value
+    if (vestValue > 0) {
+      // Estimate withholdings based on most recent RSU vest data if available
+      const rsuVestWage = parseFloat(income.rsuVestWage) || 0
+      const rsuVestFederal = parseFloat(income.rsuVestFederal) || 0
+      const rsuVestState = parseFloat(income.rsuVestState) || 0
       
-      acc.wage += vestValue
-      acc.federal += vestValue * federalRate
-      acc.state += vestValue * stateRate
-    } else {
-      acc.wage += vestValue
-      // Default withholding rates if no historical data
-      acc.federal += vestValue * 0.24 // Estimate 24% federal
-      acc.state += vestValue * 0.10 // Estimate 10% state
+      if (rsuVestWage > 0) {
+        const federalRate = rsuVestFederal / rsuVestWage
+        const stateRate = rsuVestState / rsuVestWage
+        
+        acc.wage += vestValue
+        acc.federal += vestValue * federalRate
+        acc.state += vestValue * stateRate
+      } else {
+        acc.wage += vestValue
+        // Default withholding rates if no historical data
+        acc.federal += vestValue * 0.24 // Estimate 24% federal
+        acc.state += vestValue * 0.10 // Estimate 10% state
+      }
     }
     
     return acc
   }, { wage: 0, federal: 0, state: 0 })
 
-  return {
+  const result = {
     totalWage: paycheckTotal.wage + rsuTotals.wage,
     totalFederalWithhold: paycheckTotal.federal + rsuTotals.federal,
     totalStateWithhold: paycheckTotal.state + rsuTotals.state
   }
+  
+  
+  return result
 }
 
 /**
@@ -181,7 +215,7 @@ function aggregateIndividualIncome(income: IncomeData): {
   const totalWageIncome = ytdWage + futureIncome.totalWage
   const totalInvestmentIncome = Object.values(investmentIncome).reduce((sum, value) => sum + value, 0)
 
-  return {
+  const result = {
     totalIncome: totalWageIncome + totalInvestmentIncome,
     investmentIncome,
     wageIncome: totalWageIncome,
@@ -190,6 +224,9 @@ function aggregateIndividualIncome(income: IncomeData): {
       state: ytdStateWithhold + futureIncome.totalStateWithhold
     }
   }
+  
+  
+  return result
 }
 
 /**
@@ -473,10 +510,7 @@ export function calculateComprehensiveTax(
     )
   }
 
-  // Calculate total withholdings and estimated payments
-  const totalWithholdings = userAgg.totalWithholdings.federal + spouseAgg.totalWithholdings.federal +
-    (includeCaliforniaTax ? (userAgg.totalWithholdings.state + spouseAgg.totalWithholdings.state) : 0)
-
+  // Calculate estimated payments
   const federalEstimatedPayments = 
     (parseFloat(estimatedPayments.federalQ1) || 0) +
     (parseFloat(estimatedPayments.federalQ2) || 0) +
@@ -488,13 +522,7 @@ export function calculateComprehensiveTax(
     (parseFloat(estimatedPayments.californiaQ2) || 0) +
     (parseFloat(estimatedPayments.californiaQ4) || 0) : 0
 
-  const totalEstimatedPayments = federalEstimatedPayments + californiaEstimatedPayments
-
-  // Calculate what's owed or refund
-  const totalTaxLiability = federalTaxResult.totalTax + (californiaTaxResult?.totalTax || 0)
-  const totalPayments = totalWithholdings + totalEstimatedPayments
-  const taxOwedOrRefund = totalTaxLiability - totalPayments
-
+  // Calculate what's owed or refund for each jurisdiction
   const federalPayments = userAgg.totalWithholdings.federal + spouseAgg.totalWithholdings.federal + federalEstimatedPayments
   const federalOwedOrRefund = federalTaxResult.totalTax - federalPayments
 
@@ -518,9 +546,6 @@ export function calculateComprehensiveTax(
       mentalHealthTax: californiaTaxResult.mentalHealthTax,
       totalTax: californiaTaxResult.totalTax
     } : undefined,
-    totalWithholdings,
-    totalEstimatedPayments,
-    taxOwedOrRefund,
     federalOwedOrRefund,
     californiaOwedOrRefund
   }
