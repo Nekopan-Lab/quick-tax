@@ -90,9 +90,9 @@ export function calculateFederalTax(
 
   return {
     taxableIncome,
-    ordinaryIncomeTax: Math.round(ordinaryIncomeTax * 100) / 100,
-    capitalGainsTax: Math.round(capitalGainsTax * 100) / 100,
-    totalTax: Math.round((ordinaryIncomeTax + capitalGainsTax) * 100) / 100
+    ordinaryIncomeTax: Math.round(ordinaryIncomeTax),
+    capitalGainsTax: Math.round(capitalGainsTax),
+    totalTax: Math.round(ordinaryIncomeTax + capitalGainsTax)
   }
 }
 

@@ -213,6 +213,7 @@ function aggregateIndividualIncome(income: IncomeData): {
   const futureIncome = calculateFutureIncome(income)
 
   const totalWageIncome = ytdWage + futureIncome.totalWage
+  
   // Don't double-count qualified dividends - they're already included in ordinary dividends
   const totalInvestmentIncome = 
     investmentIncome.ordinaryDividends + // This already includes qualified dividends
@@ -220,6 +221,7 @@ function aggregateIndividualIncome(income: IncomeData): {
     investmentIncome.shortTermGains + 
     investmentIncome.longTermGains
     // Note: NOT adding qualifiedDividends separately as they're part of ordinaryDividends
+    // Note: Capital loss limit is applied at the tax calculation level, not here
 
   const result = {
     totalIncome: totalWageIncome + totalInvestmentIncome,
@@ -459,7 +461,19 @@ export function calculateComprehensiveTax(
         shortTermGains: 0, longTermGains: 0
       }, wageIncome: 0, totalWithholdings: { federal: 0, state: 0 } }
 
-  const totalIncome = userAgg.totalIncome + spouseAgg.totalIncome
+  // Calculate total income with capital loss limit applied
+  const totalWageAndOtherIncome = userAgg.wageIncome + spouseAgg.wageIncome +
+    userAgg.investmentIncome.ordinaryDividends + spouseAgg.investmentIncome.ordinaryDividends +
+    userAgg.investmentIncome.interestIncome + spouseAgg.investmentIncome.interestIncome
+  
+  const totalCapitalGains = 
+    userAgg.investmentIncome.shortTermGains + spouseAgg.investmentIncome.shortTermGains +
+    userAgg.investmentIncome.longTermGains + spouseAgg.investmentIncome.longTermGains
+  
+  // Apply $3,000 capital loss limit for total income calculation
+  const limitedCapitalGains = totalCapitalGains < 0 ? Math.max(totalCapitalGains, -3000) : totalCapitalGains
+  
+  const totalIncome = totalWageAndOtherIncome + limitedCapitalGains
   const adjustedGrossIncome = totalIncome // Simplified - no adjustments for now
 
   // Calculate deductions with SALT cap and mortgage limits
@@ -493,14 +507,24 @@ export function calculateComprehensiveTax(
   const totalQualifiedDividends = userAgg.investmentIncome.qualifiedDividends + spouseAgg.investmentIncome.qualifiedDividends
   const nonQualifiedDividends = Math.max(0, totalOrdinaryDividends - totalQualifiedDividends)
   
+  // Calculate capital gains/losses with $3,000 loss deduction limit
+  const totalShortTermGains = userAgg.investmentIncome.shortTermGains + spouseAgg.investmentIncome.shortTermGains
+  const totalLongTermGains = userAgg.investmentIncome.longTermGains + spouseAgg.investmentIncome.longTermGains
+  const netCapitalGain = totalShortTermGains + totalLongTermGains
+  
+  // Apply $3,000 capital loss limit against ordinary income
+  // Note: Married filing separately would be $1,500 but we don't support that filing status
+  const capitalLossLimit = 3000
+  const capitalLossDeduction = netCapitalGain < 0 ? Math.max(netCapitalGain, -capitalLossLimit) : 0
+  
   const federalIncomeBreakdown = {
     ordinaryIncome: userAgg.wageIncome + spouseAgg.wageIncome + 
       nonQualifiedDividends + // Only non-qualified portion of dividends
       userAgg.investmentIncome.interestIncome + spouseAgg.investmentIncome.interestIncome +
-      userAgg.investmentIncome.shortTermGains + spouseAgg.investmentIncome.shortTermGains,
+      capitalLossDeduction, // Apply limited capital loss against ordinary income
     qualifiedDividends: totalQualifiedDividends,
-    longTermCapitalGains: userAgg.investmentIncome.longTermGains + spouseAgg.investmentIncome.longTermGains,
-    shortTermCapitalGains: 0 // Already included in ordinary income
+    longTermCapitalGains: Math.max(0, totalLongTermGains), // Only positive LTCG for preferential rates
+    shortTermCapitalGains: Math.max(0, totalShortTermGains) // Only positive STCG
   }
 
   // Calculate federal tax

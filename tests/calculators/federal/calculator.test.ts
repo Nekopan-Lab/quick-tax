@@ -18,12 +18,12 @@ const TAX_YEAR_DATA = {
       {
         name: 'ordinary income only',
         income: { ordinaryIncome: 50000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
-        expected: { taxableIncome: 35000, ordinaryIncomeTax: 3961.50, capitalGainsTax: 0, totalTax: 3961.50 }
+        expected: { taxableIncome: 35000, ordinaryIncomeTax: 3962, capitalGainsTax: 0, totalTax: 3962 }
       },
       {
         name: 'short-term capital gains as ordinary income',
         income: { ordinaryIncome: 30000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 20000 },
-        expected: { taxableIncome: 35000, ordinaryIncomeTax: 3961.50, capitalGainsTax: 0, totalTax: 3961.50 }
+        expected: { taxableIncome: 35000, ordinaryIncomeTax: 3962, capitalGainsTax: 0, totalTax: 3962 }
       },
       {
         name: '0% capital gains rate for low income',
@@ -33,12 +33,12 @@ const TAX_YEAR_DATA = {
       {
         name: '15% capital gains rate for middle income',
         income: { ordinaryIncome: 60000, qualifiedDividends: 0, longTermCapitalGains: 20000, shortTermCapitalGains: 0 },
-        expected: { taxableIncome: 65000, ordinaryIncomeTax: 5161.50, capitalGainsTax: 2497.50, totalTax: 7659 }
+        expected: { taxableIncome: 65000, ordinaryIncomeTax: 5162, capitalGainsTax: 2498, totalTax: 7659 }
       },
       {
         name: 'qualified dividends like long-term capital gains',
         income: { ordinaryIncome: 60000, qualifiedDividends: 10000, longTermCapitalGains: 10000, shortTermCapitalGains: 0 },
-        expected: { taxableIncome: 65000, ordinaryIncomeTax: 5161.50, capitalGainsTax: 2497.50, totalTax: 7659 }
+        expected: { taxableIncome: 65000, ordinaryIncomeTax: 5162, capitalGainsTax: 2498, totalTax: 7659 }
       },
       {
         name: '20% capital gains rate for high income',

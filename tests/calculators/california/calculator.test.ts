@@ -19,39 +19,39 @@ const CA_TAX_YEAR_DATA = {
       {
         name: 'low income',
         income: 20000,
-        expected: { taxableIncome: 14460, baseTax: 181.64, mentalHealthTax: 0, totalTax: 181.64 }
+        expected: { taxableIncome: 14460, baseTax: 182, mentalHealthTax: 0, totalTax: 182 }
       },
       {
         name: 'middle income',
         income: 75000,
-        expected: { taxableIncome: 69460, baseTax: 3017.04, mentalHealthTax: 0, totalTax: 3017.04 }
+        expected: { taxableIncome: 69460, baseTax: 3017, mentalHealthTax: 0, totalTax: 3017 }
       },
       {
         name: 'high income with all brackets',
         income: 500000,
-        expected: { taxableIncome: 494460, baseTax: 44481.88, mentalHealthTax: 0, totalTax: 44481.88 }
+        expected: { taxableIncome: 494460, baseTax: 44482, mentalHealthTax: 0, totalTax: 44482 }
       },
       {
         name: 'income over $1 million (mental health tax)',
         income: 1200000,
-        expected: { taxableIncome: 1194460, mentalHealthTax: 1944.60 }
+        expected: { taxableIncome: 1194460, mentalHealthTax: 1945 }
       }
     ],
     marriedTaxTests: [
       {
         name: 'correct brackets for married filing jointly',
         income: 100000,
-        expected: { taxableIncome: 88920, baseTax: 2490.32, mentalHealthTax: 0, totalTax: 2490.32 }
+        expected: { taxableIncome: 88920, baseTax: 2490, mentalHealthTax: 0, totalTax: 2490 }
       },
       {
         name: 'high income married couple',
         income: 800000,
-        expected: { taxableIncome: 788920, baseTax: 67130.30, mentalHealthTax: 0, totalTax: 67130.30 }
+        expected: { taxableIncome: 788920, baseTax: 67130, mentalHealthTax: 0, totalTax: 67130 }
       },
       {
         name: 'married couple over $1 million (mental health tax)',
         income: 2000000,
-        expected: { taxableIncome: 1988920, mentalHealthTax: 9889.20, baseTax: 207426.68 }
+        expected: { taxableIncome: 1988920, mentalHealthTax: 9889, baseTax: 207427 }
       }
     ]
   },
@@ -70,14 +70,14 @@ const CA_TAX_YEAR_DATA = {
       {
         name: 'low income',
         income: 20000,
-        expected: { taxableIncome: 14330, baseTax: 176.60, mentalHealthTax: 0, totalTax: 176.60 }
+        expected: { taxableIncome: 14330, baseTax: 177, mentalHealthTax: 0, totalTax: 177 }
       }
     ],
     marriedTaxTests: [
       {
         name: 'correct brackets for married filing jointly',
         income: 100000,
-        expected: { taxableIncome: 88660, baseTax: 2407.60, mentalHealthTax: 0, totalTax: 2407.60 }
+        expected: { taxableIncome: 88660, baseTax: 2408, mentalHealthTax: 0, totalTax: 2408 }
       }
     ]
   }
@@ -213,7 +213,7 @@ describe('California Tax Calculator', () => {
         income: 5000000,
         deduction: 11080,
         filingStatus: 'marriedFilingJointly' as FilingStatus,
-        expected: { taxableIncome: 4988920, mentalHealthTax: 39889.20 }
+        expected: { taxableIncome: 4988920, mentalHealthTax: 39889 }
       }
     ]
 

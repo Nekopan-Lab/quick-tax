@@ -53,9 +53,9 @@ export function calculateCaliforniaTax(
   
   return {
     taxableIncome,
-    baseTax: Math.round(baseTax * 100) / 100,
-    mentalHealthTax: Math.round(mentalHealthTax * 100) / 100,
-    totalTax: Math.round((baseTax + mentalHealthTax) * 100) / 100
+    baseTax: Math.round(baseTax),
+    mentalHealthTax: Math.round(mentalHealthTax),
+    totalTax: Math.round(baseTax + mentalHealthTax)
   }
 }
 

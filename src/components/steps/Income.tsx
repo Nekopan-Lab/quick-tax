@@ -198,6 +198,11 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     />
                   </div>
                 </div>
+                <div className="mt-3 p-3 bg-amber-50 rounded-md">
+                  <p className="text-xs text-amber-800">
+                    <span className="font-medium">Note:</span> If your total capital losses exceed your capital gains, you can deduct up to $3,000 ($1,500 if married filing separately) against ordinary income. Any remaining losses carry forward to future years.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
