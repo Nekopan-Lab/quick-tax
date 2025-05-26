@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useStore } from '../../store/useStore'
 
 interface DeductionsProps {
@@ -7,14 +6,21 @@ interface DeductionsProps {
 }
 
 export function Deductions({ onNext, onPrevious }: DeductionsProps) {
-  const { includeCaliforniaTax } = useStore()
-  const [propertyTax, setPropertyTax] = useState('')
-  const [mortgageInterest, setMortgageInterest] = useState('')
-  const [donations, setDonations] = useState('')
+  const { 
+    includeCaliforniaTax, 
+    filingStatus, 
+    deductions, 
+    setDeductions 
+  } = useStore()
 
-  const federalStandardDeduction = 15000 // TODO: Get from filing status
-  const caStandardDeduction = 5540 // TODO: Get from filing status
-  const totalItemized = Number(propertyTax) + Number(mortgageInterest) + Number(donations)
+  // Standard deduction values based on filing status
+  const federalStandardDeduction = filingStatus === 'marriedFilingJointly' ? 30000 : 15000
+  const caStandardDeduction = filingStatus === 'marriedFilingJointly' ? 11080 : 5540
+  
+  const totalItemized = 
+    Number(deductions.propertyTax) + 
+    Number(deductions.mortgageInterest) + 
+    Number(deductions.donations)
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -37,8 +43,8 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <input
                   type="number"
-                  value={propertyTax}
-                  onChange={(e) => setPropertyTax(e.target.value)}
+                  value={deductions.propertyTax}
+                  onChange={(e) => setDeductions({ propertyTax: e.target.value })}
                   placeholder="0"
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
                 />
@@ -53,8 +59,8 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <input
                   type="number"
-                  value={mortgageInterest}
-                  onChange={(e) => setMortgageInterest(e.target.value)}
+                  value={deductions.mortgageInterest}
+                  onChange={(e) => setDeductions({ mortgageInterest: e.target.value })}
                   placeholder="0"
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
                 />
@@ -69,8 +75,8 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <input
                   type="number"
-                  value={donations}
-                  onChange={(e) => setDonations(e.target.value)}
+                  value={deductions.donations}
+                  onChange={(e) => setDeductions({ donations: e.target.value })}
                   placeholder="0"
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
                 />

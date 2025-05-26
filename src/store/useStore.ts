@@ -42,6 +42,12 @@ interface IncomeData {
   futureRSUVests: FutureRSUVest[]
 }
 
+interface DeductionsData {
+  propertyTax: string
+  mortgageInterest: string
+  donations: string
+}
+
 interface TaxStore {
   // Tax Year
   taxYear: number
@@ -54,6 +60,10 @@ interface TaxStore {
   // Tax Scope
   includeCaliforniaTax: boolean
   setIncludeCaliforniaTax: (include: boolean) => void
+  
+  // Deductions
+  deductions: DeductionsData
+  setDeductions: (deductions: Partial<DeductionsData>) => void
   
   // Income Data
   userIncome: IncomeData
@@ -99,6 +109,12 @@ const initialIncomeData: IncomeData = {
   futureRSUVests: [],
 }
 
+const initialDeductionsData: DeductionsData = {
+  propertyTax: '',
+  mortgageInterest: '',
+  donations: '',
+}
+
 export const useStore = create<TaxStore>()(
   persist(
     (set) => ({
@@ -106,6 +122,7 @@ export const useStore = create<TaxStore>()(
       taxYear: 2025,
       filingStatus: null,
       includeCaliforniaTax: true,
+      deductions: { ...initialDeductionsData },
       userIncome: { ...initialIncomeData },
       spouseIncome: { ...initialIncomeData },
       
@@ -113,6 +130,10 @@ export const useStore = create<TaxStore>()(
       setTaxYear: (year) => set({ taxYear: year }),
       setFilingStatus: (status) => set({ filingStatus: status }),
       setIncludeCaliforniaTax: (include) => set({ includeCaliforniaTax: include }),
+      
+      setDeductions: (deductions) => set((state) => ({
+        deductions: { ...state.deductions, ...deductions }
+      })),
       
       setUserIncome: (income) => set((state) => ({
         userIncome: { ...state.userIncome, ...income }
@@ -126,6 +147,7 @@ export const useStore = create<TaxStore>()(
         taxYear: 2025,
         filingStatus: null,
         includeCaliforniaTax: true,
+        deductions: { ...initialDeductionsData },
         userIncome: { ...initialIncomeData },
         spouseIncome: { ...initialIncomeData },
       }),

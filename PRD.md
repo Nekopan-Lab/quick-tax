@@ -2,13 +2,13 @@
 
 ## **1\. Introduction**
 
-This document outlines the product requirements for "QuickTax," a web-based application designed to help individuals estimate their federal and California state tax payments throughout the tax year 2025\.
+This document outlines the product requirements for "QuickTax," a web-based application designed to help individuals estimate their federal and California state tax payments throughout the tax year.
 
 **IMPORTANT DISCLAIMER:** QuickTax is intended solely as a planning tool for *estimated* tax payments and is *not* a substitute for professional tax advice, official tax filing software, or the services of a licensed tax preparer. Its primary goal is to provide users with real-time insights into their estimated tax liability, allowing them to adjust their financial planning proactively.
 
 ## **2\. Goals**
 
-* **Empower Users:** Provide a user-friendly tool for individuals to proactively estimate their tax payments for the 2025 tax year.  
+* **Empower Users:** Provide a user-friendly tool for individuals to proactively estimate their tax payments for the current tax year.  
 * **Real-time Feedback:** Offer immediate updates on estimated tax owed or overpaid as users input their financial data.  
 * **Simplify Complexity:** Break down tax calculations into understandable steps, guiding users through the process.  
 * **Data Privacy:** Ensure all user data remains local to their device, reinforcing privacy and control.  
@@ -20,7 +20,7 @@ This document outlines the product requirements for "QuickTax," a web-based appl
 
 * **Product Name:** QuickTax  
 * **Purpose:** Estimated tax payment calculation (not for filing).  
-* **Tax Year:** 2025 (with architecture designed for future year expandability).  
+* **Tax Year:** User-selectable, starting with 2025 (with architecture designed to support maximum 2 tax years).  
 * **Tax Jurisdictions:** Federal (IRS) and California state (FTB).  
 * **Filing Statuses:** Single, Married Filing Jointly.  
 * **Deductions:** Standard vs. Itemized (Property Tax, Mortgage Interest, Donations).  
@@ -36,7 +36,7 @@ This document outlines the product requirements for "QuickTax," a web-based appl
 ### **3.2. Out of Scope**
 
 * Actual tax filing or submission to tax authorities.  
-* Support for tax years other than 2025 initially.  
+* Support for more than 2 tax years simultaneously.  
 * Support for states other than California initially.  
 * Support for filing statuses other than Single and Married Filing Jointly (e.g., Head of Household, Married Filing Separately, Qualifying Widower).  
 * Complex tax scenarios (e.g., self-employment tax, foreign income, depreciation, credits beyond basic withholding).  
@@ -51,18 +51,20 @@ The application will feature a clear, step-by-step flow to guide users through t
 
 1. **Welcome & Initial Setup:**  
    * User lands on the QuickTax application.  
-   * **Prominent Disclaimer:** A clear, highly visible disclaimer stating that the tool is for estimation purposes only and does not constitute professional tax advice or licensed tax preparation.  
+   * **Application Title:** "QuickTax" with subtitle "Estimated Tax Calculator"  
+   * **Prominent Disclaimer:** A clear, highly visible disclaimer stating that the tool is for estimation purposes only and does not constitute professional tax advice or licensed tax preparation. Note: Emojis should be avoided in the main application UI for a professional appearance, though may be used sparingly in disclaimers.  
    * Automatically pre-fill with previous data if available, or start a new estimation if no previous data is found.  
    * Option to delete all locally stored data.  
    * A small footer link, when clicked, will open a popup with the data privacy disclaimer.  
 2. **Step 1: Filing Status & Tax Scope:**  
    * **Input:**  
+     * Tax Year: Toggle button selector (currently 2025 only, with support for one additional year in the future).  
      * Filing Status: Radio buttons for "Single" or "Married Filing Jointly."  
      * Tax Scope: A checkbox for "California State Tax (FTB)." Federal tax calculation will always be performed.  
    * **Action:**  
      * Based on the Filing Status selection, the application will apply the correct federal and state tax rules.  
      * If "California State Tax (FTB)" is *not* checked, all California-specific UX elements (e.g., state-specific income fields, state estimated payment inputs, state tax breakdown) will be hidden or disabled.  
-3. **Step 2: Deductions:**  
+3. **Deductions:**  
    * **Input:**  
      * Estimated full-year Property Tax.  
      * Estimated full-year Mortgage Interest.  
@@ -73,8 +75,13 @@ The application will feature a clear, step-by-step flow to guide users through t
      * Compare total itemized deductions to the applicable standard deduction for the selected filing status (Federal and California separately, if CA tax is selected).  
      * Automatically select and display which deduction method (Standard or Itemized) is more beneficial for the user for *each* jurisdiction, explaining why.  
      * The higher deduction amount will be used in subsequent tax calculations.  
-4. **Step 3: Income:**  
-   * **Structure:** Separate sections for "User Income" and "Spouse Income" (spouse section optional/skippable if filing status is Single).  
+4. **Income:**  
+   * **Structure:** Tab-based interface with "Your Income" and "Spouse Income" tabs when filing status is Married Filing Jointly. For Single filers, only the user income section is shown.  
+   * **Spouse Income UI:** When Married Filing Jointly is selected:  
+     * Default view shows only "Your Income" tab  
+     * "Add Spouse Income (Optional)" button appears below the income form  
+     * Clicking the button switches to spouse income tab  
+     * Both tabs remain accessible once spouse income is initiated  
    * **Sub-sections for User/Spouse Income:**  
      * **Investment Income (Full Year Estimations):**  
        * Ordinary Dividends (total).  
@@ -105,14 +112,18 @@ The application will feature a clear, step-by-step flow to guide users through t
            * State Withhold (per vest) \- *This field will be hidden if California State Tax is not selected.*  
            * Vest Price (per share, if applicable, for calculation context).  
          * **Future RSU Vests:**  
-           * Number of additional RSU vests expected for the rest of the year.  
-           * Expected Vest Price for each future vest (default to most recent, user editable).  
+           * Dynamic list of RSU vests with the following fields for each vest:  
+             * Vest Date (date picker)  
+             * Number of Shares  
+             * Expected Price per Share (defaults to most recent vest price if available)  
+           * "Add RSU Vest" button to add additional vests  
+           * "Remove" button for each vest to delete it  
    * **Real-time Display:** As income fields are updated, the "Calculated Total Income" for the user and spouse will update in real-time.  
-5. **Step 4: Estimated Tax Payments YTD:**  
+5. **Estimated Tax Payments YTD:**  
    * **Input:**  
      * Separate input fields for payments made for each IRS estimated tax due date.  
      * Separate input fields for payments made for each California FTB estimated tax due date (note CA has 3 payment dates) \- *These fields will be hidden if California State Tax is not selected.*  
-6. **Step 5: Summary & Actionable Insights:**  
+6. **Summary & Actionable Insights:**  
    * **Display:**  
      * **Calculated Total Tax Owed / Overpaid:** Prominently displayed for Federal and California separately \- *California display will be hidden if California State Tax is not selected.*  
      * **Simple, Easy-to-Understand Breakdown:**  
@@ -138,7 +149,8 @@ The application will feature a clear, step-by-step flow to guide users through t
 ### **4.2. Navigation**
 
 * **Step-by-Step Flow:** Clear "Next" and "Previous" buttons to guide users sequentially.  
-* **Quick Navigation:** A persistent sidebar or top navigation bar with clickable links to each major step (e.g., "1. Filing Status," "2. Deductions," "3. Income," etc.) for quick access and editing.
+* **Quick Navigation:** A persistent top navigation bar with clickable links to each major step (e.g., "Filing Status," "Deductions," "Income," etc.) for quick access and editing. Step numbers are not displayed in the navigation.  
+* **Responsive Behavior:** On mobile devices, the navigation bar is horizontally scrollable to accommodate all steps without wrapping.
 
 ### **4.3. Visual Design**
 
@@ -186,6 +198,8 @@ The application will feature a clear, step-by-step flow to guide users through t
 **Source:** IRS.gov, various tax publications, and financial news outlets providing 2025 projections.
 
 #### **7.1.1. Standard Deductions**
+
+These values are applied automatically based on the selected filing status:
 
 * **Single:** $15,000  
 * **Married Filing Jointly:** $30,000
@@ -251,6 +265,8 @@ These rates apply to the portion of qualified dividends and long-term capital ga
 **Source:** California Franchise Tax Board (FTB.ca.gov) and financial news outlets providing 2024-2025 projections. Note: California's 2025 brackets are typically inflation-adjusted versions of the 2024 brackets.
 
 #### **7.2.1. Standard Deductions**
+
+These values are applied automatically based on the selected filing status:
 
 * **Single:** $5,540  
 * **Married Filing Jointly:** $11,080
