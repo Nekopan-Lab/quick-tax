@@ -28,5 +28,6 @@ coverage
 *.lcov
 
 # Build output files in root (for GitHub Pages)
-/index.html
-/assets
+# Note: These are needed for GitHub Pages deployment
+# /index.html
+# /assets
