@@ -1,5 +1,5 @@
 import { useStore } from '../../store/useStore'
-import { calculateComprehensiveTax } from '../../utils/taxCalculations'
+import { calculateComprehensiveTax, calculateCaliforniaWithholdings } from '../../utils/taxCalculations'
 import { TaxYear } from '../../types'
 
 interface SummaryProps {
@@ -52,6 +52,11 @@ export function Summary({ onPrevious }: SummaryProps) {
 
   const federalOwed = taxResults.federalOwedOrRefund
   const caOwed = taxResults.californiaOwedOrRefund || 0
+  
+  // Calculate California withholdings separately for display
+  const californiaWithholdings = includeCaliforniaTax 
+    ? calculateCaliforniaWithholdings(userIncome, spouseIncome, filingStatus)
+    : 0
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -162,7 +167,7 @@ export function Summary({ onPrevious }: SummaryProps) {
               </div>
               <div className="flex justify-between pt-2">
                 <span>Total Withholdings</span>
-                <span className="font-medium">-${(taxResults.totalWithholdings - (taxResults.totalWithholdings * 0.7)).toLocaleString()}</span>
+                <span className="font-medium">-${californiaWithholdings.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span>Estimated Payments Made</span>

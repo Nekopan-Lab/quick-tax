@@ -190,6 +190,30 @@ function aggregateIndividualIncome(income: IncomeData): {
 }
 
 /**
+ * Calculate total income for an individual (for display purposes)
+ */
+export function calculateIndividualTotalIncome(income: IncomeData): number {
+  const aggregated = aggregateIndividualIncome(income)
+  return aggregated.totalIncome
+}
+
+/**
+ * Calculate just California withholdings from all sources
+ */
+export function calculateCaliforniaWithholdings(
+  userIncome: IncomeData,
+  spouseIncome: IncomeData,
+  filingStatus: FilingStatus | null
+): number {
+  const userAgg = aggregateIndividualIncome(userIncome)
+  const spouseAgg = filingStatus === 'marriedFilingJointly' 
+    ? aggregateIndividualIncome(spouseIncome) 
+    : { totalWithholdings: { state: 0 } }
+  
+  return userAgg.totalWithholdings.state + spouseAgg.totalWithholdings.state
+}
+
+/**
  * Calculate comprehensive tax results based on all user input
  */
 export function calculateComprehensiveTax(

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
+import { calculateIndividualTotalIncome } from '../../utils/taxCalculations'
 
 interface IncomeProps {
   onNext: () => void
@@ -21,6 +22,9 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
   // Get the current income data based on active tab
   const currentIncome = activeTab === 'user' ? userIncome : spouseIncome
   const setCurrentIncome = activeTab === 'user' ? setUserIncome : setSpouseIncome
+  
+  // Calculate total income for display
+  const totalIncome = calculateIndividualTotalIncome(currentIncome)
 
   // Calculate tax withholding percentages from last vest
   const federalWithholdingRate = currentIncome.rsuVestWage && currentIncome.rsuVestFederal ? 
@@ -570,7 +574,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 <span className="font-medium">
                   {activeTab === 'user' ? 'Your' : 'Spouse'} Calculated Total Income:
                 </span>
-                <span className="text-lg font-semibold">$0</span>
+                <span className="text-lg font-semibold">${totalIncome.toLocaleString()}</span>
               </div>
               {showSpouseTab && (
                 <div className="text-sm text-gray-600 text-center">
