@@ -23,7 +23,7 @@ QuickTax is a web-based tax estimation tool for the 2025 tax year, focusing on f
 ## Key Technical Stack
 
 - **Frontend Framework**: Modern JavaScript framework (React/Vue/Angular)
-- **Styling**: Tailwind CSS with dark theme
+- **Styling**: Tailwind CSS with light theme
 - **State Management**: Robust client-side state management
 - **Storage**: Browser localStorage or IndexedDB only
 
@@ -66,6 +66,20 @@ All tax calculation functions must have comprehensive unit tests covering:
 
 - This application should be deployed via GitHub Pages, i.e. works as a static web page
 - The build process must generate static assets that can be served directly without a backend server
+- **CRITICAL**: The root directory must contain `index.html` as the entry point for GitHub Pages
+- After any code changes, always:
+  1. Run `npm run build` to generate production assets in `dist/`
+  2. Copy `dist/index.html` to root directory as `index.html`
+  3. Copy `dist/assets/` folder to root directory as `assets/`
+  4. Commit and push all changes including the root `index.html` and `assets/` folder
+
+## Local Testing
+
+- For local testing, use a simple web server pointing to the root directory
+- **Recommended method**: `python3 -m http.server 8000` from the root directory
+- Access the application at `http://localhost:8000`
+- This ensures testing matches the GitHub Pages deployment environment
+- Do NOT use `npm run dev` for final testing as it runs a different server configuration
 
 ## Development Guidelines
 
