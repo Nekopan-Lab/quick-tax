@@ -94,14 +94,9 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
               Select Tax Jurisdictions
             </h3>
             <div className="bg-gray-50 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h4 className="font-medium text-gray-900">Federal Tax (IRS)</h4>
-                  <p className="text-sm text-gray-600">Always calculated</p>
-                </div>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                  Included
-                </span>
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-900">Federal Tax (IRS)</h4>
+                <p className="text-sm text-gray-600">Always calculated</p>
               </div>
               
               <div className="border-t pt-4">
@@ -120,13 +115,12 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
                       className="sr-only"
                     />
                     <div className={`
-                      w-14 h-8 rounded-full transition-colors duration-200
+                      w-14 h-8 rounded-full transition-colors duration-200 relative
                       ${includeCA ? 'bg-blue-600' : 'bg-gray-300'}
                     `}>
                       <div className={`
-                        w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200
+                        absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200
                         ${includeCA ? 'translate-x-7' : 'translate-x-1'}
-                        mt-1
                       `} />
                     </div>
                   </div>
