@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from './store/useStore'
 import { calculateComprehensiveTax } from './utils/taxCalculations'
 import { TaxYear } from './types'
@@ -38,6 +38,11 @@ function App() {
 
   const federalOwed = taxResults?.federalOwedOrRefund || 0
   const californiaOwed = taxResults?.californiaOwedOrRefund || 0
+
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [currentStep])
 
   const handleNext = () => {
     if (currentStep < 5) {
