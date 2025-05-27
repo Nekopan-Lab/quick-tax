@@ -33,8 +33,12 @@ export function Summary({ onPrevious }: SummaryProps) {
     ordinaryIncomeTax: false,
     capitalGainsTax: false,
     caBaseTax: false,
-    mentalHealthTax: false
+    mentalHealthTax: false,
+    paymentSchedule: false
   })
+  
+  // State for payment schedule info toggle
+  const [showScheduleInfo, setShowScheduleInfo] = useState(false)
   
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -643,24 +647,6 @@ export function Summary({ onPrevious }: SummaryProps) {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-medium mb-4">Estimated Tax Payments</h3>
         
-        {/* Payment Schedule Explanation */}
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 text-sm">
-          <h4 className="font-medium text-blue-900 mb-2">Understanding Estimated Tax Payment Schedules</h4>
-          <div className="space-y-2 text-blue-800">
-            <p>
-              <span className="font-medium">Federal (IRS):</span> Requires cumulative payments throughout the year:
-              <span className="block ml-4 mt-1">• Q1 (Apr 15): 25% of annual tax • Q2 (Jun 16): 50% of annual tax • Q3 (Sep 15): 75% of annual tax • Q4 (Jan 15): 100% of annual tax</span>
-            </p>
-            <p>
-              <span className="font-medium">California (FTB):</span> Uses a different schedule with no Q3 payment:
-              <span className="block ml-4 mt-1">• Q1 (Apr 15): 30% of annual tax • Q2 (Jun 16): 70% of annual tax • Q4 (Jan 15): 100% of annual tax</span>
-            </p>
-            <p className="text-xs mt-2 italic">
-              Note: These percentages are cumulative. For example, if you need to pay $10,000 in federal taxes for the year, you should have paid $2,500 by Q1, $5,000 total by Q2, etc.
-            </p>
-          </div>
-        </div>
-        
         {/* Federal Payments */}
         <div className="mb-6">
           <h4 className="font-medium mb-3">Federal (IRS)</h4>
@@ -780,16 +766,37 @@ export function Summary({ onPrevious }: SummaryProps) {
                     </p>
                   )}
                 </div>
-                
-                {caOwed > 0 && !allCaliforniaPaid && (
-                  <p className="text-xs text-gray-600 mt-3">
-                    * California uses weighted percentages for estimated payments
-                  </p>
-                )}
               </div>
             )}
           </div>
         )}
+        
+        {/* Payment Schedule Information */}
+        <div className="mt-6 pt-4 border-t">
+          <button
+            onClick={() => setShowScheduleInfo(!showScheduleInfo)}
+            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+          >
+            <span>{showScheduleInfo ? '▼' : '▶'}</span>
+            How is the payment schedule calculated?
+          </button>
+          
+          {showScheduleInfo && (
+            <div className="mt-3 text-sm text-gray-600 space-y-2">
+              <p>
+                <strong>Federal:</strong> The IRS expects quarterly payments of 25% each.
+                If you miss a quarter, the next payment should catch up to the cumulative percentage:
+                Q1=25%, Q2=50%, Q3=75%, Q4=100% of total annual tax.
+              </p>
+              {includeCaliforniaTax && (
+                <p>
+                  <strong>California:</strong> The FTB has a different schedule:
+                  Q1=30%, Q2=70%, Q4=100% cumulative (no Q3 payment).
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex justify-between mt-8">
