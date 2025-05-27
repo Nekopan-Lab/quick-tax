@@ -94,10 +94,29 @@ export function Summary({ onPrevious }: SummaryProps) {
     ? calculateCaliforniaWithholdings(userIncome, spouseIncome, filingStatus)
     : 0
     
+  // Calculate total estimated payments already made
+  const federalEstimatedPaid = 
+    (parseFloat(estimatedPayments.federalQ1) || 0) +
+    (parseFloat(estimatedPayments.federalQ2) || 0) +
+    (parseFloat(estimatedPayments.federalQ3) || 0) +
+    (parseFloat(estimatedPayments.federalQ4) || 0)
+  
+  const californiaEstimatedPaid = 
+    (parseFloat(estimatedPayments.californiaQ1) || 0) +
+    (parseFloat(estimatedPayments.californiaQ2) || 0) +
+    (parseFloat(estimatedPayments.californiaQ4) || 0)
+  
   // Calculate suggested estimated payments
-  const federalSuggestions = calculateFederalEstimatedPayments(federalOwed, estimatedPayments)
-  const californiaSuggestions = includeCaliforniaTax 
-    ? calculateCaliforniaEstimatedPayments(caOwed, estimatedPayments)
+  // Pass the total that needs to be paid via estimated payments (owed + already paid)
+  const federalSuggestions = calculateFederalEstimatedPayments(
+    federalOwed + federalEstimatedPaid, 
+    estimatedPayments
+  )
+  const californiaSuggestions = includeCaliforniaTax
+    ? calculateCaliforniaEstimatedPayments(
+        caOwed + californiaEstimatedPaid,
+        estimatedPayments
+      )
     : []
     
   // Check if all payments have been made
@@ -623,6 +642,24 @@ export function Summary({ onPrevious }: SummaryProps) {
       {/* Estimated Payments Status & Suggestions */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-medium mb-4">Estimated Tax Payments</h3>
+        
+        {/* Payment Schedule Explanation */}
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 text-sm">
+          <h4 className="font-medium text-blue-900 mb-2">Understanding Estimated Tax Payment Schedules</h4>
+          <div className="space-y-2 text-blue-800">
+            <p>
+              <span className="font-medium">Federal (IRS):</span> Requires cumulative payments throughout the year:
+              <span className="block ml-4 mt-1">• Q1 (Apr 15): 25% of annual tax • Q2 (Jun 16): 50% of annual tax • Q3 (Sep 15): 75% of annual tax • Q4 (Jan 15): 100% of annual tax</span>
+            </p>
+            <p>
+              <span className="font-medium">California (FTB):</span> Uses a different schedule with no Q3 payment:
+              <span className="block ml-4 mt-1">• Q1 (Apr 15): 30% of annual tax • Q2 (Jun 16): 70% of annual tax • Q4 (Jan 15): 100% of annual tax</span>
+            </p>
+            <p className="text-xs mt-2 italic">
+              Note: These percentages are cumulative. For example, if you need to pay $10,000 in federal taxes for the year, you should have paid $2,500 by Q1, $5,000 total by Q2, etc.
+            </p>
+          </div>
+        </div>
         
         {/* Federal Payments */}
         <div className="mb-6">

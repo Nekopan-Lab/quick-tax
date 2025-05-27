@@ -358,82 +358,141 @@ interface EstimatedPaymentSuggestion {
 
 /**
  * Calculate suggested federal estimated tax payments
+ * Federal requires cumulative payments: Q1: 25%, Q2: 50%, Q3: 75%, Q4: 100%
  */
 export function calculateFederalEstimatedPayments(
-  amountOwed: number,
+  totalTaxOwed: number,
   estimatedPayments: EstimatedPaymentsData
 ): EstimatedPaymentSuggestion[] {
   const currentDate = new Date()
   const quarters = [
-    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), paid: parseFloat(estimatedPayments.federalQ1) || 0 },
-    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), paid: parseFloat(estimatedPayments.federalQ2) || 0 },
-    { quarter: 'Q3', dueDate: 'September 15, 2025', dueDateObj: new Date('2025-09-15'), paid: parseFloat(estimatedPayments.federalQ3) || 0 },
-    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), paid: parseFloat(estimatedPayments.federalQ4) || 0 }
+    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), cumulativePercentage: 0.25, paid: parseFloat(estimatedPayments.federalQ1) || 0 },
+    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), cumulativePercentage: 0.50, paid: parseFloat(estimatedPayments.federalQ2) || 0 },
+    { quarter: 'Q3', dueDate: 'September 15, 2025', dueDateObj: new Date('2025-09-15'), cumulativePercentage: 0.75, paid: parseFloat(estimatedPayments.federalQ3) || 0 },
+    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), cumulativePercentage: 1.00, paid: parseFloat(estimatedPayments.federalQ4) || 0 }
   ]
   
-  // Only count unpaid quarters that are not past due
-  const unpaidFutureQuarters = quarters.filter(q => q.paid === 0 && q.dueDateObj > currentDate).length
-  const remainingAmount = Math.max(0, amountOwed)
-  const perQuarterAmount = unpaidFutureQuarters > 0 ? remainingAmount / unpaidFutureQuarters : 0
+  const results: EstimatedPaymentSuggestion[] = []
+  let cumulativePaid = 0
   
-  return quarters.map(q => {
+  // Process each quarter in sequence
+  for (let i = 0; i < quarters.length; i++) {
+    const q = quarters[i]
     const isPastDue = q.dueDateObj <= currentDate
-    return {
+    
+    // If this quarter is already paid
+    if (q.paid > 0) {
+      cumulativePaid += q.paid
+      results.push({
+        quarter: q.quarter,
+        dueDate: q.dueDate,
+        amount: q.paid,
+        isPaid: true,
+        isPastDue: false
+      })
+      continue
+    }
+    
+    // If past due and not paid
+    if (isPastDue) {
+      results.push({
+        quarter: q.quarter,
+        dueDate: q.dueDate,
+        amount: 0,
+        isPaid: false,
+        isPastDue: true
+      })
+      continue
+    }
+    
+    // Calculate required cumulative amount by this quarter
+    const requiredCumulative = totalTaxOwed * q.cumulativePercentage
+    
+    // Calculate how much needs to be paid this quarter to catch up
+    const catchUpAmount = Math.max(0, requiredCumulative - cumulativePaid)
+    
+    // Assume this payment will be made for future calculations
+    cumulativePaid += catchUpAmount
+    
+    results.push({
       quarter: q.quarter,
       dueDate: q.dueDate,
-      amount: q.paid > 0 ? q.paid : (isPastDue ? 0 : perQuarterAmount),
-      isPaid: q.paid > 0,
-      isPastDue: isPastDue && q.paid === 0
-    }
-  })
+      amount: catchUpAmount,
+      isPaid: false,
+      isPastDue: false
+    })
+  }
+  
+  return results
 }
 
 /**
- * Calculate suggested California estimated tax payments with weighted schedule
+ * Calculate suggested California estimated tax payments with cumulative schedule
+ * California requires cumulative payments: Q1: 30%, Q2: 70%, Q4: 100%
  */
 export function calculateCaliforniaEstimatedPayments(
-  amountOwed: number,
+  totalTaxOwed: number,
   estimatedPayments: EstimatedPaymentsData
 ): EstimatedPaymentSuggestion[] {
   const currentDate = new Date()
   const quarters = [
-    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), weight: 0.3, paid: parseFloat(estimatedPayments.californiaQ1) || 0 },
-    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), weight: 0.4, paid: parseFloat(estimatedPayments.californiaQ2) || 0 },
-    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), weight: 0.3, paid: parseFloat(estimatedPayments.californiaQ4) || 0 }
+    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), cumulativePercentage: 0.30, paid: parseFloat(estimatedPayments.californiaQ1) || 0 },
+    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), cumulativePercentage: 0.70, paid: parseFloat(estimatedPayments.californiaQ2) || 0 },
+    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), cumulativePercentage: 1.00, paid: parseFloat(estimatedPayments.californiaQ4) || 0 }
   ]
   
-  const remainingAmount = Math.max(0, amountOwed)
-  const unpaidFutureQuarters = quarters.filter(q => q.paid === 0 && q.dueDateObj > currentDate)
+  const results: EstimatedPaymentSuggestion[] = []
+  let cumulativePaid = 0
   
-  // Calculate adjusted weights for unpaid future quarters
-  let adjustedWeights: Record<string, number> = {}
-  if (unpaidFutureQuarters.length === 0) {
-    // All paid or past due
-    quarters.forEach(q => adjustedWeights[q.quarter] = 0)
-  } else if (unpaidFutureQuarters.length === 1) {
-    // Only one quarter left
-    adjustedWeights[unpaidFutureQuarters[0].quarter] = 1
-  } else if (unpaidFutureQuarters.length === 2) {
-    // Two quarters left - redistribute weights proportionally
-    const totalUnpaidWeight = unpaidFutureQuarters.reduce((sum, q) => sum + q.weight, 0)
-    unpaidFutureQuarters.forEach(q => {
-      adjustedWeights[q.quarter] = q.weight / totalUnpaidWeight
-    })
-  } else {
-    // All unpaid - use original weights for future quarters only
-    unpaidFutureQuarters.forEach(q => adjustedWeights[q.quarter] = q.weight)
-  }
-  
-  return quarters.map(q => {
+  // Process each quarter in sequence
+  for (let i = 0; i < quarters.length; i++) {
+    const q = quarters[i]
     const isPastDue = q.dueDateObj <= currentDate
-    return {
+    
+    // If this quarter is already paid
+    if (q.paid > 0) {
+      cumulativePaid += q.paid
+      results.push({
+        quarter: q.quarter,
+        dueDate: q.dueDate,
+        amount: q.paid,
+        isPaid: true,
+        isPastDue: false
+      })
+      continue
+    }
+    
+    // If past due and not paid
+    if (isPastDue) {
+      results.push({
+        quarter: q.quarter,
+        dueDate: q.dueDate,
+        amount: 0,
+        isPaid: false,
+        isPastDue: true
+      })
+      continue
+    }
+    
+    // Calculate required cumulative amount by this quarter
+    const requiredCumulative = totalTaxOwed * q.cumulativePercentage
+    
+    // Calculate how much needs to be paid this quarter to catch up
+    const catchUpAmount = Math.max(0, requiredCumulative - cumulativePaid)
+    
+    // Assume this payment will be made for future calculations
+    cumulativePaid += catchUpAmount
+    
+    results.push({
       quarter: q.quarter,
       dueDate: q.dueDate,
-      amount: q.paid > 0 ? q.paid : (isPastDue ? 0 : remainingAmount * (adjustedWeights[q.quarter] || 0)),
-      isPaid: q.paid > 0,
-      isPastDue: isPastDue && q.paid === 0
-    }
-  })
+      amount: catchUpAmount,
+      isPaid: false,
+      isPastDue: false
+    })
+  }
+  
+  return results
 }
 
 /**
