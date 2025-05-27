@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { calculateIndividualTotalIncome } from '../../utils/taxCalculations'
+import { numberInputProps } from '../../utils/inputHelpers'
 
 interface IncomeProps {
   onNext: () => void
@@ -132,7 +133,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     Ordinary Dividends
                   </label>
                   <input
-                    type="number"
+                    type="number" {...numberInputProps}
                     value={currentIncome.ordinaryDividends}
                     onChange={(e) => setCurrentIncome({ ordinaryDividends: e.target.value })}
                     placeholder="0"
@@ -146,7 +147,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     <span className="text-xs text-gray-500 ml-1">(portion of ordinary)</span>
                   </label>
                   <input
-                    type="number"
+                    type="number" {...numberInputProps}
                     value={currentIncome.qualifiedDividends}
                     onChange={(e) => setCurrentIncome({ qualifiedDividends: e.target.value })}
                     placeholder="0"
@@ -159,7 +160,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     Interest Income
                   </label>
                   <input
-                    type="number"
+                    type="number" {...numberInputProps}
                     value={currentIncome.interestIncome}
                     onChange={(e) => setCurrentIncome({ interestIncome: e.target.value })}
                     placeholder="0"
@@ -177,7 +178,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       Short-Term Capital Gains/Losses
                     </label>
                     <input
-                      type="number"
+                      type="number" {...numberInputProps}
                       value={currentIncome.shortTermGains}
                       onChange={(e) => setCurrentIncome({ shortTermGains: e.target.value })}
                       placeholder="0"
@@ -190,7 +191,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       Long-Term Capital Gains/Losses
                     </label>
                     <input
-                      type="number"
+                      type="number" {...numberInputProps}
                       value={currentIncome.longTermGains}
                       onChange={(e) => setCurrentIncome({ longTermGains: e.target.value })}
                       placeholder="0"
@@ -216,7 +217,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   Taxable Wage (YTD)
                 </label>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={currentIncome.ytdWage}
                   onChange={(e) => setCurrentIncome({ ytdWage: e.target.value })}
                   placeholder="0"
@@ -229,7 +230,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   Federal Withhold (YTD)
                 </label>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={currentIncome.ytdFederalWithhold}
                   onChange={(e) => setCurrentIncome({ ytdFederalWithhold: e.target.value })}
                   placeholder="0"
@@ -243,7 +244,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     State Withhold (YTD)
                   </label>
                   <input
-                    type="number"
+                    type="number" {...numberInputProps}
                     value={currentIncome.ytdStateWithhold}
                     onChange={(e) => setCurrentIncome({ ytdStateWithhold: e.target.value })}
                     placeholder="0"
@@ -307,7 +308,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     Estimated Future Taxable Wage
                   </label>
                   <input
-                    type="number"
+                    type="number" {...numberInputProps}
                     value={currentIncome.futureWage}
                     onChange={(e) => setCurrentIncome({ futureWage: e.target.value })}
                     placeholder="0"
@@ -320,7 +321,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     Estimated Future Federal Withhold
                   </label>
                   <input
-                    type="number"
+                    type="number" {...numberInputProps}
                     value={currentIncome.futureFederalWithhold}
                     onChange={(e) => setCurrentIncome({ futureFederalWithhold: e.target.value })}
                     placeholder="0"
@@ -334,7 +335,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       Estimated Future State Withhold
                     </label>
                     <input
-                      type="number"
+                      type="number" {...numberInputProps}
                       value={currentIncome.futureStateWithhold}
                       onChange={(e) => setCurrentIncome({ futureStateWithhold: e.target.value })}
                       placeholder="0"
@@ -354,7 +355,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         Taxable Wage (per paycheck)
                       </label>
                       <input
-                        type="number"
+                        type="number" {...numberInputProps}
                         value={currentIncome.paycheckWage}
                         onChange={(e) => setCurrentIncome({ paycheckWage: e.target.value })}
                         placeholder="0"
@@ -367,7 +368,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                         Federal Withhold (per paycheck)
                       </label>
                       <input
-                        type="number"
+                        type="number" {...numberInputProps}
                         value={currentIncome.paycheckFederal}
                         onChange={(e) => setCurrentIncome({ paycheckFederal: e.target.value })}
                         placeholder="0"
@@ -381,7 +382,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                           State Withhold (per paycheck)
                         </label>
                         <input
-                          type="number"
+                          type="number" {...numberInputProps}
                           value={currentIncome.paycheckState}
                           onChange={(e) => setCurrentIncome({ paycheckState: e.target.value })}
                           placeholder="0"
@@ -467,7 +468,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                           <span className="text-xs text-gray-500 block">Optional - from last vest</span>
                         </label>
                         <input
-                          type="number"
+                          type="number" {...numberInputProps}
                           value={currentIncome.rsuVestWage}
                           onChange={(e) => setCurrentIncome({ rsuVestWage: e.target.value })}
                           placeholder="Optional"
@@ -481,7 +482,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                           <span className="text-xs text-gray-500 block">Optional - from last vest</span>
                         </label>
                         <input
-                          type="number"
+                          type="number" {...numberInputProps}
                           value={currentIncome.rsuVestFederal}
                           onChange={(e) => setCurrentIncome({ rsuVestFederal: e.target.value })}
                           placeholder="Optional"
@@ -496,7 +497,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                             <span className="text-xs text-gray-500 block">Optional - from last vest</span>
                           </label>
                           <input
-                            type="number"
+                            type="number" {...numberInputProps}
                             value={currentIncome.rsuVestState}
                             onChange={(e) => setCurrentIncome({ rsuVestState: e.target.value })}
                             placeholder="Optional"
@@ -511,7 +512,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                           <span className="text-xs text-gray-500 block">Optional - price per share</span>
                         </label>
                         <input
-                          type="number"
+                          type="number" {...numberInputProps}
                           value={currentIncome.vestPrice}
                           onChange={(e) => setCurrentIncome({ vestPrice: e.target.value })}
                           placeholder="Optional"
@@ -575,7 +576,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                     Number of Shares
                                   </label>
                                   <input
-                                    type="number"
+                                    type="number" {...numberInputProps}
                                     value={vest.shares}
                                     onChange={(e) => updateFutureRSUVest(vest.id, 'shares', e.target.value)}
                                     placeholder="0"
@@ -588,7 +589,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                     Expected Price/Share
                                   </label>
                                   <input
-                                    type="number"
+                                    type="number" {...numberInputProps}
                                     value={vest.expectedPrice}
                                     onChange={(e) => updateFutureRSUVest(vest.id, 'expectedPrice', e.target.value)}
                                     placeholder={currentIncome.vestPrice || "0"}

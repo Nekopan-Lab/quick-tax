@@ -1,4 +1,5 @@
 import { useStore } from '../../store/useStore'
+import { numberInputProps } from '../../utils/inputHelpers'
 
 interface EstimatedPaymentsProps {
   onNext: () => void
@@ -40,7 +41,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                 Q1 Payment (Due April 15, 2025)
               </label>
               <input
-                type="number"
+                type="number" {...numberInputProps}
                 value={estimatedPayments.federalQ1}
                 onChange={(e) => setEstimatedPayments({ federalQ1: e.target.value })}
                 placeholder="0"
@@ -53,7 +54,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                 Q2 Payment (Due June 16, 2025)
               </label>
               <input
-                type="number"
+                type="number" {...numberInputProps}
                 value={estimatedPayments.federalQ2}
                 onChange={(e) => setEstimatedPayments({ federalQ2: e.target.value })}
                 placeholder="0"
@@ -66,7 +67,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                 Q3 Payment (Due September 15, 2025)
               </label>
               <input
-                type="number"
+                type="number" {...numberInputProps}
                 value={estimatedPayments.federalQ3}
                 onChange={(e) => setEstimatedPayments({ federalQ3: e.target.value })}
                 placeholder="0"
@@ -79,7 +80,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                 Q4 Payment (Due January 15, 2026)
               </label>
               <input
-                type="number"
+                type="number" {...numberInputProps}
                 value={estimatedPayments.federalQ4}
                 onChange={(e) => setEstimatedPayments({ federalQ4: e.target.value })}
                 placeholder="0"
@@ -111,7 +112,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                   <span className="text-xs text-gray-500 ml-1">(30% of annual)</span>
                 </label>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={estimatedPayments.californiaQ1}
                   onChange={(e) => setEstimatedPayments({ californiaQ1: e.target.value })}
                   placeholder="0"
@@ -125,7 +126,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                   <span className="text-xs text-gray-500 ml-1">(40% of annual)</span>
                 </label>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={estimatedPayments.californiaQ2}
                   onChange={(e) => setEstimatedPayments({ californiaQ2: e.target.value })}
                   placeholder="0"
@@ -152,7 +153,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
                   <span className="text-xs text-gray-500 ml-1">(30% of annual)</span>
                 </label>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={estimatedPayments.californiaQ4}
                   onChange={(e) => setEstimatedPayments({ californiaQ4: e.target.value })}
                   placeholder="0"

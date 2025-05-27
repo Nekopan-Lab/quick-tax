@@ -8,6 +8,7 @@ import {
   calculateEstimatedCAStateTax
 } from '../../utils/taxCalculations'
 import { TaxYear } from '../../types'
+import { numberInputProps } from '../../utils/inputHelpers'
 
 interface DeductionsProps {
   onNext: () => void
@@ -93,7 +94,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={deductions.propertyTax}
                   onChange={(e) => setDeductions({ propertyTax: e.target.value })}
                   placeholder="0"
@@ -109,7 +110,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={deductions.mortgageInterest}
                   onChange={(e) => setDeductions({ mortgageInterest: e.target.value })}
                   placeholder="0"
@@ -158,7 +159,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                       <input
-                        type="number"
+                        type="number" {...numberInputProps}
                         value={deductions.mortgageBalance}
                         onChange={(e) => setDeductions({ mortgageBalance: e.target.value })}
                         placeholder="0"
@@ -177,7 +178,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <input
-                  type="number"
+                  type="number" {...numberInputProps}
                   value={deductions.donations}
                   onChange={(e) => setDeductions({ donations: e.target.value })}
                   placeholder="0"
@@ -195,7 +196,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                   <input
-                    type="number"
+                    type="number" {...numberInputProps}
                     value={deductions.otherStateIncomeTax}
                     onChange={(e) => setDeductions({ otherStateIncomeTax: e.target.value })}
                     placeholder="0"
