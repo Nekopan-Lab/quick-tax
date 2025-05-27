@@ -20,9 +20,23 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
   const { filingStatus, includeCaliforniaTax, userIncome, spouseIncome, setUserIncome, setSpouseIncome } = useStore()
   const showSpouseTab = filingStatus === 'marriedFilingJointly'
   
+  // State for tracking gains vs losses
+  const [shortTermIsLoss, setShortTermIsLoss] = useState<{ user: boolean; spouse: boolean }>({
+    user: Number(userIncome.shortTermGains) < 0,
+    spouse: Number(spouseIncome.shortTermGains) < 0
+  })
+  const [longTermIsLoss, setLongTermIsLoss] = useState<{ user: boolean; spouse: boolean }>({
+    user: Number(userIncome.longTermGains) < 0,
+    spouse: Number(spouseIncome.longTermGains) < 0
+  })
+  
   // Get the current income data based on active tab
   const currentIncome = activeTab === 'user' ? userIncome : spouseIncome
   const setCurrentIncome = activeTab === 'user' ? setUserIncome : setSpouseIncome
+  
+  // Get current loss states for active tab
+  const currentShortTermIsLoss = activeTab === 'user' ? shortTermIsLoss.user : shortTermIsLoss.spouse
+  const currentLongTermIsLoss = activeTab === 'user' ? longTermIsLoss.user : longTermIsLoss.spouse
   
   // Calculate total income for display
   const totalIncome = calculateIndividualTotalIncome(currentIncome)
@@ -175,28 +189,90 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Short-Term Capital Gains/Losses
+                      Short-Term Capital
                     </label>
-                    <input
-                      type="number" {...numberInputProps}
-                      value={currentIncome.shortTermGains}
-                      onChange={(e) => setCurrentIncome({ shortTermGains: e.target.value })}
-                      placeholder="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
+                    <div className="flex items-stretch">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newIsLoss = !currentShortTermIsLoss
+                          setShortTermIsLoss({ ...shortTermIsLoss, [activeTab]: newIsLoss })
+                          // If switching from gain to loss or vice versa, convert the value
+                          if (currentIncome.shortTermGains) {
+                            const absValue = Math.abs(Number(currentIncome.shortTermGains))
+                            setCurrentIncome({ shortTermGains: newIsLoss ? `-${absValue}` : String(absValue) })
+                          }
+                        }}
+                        className={`px-3 py-2 text-sm font-medium rounded-l-md border transition-colors ${
+                          currentShortTermIsLoss 
+                            ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100' 
+                            : 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100'
+                        }`}
+                      >
+                        {currentShortTermIsLoss ? 'Loss' : 'Gain'}
+                      </button>
+                      <input
+                        type="number" {...numberInputProps}
+                        value={currentIncome.shortTermGains ? Math.abs(Number(currentIncome.shortTermGains)).toString() : ''}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === '' || value === '0') {
+                            setCurrentIncome({ shortTermGains: value })
+                          } else {
+                            const numValue = Number(value)
+                            setCurrentIncome({ 
+                              shortTermGains: currentShortTermIsLoss ? `-${numValue}` : value 
+                            })
+                          }
+                        }}
+                        placeholder="0"
+                        className="flex-1 px-3 py-2 border-t border-r border-b border-gray-300 rounded-r-md"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Long-Term Capital Gains/Losses
+                      Long-Term Capital
                     </label>
-                    <input
-                      type="number" {...numberInputProps}
-                      value={currentIncome.longTermGains}
-                      onChange={(e) => setCurrentIncome({ longTermGains: e.target.value })}
-                      placeholder="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
+                    <div className="flex items-stretch">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newIsLoss = !currentLongTermIsLoss
+                          setLongTermIsLoss({ ...longTermIsLoss, [activeTab]: newIsLoss })
+                          // If switching from gain to loss or vice versa, convert the value
+                          if (currentIncome.longTermGains) {
+                            const absValue = Math.abs(Number(currentIncome.longTermGains))
+                            setCurrentIncome({ longTermGains: newIsLoss ? `-${absValue}` : String(absValue) })
+                          }
+                        }}
+                        className={`px-3 py-2 text-sm font-medium rounded-l-md border transition-colors ${
+                          currentLongTermIsLoss 
+                            ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100' 
+                            : 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100'
+                        }`}
+                      >
+                        {currentLongTermIsLoss ? 'Loss' : 'Gain'}
+                      </button>
+                      <input
+                        type="number" {...numberInputProps}
+                        value={currentIncome.longTermGains ? Math.abs(Number(currentIncome.longTermGains)).toString() : ''}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === '' || value === '0') {
+                            setCurrentIncome({ longTermGains: value })
+                          } else {
+                            const numValue = Number(value)
+                            setCurrentIncome({ 
+                              longTermGains: currentLongTermIsLoss ? `-${numValue}` : value 
+                            })
+                          }
+                        }}
+                        placeholder="0"
+                        className="flex-1 px-3 py-2 border-t border-r border-b border-gray-300 rounded-r-md"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="mt-3 p-3 bg-amber-50 rounded-md">
