@@ -459,34 +459,6 @@ export function Summary({ onPrevious }: SummaryProps) {
         {includeCaliforniaTax && taxResults.californiaTax && (
           <div className="mt-6 pt-4 border-t">
             <h4 className="font-medium mb-3">California Tax Details</h4>
-            {/* California Deduction Details */}
-            {taxResults.deductionType === 'itemized' && (
-              <div className="mb-4 text-sm">
-                <div className="font-medium mb-2">California Itemized Deductions:</div>
-                <div className="pl-4 text-gray-600 space-y-1">
-                  {(() => {
-                    const californiaItemized = calculateCaliforniaItemizedDeductions(deductions)
-                    const propertyTax = parseFloat(deductions.propertyTax) || 0
-                    const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
-                    const donations = parseFloat(deductions.donations) || 0
-                    const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
-                    const mortgageLimit = 1000000
-                    
-                    return (
-                      <>
-                        <div>• Property Tax: ${propertyTax.toLocaleString()}</div>
-                        <div>• Mortgage Interest: ${mortgageInterest.toLocaleString()}</div>
-                        {mortgageBalance > mortgageLimit && (
-                          <div className="text-amber-600">• (Limited to interest on $1,000,000 loan)</div>
-                        )}
-                        <div>• Donations: ${donations.toLocaleString()}</div>
-                        <div className="font-medium pt-1 border-t">Total CA Itemized: ${californiaItemized.toLocaleString()}</div>
-                      </>
-                    )
-                  })()}
-                </div>
-              </div>
-            )}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Tax Liability (before withholdings)</span>

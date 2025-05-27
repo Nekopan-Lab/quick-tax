@@ -73,8 +73,8 @@ export const DEMO_USER_INCOME: IncomeData = {
   
   // RSU Data (typical tech compensation)
   rsuVestWage: '46000', // Recent vest
-  rsuVestFederal: '12500',
-  rsuVestState: '4600',
+  rsuVestFederal: '10120', // 22% federal withholding
+  rsuVestState: '4600', // 10% state withholding
   vestPrice: '180',
   futureRSUVests: generateRSUVestDates(),
   
@@ -107,8 +107,8 @@ export const DEMO_SPOUSE_INCOME: IncomeData = {
   
   // RSU Data
   rsuVestWage: '28000', // Recent vest
-  rsuVestFederal: '7500',
-  rsuVestState: '2800',
+  rsuVestFederal: '6160', // 22% federal withholding
+  rsuVestState: '2800', // 10% state withholding
   vestPrice: '140', // Different company
   futureRSUVests: [
     {
@@ -141,12 +141,12 @@ export const DEMO_DEDUCTIONS: DeductionsData = {
 }
 
 export const DEMO_ESTIMATED_PAYMENTS: EstimatedPaymentsData = {
-  // Assuming Q1 payment was made
-  federalQ1: '8000',
+  // Federal Q1 payment made, no CA payments yet
+  federalQ1: '2000',
   federalQ2: '0',
   federalQ3: '0',
   federalQ4: '0',
-  californiaQ1: '3500',
+  californiaQ1: '0',
   californiaQ2: '0',
   californiaQ4: '0'
 }
@@ -154,9 +154,9 @@ export const DEMO_ESTIMATED_PAYMENTS: EstimatedPaymentsData = {
 export const DEMO_DATA_DESCRIPTION = `This demo uses typical data for a Bay Area tech household:
 
 • Combined household income: ~$440,000
-• Both spouses work in tech with RSU compensation
+• Both spouses work in tech with RSU compensation (22% federal withholding)
 • Own a home valued at ~$1.8M with recent mortgage
 • Moderate investment income from stocks and savings
-• Already made Q1 estimated tax payments
+• Made a small Q1 federal payment ($2,000), no CA payments yet
 
 You can modify any of these values to match your situation, or clear all data to start fresh.`
