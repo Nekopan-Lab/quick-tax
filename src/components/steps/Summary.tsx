@@ -142,10 +142,13 @@ export function Summary({ onPrevious }: SummaryProps) {
       
       {/* Tax Owed/Overpaid Display */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className={`bg-white rounded-lg shadow-sm p-6 border-2 ${
+        <div className={`bg-white rounded-lg shadow-md p-6 border-2 ${
           federalOwed > 0 ? 'border-red-200' : 'border-green-200'
         }`}>
-          <h3 className="text-lg font-medium mb-2">Federal Tax</h3>
+          <div className="flex items-center mb-2">
+            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">FEDERAL</span>
+            <h3 className="text-lg font-medium">Federal Tax (IRS)</h3>
+          </div>
           <p className="text-3xl font-bold mb-1">
             {federalOwed > 0 ? (
               <span className="text-red-600">${federalOwed.toLocaleString()} Owed</span>
@@ -153,14 +156,17 @@ export function Summary({ onPrevious }: SummaryProps) {
               <span className="text-green-600">${Math.abs(federalOwed).toLocaleString()} Overpaid</span>
             )}
           </p>
-          <p className="text-sm text-gray-600">As of current date</p>
+          <p className="text-sm text-gray-600">Estimated for tax year {taxYear}</p>
         </div>
 
         {includeCaliforniaTax && (
-          <div className={`bg-white rounded-lg shadow-sm p-6 border-2 ${
+          <div className={`bg-white rounded-lg shadow-md p-6 border-2 ${
             caOwed > 0 ? 'border-red-200' : 'border-green-200'
           }`}>
-            <h3 className="text-lg font-medium mb-2">California Tax</h3>
+            <div className="flex items-center mb-2">
+              <span className="bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">CA</span>
+              <h3 className="text-lg font-medium">California Tax (FTB)</h3>
+            </div>
             <p className="text-3xl font-bold mb-1">
               {caOwed > 0 ? (
                 <span className="text-red-600">${caOwed.toLocaleString()} Owed</span>
@@ -168,7 +174,7 @@ export function Summary({ onPrevious }: SummaryProps) {
                 <span className="text-green-600">${Math.abs(caOwed).toLocaleString()} Overpaid</span>
               )}
             </p>
-            <p className="text-sm text-gray-600">As of current date</p>
+            <p className="text-sm text-gray-600">Estimated for tax year {taxYear}</p>
           </div>
         )}
       </div>
@@ -185,8 +191,11 @@ export function Summary({ onPrevious }: SummaryProps) {
         </div>
 
         {/* Federal Tax Details */}
-        <div className="mt-6 pt-4 border-t">
-          <h4 className="font-medium mb-3">Federal Tax Details</h4>
+        <div className="mt-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+          <h4 className="font-medium mb-3 flex items-center">
+            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">FEDERAL</span>
+            Federal Tax Details (IRS)
+          </h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Tax Liability (before withholdings)</span>
@@ -466,8 +475,11 @@ export function Summary({ onPrevious }: SummaryProps) {
 
         {/* California Tax Details */}
         {includeCaliforniaTax && taxResults.californiaTax && (
-          <div className="mt-6 pt-4 border-t">
-            <h4 className="font-medium mb-3">California Tax Details</h4>
+          <div className="mt-6 p-4 border-2 border-purple-200 rounded-lg bg-purple-50">
+            <h4 className="font-medium mb-3 flex items-center">
+              <span className="bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">CALIFORNIA</span>
+              California Tax Details (FTB)
+            </h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Tax Liability (before withholdings)</span>
@@ -629,8 +641,11 @@ export function Summary({ onPrevious }: SummaryProps) {
         <h3 className="text-lg font-medium mb-4">Estimated Tax Payments</h3>
         
         {/* Federal Payments */}
-        <div className="mb-6">
-          <h4 className="font-medium mb-3">Federal (IRS)</h4>
+        <div className="mb-6 p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+          <h4 className="font-medium mb-3 flex items-center">
+            <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">FEDERAL</span>
+            Federal Estimated Payments (IRS)
+          </h4>
           
           {allFederalPaid && federalOwed !== 0 ? (
             <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
@@ -690,8 +705,11 @@ export function Summary({ onPrevious }: SummaryProps) {
 
         {/* California Payments */}
         {includeCaliforniaTax && (
-          <div>
-            <h4 className="font-medium mb-3">California (FTB)</h4>
+          <div className="p-4 border-2 border-purple-200 rounded-lg bg-purple-50">
+            <h4 className="font-medium mb-3 flex items-center">
+              <span className="bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">CA</span>
+              California Estimated Payments (FTB)
+            </h4>
             
             {allCaliforniaPaid && caOwed !== 0 ? (
               <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
