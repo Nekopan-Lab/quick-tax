@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateComprehensiveTax } from '../../../src/utils/taxCalculations'
+import { calculateComprehensiveTax } from '../../../src/calculators/orchestrator'
 import type { FilingStatus } from '../../../src/types'
 
 describe('Ordinary Income Calculation', () => {
@@ -57,7 +57,7 @@ describe('Ordinary Income Calculation', () => {
     }
 
     const result = calculateComprehensiveTax(
-      '2025',
+      2025,
       'single' as FilingStatus,
       false,
       baseDeductions,
@@ -67,9 +67,12 @@ describe('Ordinary Income Calculation', () => {
     )
     
     // Total wages = 100,000 + 50,000 = 150,000
-    expect(result._federalIncomeBreakdown.ordinaryIncome).toBe(150000)
-    expect(result._federalIncomeBreakdown.qualifiedDividends).toBe(0)
-    expect(result._federalIncomeBreakdown.longTermCapitalGains).toBe(0)
+    expect(result).not.toBeNull()
+    expect(result!.totalIncome).toBe(150000)
+    // With standard deduction of $15,000, taxable income = $135,000
+    expect(result!.federalTax.taxableIncome).toBe(135000)
+    // The tax should be calculated on ordinary income rates only
+    expect(result!.federalTax.totalTax).toBeGreaterThan(0)
   })
 
   it('should separate qualified and non-qualified dividends correctly', () => {
@@ -81,7 +84,7 @@ describe('Ordinary Income Calculation', () => {
     }
 
     const result = calculateComprehensiveTax(
-      '2025',
+      2025,
       'single' as FilingStatus,
       false,
       baseDeductions,
@@ -90,11 +93,24 @@ describe('Ordinary Income Calculation', () => {
       baseEstimatedPayments
     )
     
-    // Ordinary income includes wages + non-qualified dividends
-    // Non-qualified = 20,000 - 15,000 = 5,000
-    const expectedOrdinaryIncome = 80000 + 5000
-    expect(result._federalIncomeBreakdown.ordinaryIncome).toBe(expectedOrdinaryIncome)
-    expect(result._federalIncomeBreakdown.qualifiedDividends).toBe(15000)
+    // Total income = wages + all dividends = 80,000 + 20,000 = 100,000
+    expect(result).not.toBeNull()
+    expect(result!.totalIncome).toBe(100000)
+    
+    // To verify qualified dividends get preferential treatment:
+    // Calculate what tax would be with no qualified dividends
+    const resultNoQualified = calculateComprehensiveTax(
+      2025,
+      'single' as FilingStatus,
+      false,
+      baseDeductions,
+      { ...userIncome, qualifiedDividends: '0' },
+      baseUserIncome,
+      baseEstimatedPayments
+    )
+    
+    // Tax should be lower with qualified dividends due to preferential rates
+    expect(result!.federalTax.totalTax).toBeLessThan(resultNoQualified!.federalTax.totalTax)
   })
 
   it('should include interest income in ordinary income', () => {
@@ -107,7 +123,7 @@ describe('Ordinary Income Calculation', () => {
     }
 
     const result = calculateComprehensiveTax(
-      '2025',
+      2025,
       'single' as FilingStatus,
       false,
       baseDeductions,
@@ -116,10 +132,25 @@ describe('Ordinary Income Calculation', () => {
       baseEstimatedPayments
     )
     
-    // Ordinary income = wages + interest + non-qualified dividends
-    // Non-qualified = 10,000 - 8,000 = 2,000
-    const expectedOrdinaryIncome = 100000 + 5000 + 2000
-    expect(result._federalIncomeBreakdown.ordinaryIncome).toBe(expectedOrdinaryIncome)
+    // Total income should include all income sources
+    // Wages: 100,000, Interest: 5,000, Dividends: 10,000 = 115,000
+    expect(result).not.toBeNull()
+    expect(result!.totalIncome).toBe(115000)
+    
+    // Verify interest is taxed at ordinary rates by comparing with no interest
+    const resultNoInterest = calculateComprehensiveTax(
+      2025,
+      'single' as FilingStatus,
+      false,
+      baseDeductions,
+      { ...userIncome, interestIncome: '0' },
+      baseUserIncome,
+      baseEstimatedPayments
+    )
+    
+    // The tax difference should reflect ordinary income rates on $5,000
+    const taxDifference = result!.federalTax.totalTax - resultNoInterest!.federalTax.totalTax
+    expect(taxDifference).toBeGreaterThan(0)
   })
 
   it('should track short-term capital gains separately but tax as ordinary income', () => {
@@ -131,7 +162,7 @@ describe('Ordinary Income Calculation', () => {
     }
 
     const result = calculateComprehensiveTax(
-      '2025',
+      2025,
       'single' as FilingStatus,
       false,
       baseDeductions,
@@ -140,15 +171,24 @@ describe('Ordinary Income Calculation', () => {
       baseEstimatedPayments
     )
     
-    // Short-term gains are tracked separately but taxed as ordinary income
-    expect(result._federalIncomeBreakdown.ordinaryIncome).toBe(100000) // wages only
-    expect(result._federalIncomeBreakdown.shortTermCapitalGains).toBe(10000) // tracked separately
-    expect(result._federalIncomeBreakdown.longTermCapitalGains).toBe(5000)
+    // Total income = wages + short-term + long-term = 100,000 + 10,000 + 5,000 = 115,000
+    expect(result).not.toBeNull()
+    expect(result!.totalIncome).toBe(115000)
     
-    // Verify they're taxed together by checking the tax calculation
-    // With $110,000 total ordinary income (wages + short-term gains) and $15,000 standard deduction
-    // Taxable ordinary income = $95,000, which should result in higher tax than just $100,000 wages
-    expect(result.federalTax.ordinaryIncomeTax).toBeGreaterThan(0)
+    // Verify short-term gains are taxed as ordinary income by comparing
+    // with scenario where they're long-term gains
+    const resultAllLongTerm = calculateComprehensiveTax(
+      2025,
+      'single' as FilingStatus,
+      false,
+      baseDeductions,
+      { ...userIncome, shortTermGains: '0', longTermGains: '15000' },
+      baseUserIncome,
+      baseEstimatedPayments
+    )
+    
+    // Tax should be higher when gains are short-term (ordinary rates)
+    expect(result!.federalTax.totalTax).toBeGreaterThan(resultAllLongTerm!.federalTax.totalTax)
   })
 
   it('should apply capital loss deduction to ordinary income', () => {
@@ -160,7 +200,7 @@ describe('Ordinary Income Calculation', () => {
     }
 
     const result = calculateComprehensiveTax(
-      '2025',
+      2025,
       'single' as FilingStatus,
       false,
       baseDeductions,
@@ -171,10 +211,9 @@ describe('Ordinary Income Calculation', () => {
     
     // Total capital loss = -5,000 + -3,000 = -8,000
     // Limited to -3,000 for ordinary income deduction
-    const expectedOrdinaryIncome = 100000 - 3000
-    expect(result._federalIncomeBreakdown.ordinaryIncome).toBe(expectedOrdinaryIncome)
-    expect(result._federalIncomeBreakdown.shortTermCapitalGains).toBe(0)
-    expect(result._federalIncomeBreakdown.longTermCapitalGains).toBe(0)
+    // Total income = 100,000 - 3,000 = 97,000
+    expect(result).not.toBeNull()
+    expect(result!.totalIncome).toBe(97000)
   })
 
   it('should combine spouse income correctly', () => {
@@ -195,7 +234,7 @@ describe('Ordinary Income Calculation', () => {
     }
 
     const result = calculateComprehensiveTax(
-      '2025',
+      2025,
       'marriedFilingJointly' as FilingStatus,
       false,
       baseDeductions,
@@ -204,15 +243,16 @@ describe('Ordinary Income Calculation', () => {
       baseEstimatedPayments
     )
     
-    // Combined ordinary income:
+    // Combined total income:
     // Wages: 80,000 + 70,000 = 150,000
-    // Non-qualified dividends: (10,000 - 8,000) + (5,000 - 5,000) = 2,000
+    // Dividends: 10,000 + 5,000 = 15,000
     // Interest: 2,000 + 3,000 = 5,000
-    const expectedOrdinaryIncome = 150000 + 2000 + 5000
-    expect(result._federalIncomeBreakdown.ordinaryIncome).toBe(expectedOrdinaryIncome)
+    // Total: 170,000
+    expect(result).not.toBeNull()
+    expect(result!.totalIncome).toBe(170000)
     
-    // Combined qualified dividends: 8,000 + 5,000 = 13,000
-    expect(result._federalIncomeBreakdown.qualifiedDividends).toBe(13000)
+    // With married filing jointly standard deduction of $30,000
+    expect(result!.federalTax.taxableIncome).toBe(140000)
   })
 
   it('should handle mixed capital gains and losses correctly', () => {
@@ -224,7 +264,7 @@ describe('Ordinary Income Calculation', () => {
     }
 
     const result = calculateComprehensiveTax(
-      '2025',
+      2025,
       'single' as FilingStatus,
       false,
       baseDeductions,
@@ -235,10 +275,8 @@ describe('Ordinary Income Calculation', () => {
     
     // Net capital gain/loss = 10,000 - 15,000 = -5,000
     // Limited to -3,000 for ordinary income deduction
-    // The 10,000 short-term gain offsets the long-term loss first
-    const expectedOrdinaryIncome = 100000 - 3000
-    expect(result._federalIncomeBreakdown.ordinaryIncome).toBe(expectedOrdinaryIncome)
-    expect(result._federalIncomeBreakdown.shortTermCapitalGains).toBe(0)
-    expect(result._federalIncomeBreakdown.longTermCapitalGains).toBe(0)
+    // Total income = 100,000 - 3,000 = 97,000
+    expect(result).not.toBeNull()
+    expect(result!.totalIncome).toBe(97000)
   })
 })

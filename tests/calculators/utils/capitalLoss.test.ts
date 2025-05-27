@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateComprehensiveTax } from '../../../src/utils/taxCalculations'
+import { calculateComprehensiveTax } from '../../../src/calculators/orchestrator'
 
 describe('Capital Loss Deduction Limit', () => {
   const baseIncome = {
@@ -71,7 +71,7 @@ describe('Capital Loss Deduction Limit', () => {
         expect(result.totalIncome).toBe(47000)
         
         // Taxable income after standard deduction
-        expect(result.taxableIncome).toBe(32000) // $47k - $15k standard
+        expect(result.federalTax.taxableIncome).toBe(32000) // $47k - $15k standard
       }
     })
 
@@ -178,7 +178,7 @@ describe('Capital Loss Deduction Limit', () => {
         expect(result.totalIncome).toBe(97000)
         
         // Taxable income after standard deduction
-        expect(result.taxableIncome).toBe(67000) // $97k - $30k standard
+        expect(result.federalTax.taxableIncome).toBe(67000) // $97k - $30k standard
       }
     })
 

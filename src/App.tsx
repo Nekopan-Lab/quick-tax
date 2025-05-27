@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useStore } from './store/useStore'
-import { calculateComprehensiveTax } from './utils/taxCalculations'
+import { calculateComprehensiveTax } from './calculators/orchestrator'
 import { TaxYear } from './types'
 import { StepNavigation } from './components/layout/StepNavigation'
 import { FilingStatus } from './components/steps/FilingStatus'

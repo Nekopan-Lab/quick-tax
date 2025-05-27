@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
-import { getFederalStandardDeduction } from '../../calculators/federal/calculator'
+import { getFederalStandardDeduction, calculateFederalItemizedDeductions } from '../../calculators/federal/calculator'
 import { getCaliforniaStandardDeduction } from '../../calculators/california/calculator'
 import { 
-  calculateFederalItemizedDeductions, 
   calculateCaliforniaItemizedDeductions,
   calculateEstimatedCAStateTax
-} from '../../utils/taxCalculations'
+} from '../../calculators/orchestrator'
 import { TaxYear } from '../../types'
 import { numberInputProps } from '../../utils/inputHelpers'
+import { calculateIndividualTotalIncome } from '../../calculators/utils/income'
 
 interface DeductionsProps {
   onNext: () => void
@@ -35,14 +35,20 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
   const caStandardDeduction = filingStatus ? 
     getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus) : 0
   
+  // Calculate total income for CA state tax estimation
+  const userTotalIncome = calculateIndividualTotalIncome(userIncome)
+  const spouseTotalIncome = filingStatus === 'marriedFilingJointly' ? calculateIndividualTotalIncome(spouseIncome) : 0
+  const totalIncome = userTotalIncome + spouseTotalIncome
+  
+  // Calculate estimated CA state tax for SALT deduction
+  const estimatedCAStateTax = includeCaliforniaTax ? 
+    calculateEstimatedCAStateTax(totalIncome, filingStatus, taxYear as TaxYear) : 0
+  
   // Calculate itemized deductions with SALT cap and mortgage limits
   const federalItemized = calculateFederalItemizedDeductions(
     deductions,
-    userIncome,
-    spouseIncome,
-    filingStatus,
-    includeCaliforniaTax,
-    taxYear as TaxYear
+    estimatedCAStateTax,
+    includeCaliforniaTax
   )
   
   const californiaItemized = calculateCaliforniaItemizedDeductions(deductions)
@@ -54,9 +60,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
   const otherStateIncomeTax = parseFloat(deductions.otherStateIncomeTax) || 0
   const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
   
-  // Calculate estimated CA state tax if CA is selected
-  const estimatedCAStateTax = includeCaliforniaTax ? 
-    calculateEstimatedCAStateTax(userIncome, spouseIncome, filingStatus, taxYear as TaxYear) : 0
+  // Already calculated above
   
   // Calculate SALT for federal
   const saltDeduction = propertyTax + (includeCaliforniaTax ? estimatedCAStateTax : otherStateIncomeTax)

@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  calculateFederalItemizedDeductions,
-  calculateCaliforniaItemizedDeductions 
-} from '../../../src/utils/taxCalculations'
+import { calculateFederalItemizedDeductions } from '../../../src/calculators/federal/calculator'
+import { calculateCaliforniaItemizedDeductions } from '../../../src/calculators/california/calculator'
 
 describe('Federal Itemized Deductions', () => {
   const baseDeductions = {
@@ -12,31 +10,6 @@ describe('Federal Itemized Deductions', () => {
     mortgageLoanDate: '' as const,
     mortgageBalance: '0',
     otherStateIncomeTax: '0'
-  }
-
-  const baseIncome = {
-    ordinaryDividends: '0',
-    qualifiedDividends: '0',
-    interestIncome: '0',
-    shortTermGains: '0',
-    longTermGains: '0',
-    ytdWage: '0',
-    ytdFederalWithhold: '0',
-    ytdStateWithhold: '0',
-    futureWage: '0',
-    futureFederalWithhold: '0',
-    futureStateWithhold: '0',
-    incomeMode: 'simple' as const,
-    paycheckWage: '0',
-    paycheckFederal: '0',
-    paycheckState: '0',
-    payFrequency: 'biweekly' as const,
-    nextPayDate: '',
-    rsuVestWage: '0',
-    rsuVestFederal: '0',
-    rsuVestState: '0',
-    vestPrice: '0',
-    futureRSUVests: []
   }
 
   describe('SALT Cap', () => {
@@ -49,11 +22,8 @@ describe('Federal Itemized Deductions', () => {
       
       const result = calculateFederalItemizedDeductions(
         deductions,
-        baseIncome,
-        baseIncome,
-        'single',
-        false,
-        '2025'
+        0, // estimatedCAStateTax
+        false // includeCaliforniaTax
       )
       
       // Property tax ($15k) + state income tax ($8k) = $23k, capped at $10k
@@ -69,11 +39,8 @@ describe('Federal Itemized Deductions', () => {
       
       const result = calculateFederalItemizedDeductions(
         deductions,
-        baseIncome,
-        baseIncome,
-        'single',
-        false,
-        '2025'
+        0, // estimatedCAStateTax
+        false // includeCaliforniaTax
       )
       
       // Property tax ($5k) + state income tax ($3k) = $8k, under cap
@@ -86,18 +53,13 @@ describe('Federal Itemized Deductions', () => {
         propertyTax: '5000'
       }
       
-      const income = {
-        ...baseIncome,
-        ytdWage: '100000'
-      }
+      // Simulate estimated CA tax on $100k income
+      const estimatedCAStateTax = 3000 // Approximate CA tax on $100k
       
       const result = calculateFederalItemizedDeductions(
         deductions,
-        income,
-        baseIncome,
-        'single',
-        true, // California tax selected
-        '2025'
+        estimatedCAStateTax,
+        true // includeCaliforniaTax
       )
       
       // Result should include property tax + estimated CA tax, capped at $10k
@@ -117,11 +79,8 @@ describe('Federal Itemized Deductions', () => {
       
       const result = calculateFederalItemizedDeductions(
         deductions,
-        baseIncome,
-        baseIncome,
-        'single',
-        false,
-        '2025'
+        0, // estimatedCAStateTax
+        false // includeCaliforniaTax
       )
       
       // Interest should be prorated: $30k * ($750k / $1M) = $22.5k
@@ -138,11 +97,8 @@ describe('Federal Itemized Deductions', () => {
       
       const result = calculateFederalItemizedDeductions(
         deductions,
-        baseIncome,
-        baseIncome,
-        'single',
-        false,
-        '2025'
+        0, // estimatedCAStateTax
+        false // includeCaliforniaTax
       )
       
       // Interest should be prorated: $50k * ($1M / $1.2M) = $41,666.67
@@ -159,11 +115,8 @@ describe('Federal Itemized Deductions', () => {
       
       const result = calculateFederalItemizedDeductions(
         deductions,
-        baseIncome,
-        baseIncome,
-        'single',
-        false,
-        '2025'
+        0, // estimatedCAStateTax
+        false // includeCaliforniaTax
       )
       
       // Balance ($500k) is under limit ($750k), so full interest applies
@@ -184,11 +137,8 @@ describe('Federal Itemized Deductions', () => {
       
       const result = calculateFederalItemizedDeductions(
         deductions,
-        baseIncome,
-        baseIncome,
-        'single',
-        false,
-        '2025'
+        0, // estimatedCAStateTax
+        false // includeCaliforniaTax
       )
       
       // SALT: $12k capped at $10k

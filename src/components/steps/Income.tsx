@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
-import { calculateIndividualTotalIncome } from '../../utils/taxCalculations'
+import { calculateIndividualTotalIncome } from '../../calculators/utils/income'
 import { numberInputProps } from '../../utils/inputHelpers'
 
 interface IncomeProps {

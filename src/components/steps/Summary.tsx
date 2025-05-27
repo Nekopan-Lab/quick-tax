@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { 
-  calculateComprehensiveTax, 
+  calculateComprehensiveTax,
   calculateCaliforniaWithholdings,
   calculateFederalEstimatedPayments,
   calculateCaliforniaEstimatedPayments,
-  calculateCaliforniaItemizedDeductions,
-  calculateFutureIncome
-} from '../../utils/taxCalculations'
+  calculateCaliforniaItemizedDeductions
+} from '../../calculators/orchestrator'
+import { calculateFutureIncome } from '../../calculators/utils/income'
 import { TaxYear } from '../../types'
 import { getFederalTaxBrackets, getFederalCapitalGainsBrackets } from '../../calculators/federal/constants'
 import { getCaliforniaTaxBrackets } from '../../calculators/california/constants'
@@ -57,6 +57,9 @@ export function Summary({ onPrevious }: SummaryProps) {
     spouseIncome,
     estimatedPayments
   )
+  
+  // Calculate taxable income (totalIncome - deductions)
+  const taxableIncome = taxResults ? taxResults.totalIncome - taxResults.deductionAmount : 0
 
   // Show message if calculations can't be performed
   if (!taxResults) {
@@ -94,8 +97,14 @@ export function Summary({ onPrevious }: SummaryProps) {
     spouseFutureIncome.totalFederalWithhold
   )
   
+  const userStateWithholdings = (parseFloat(userIncome.ytdStateWithhold) || 0) + userFutureIncome.totalStateWithhold
+  const spouseStateWithholdings = (parseFloat(spouseIncome.ytdStateWithhold) || 0) + spouseFutureIncome.totalStateWithhold
+  
   const californiaWithholdings = includeCaliforniaTax 
-    ? calculateCaliforniaWithholdings(userIncome, spouseIncome, filingStatus)
+    ? calculateCaliforniaWithholdings(
+        { state: userStateWithholdings },
+        filingStatus === 'marriedFilingJointly' ? { state: spouseStateWithholdings } : null
+      )
     : 0
     
   // Calculate total estimated payments already made
@@ -385,7 +394,7 @@ export function Summary({ onPrevious }: SummaryProps) {
                                 <div className="space-y-1">
                                   {brackets.map((bracket, index) => {
                                     const rate = bracket.rate * 100
-                                    const isYourBracket = taxResults.taxableIncome >= bracket.min && taxResults.taxableIncome <= bracket.max
+                                    const isYourBracket = taxableIncome >= bracket.min && taxableIncome <= bracket.max
                                     
                                     return (
                                       <div key={index} className={`flex justify-between items-center p-1.5 rounded ${isYourBracket ? 'bg-gray-100 font-medium' : ''}`}>
@@ -406,7 +415,7 @@ export function Summary({ onPrevious }: SummaryProps) {
                               <div className="text-xs space-y-1">
                                 <div className="flex justify-between">
                                   <span>Your total taxable income:</span>
-                                  <span className="font-medium">${taxResults.taxableIncome.toLocaleString()}</span>
+                                  <span className="font-medium">${taxableIncome.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Income at preferential rates:</span>
@@ -415,8 +424,8 @@ export function Summary({ onPrevious }: SummaryProps) {
                                 <div className="flex justify-between">
                                   <span>Your capital gains tax rate:</span>
                                   <span className="font-medium">{
-                                    taxResults.taxableIncome <= brackets[0].max ? '0%' :
-                                    taxResults.taxableIncome <= brackets[1].max ? '15%' : '20%'
+                                    taxableIncome <= brackets[0].max ? '0%' :
+                                    taxableIncome <= brackets[1].max ? '15%' : '20%'
                                   }</span>
                                 </div>
                                 <div className="flex justify-between pt-1 border-t border-gray-300">

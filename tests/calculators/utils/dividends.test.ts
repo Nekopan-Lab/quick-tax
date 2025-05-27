@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateComprehensiveTax } from '../../../src/utils/taxCalculations'
+import { calculateComprehensiveTax } from '../../../src/calculators/orchestrator'
 
 describe('Dividend Tax Calculations', () => {
   const baseIncome = {
@@ -54,7 +54,7 @@ describe('Dividend Tax Calculations', () => {
       }
       
       const result = calculateComprehensiveTax(
-        '2025',
+        2025,
         'single',
         true,
         baseDeductions,
@@ -84,7 +84,7 @@ describe('Dividend Tax Calculations', () => {
       }
       
       const result = calculateComprehensiveTax(
-        '2025',
+        2025,
         'single',
         true,
         baseDeductions,
@@ -102,7 +102,7 @@ describe('Dividend Tax Calculations', () => {
         
         // Compare with ordinary-only scenario
         const ordinaryOnlyResult = calculateComprehensiveTax(
-          '2025',
+          2025,
           'single',
           true,
           baseDeductions,
@@ -129,7 +129,7 @@ describe('Dividend Tax Calculations', () => {
       }
       
       const result = calculateComprehensiveTax(
-        '2025',
+        2025,
         'single',
         false, // no CA tax for simpler comparison
         baseDeductions,
@@ -144,7 +144,7 @@ describe('Dividend Tax Calculations', () => {
         expect(result.totalIncome).toBe(100000)
         
         // Taxable income after standard deduction
-        expect(result.taxableIncome).toBe(85000) // $100k - $15k standard deduction
+        expect(result.federalTax.taxableIncome).toBe(85000) // $100k - $15k standard deduction
       }
     })
 
@@ -156,7 +156,7 @@ describe('Dividend Tax Calculations', () => {
       }
       
       const result = calculateComprehensiveTax(
-        '2025',
+        2025,
         'single',
         false,
         baseDeductions,
@@ -182,7 +182,7 @@ describe('Dividend Tax Calculations', () => {
       }
       
       const result = calculateComprehensiveTax(
-        '2025',
+        2025,
         'single',
         true,
         baseDeductions,

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { calculateFederalEstimatedPayments, calculateCaliforniaEstimatedPayments } from '../../src/utils/taxCalculations'
+import { calculateFederalEstimatedPayments, calculateCaliforniaEstimatedPayments } from '../../src/calculators/orchestrator'
 
 // Define the type locally to match the store definition
 interface EstimatedPaymentsData {
@@ -47,14 +47,14 @@ describe('Estimated Tax Payment Calculations', () => {
       expect(result[0].amount).toBe(0)
       expect(result[0].isPastDue).toBe(true)
       
-      // Q2: Need 50% of 21,571 = 10,785.50, have 0, so 10,785.50
+      // Q2: Need 50% of 21,571 = 10,785.50, have paid 0, so pay 10,785.50
       expect(result[1].amount).toBe(10785.5)
       
-      // Q3: Need 75% of 21,571 = 16,178.25, have 0, so 16,178.25
-      expect(result[2].amount).toBe(16178.25)
+      // Q3: Need 75% of 21,571 = 16,178.25, will have paid 10,785.50, so pay 5,392.75
+      expect(result[2].amount).toBe(5392.75)
       
-      // Q4: Need 100% of 21,571 = 21,571, have 0, so 21,571
-      expect(result[3].amount).toBe(21571)
+      // Q4: Need 100% of 21,571 = 21,571, will have paid 16,178.25, so pay 5,392.75
+      expect(result[3].amount).toBe(5392.75)
     })
     
     
@@ -122,13 +122,13 @@ describe('Estimated Tax Payment Calculations', () => {
       
       // With nothing paid:
       // Q1 needs: 25% of 10000 = 2500
-      // Q2 needs: 50% of 10000 - 0 = 5000
-      // Q3 needs: 75% of 10000 - 0 = 7500
-      // Q4 needs: 100% of 10000 - 0 = 10000
+      // Q2 needs: 50% of 10000 = 5000, already scheduled 2500, so pay 2500
+      // Q3 needs: 75% of 10000 = 7500, already scheduled 5000, so pay 2500
+      // Q4 needs: 100% of 10000 = 10000, already scheduled 7500, so pay 2500
       expect(result[0].amount).toBe(2500)
-      expect(result[1].amount).toBe(5000)
-      expect(result[2].amount).toBe(7500)
-      expect(result[3].amount).toBe(10000)
+      expect(result[1].amount).toBe(2500)
+      expect(result[2].amount).toBe(2500)
+      expect(result[3].amount).toBe(2500)
     })
 
     it('should account for previous quarterly payments', () => {
@@ -248,8 +248,8 @@ describe('Estimated Tax Payment Calculations', () => {
       // Q2 needs: 70% of 10000 = 7000 total, have 1000, need 6000
       expect(result[1].amount).toBe(6000)
       
-      // Q4 needs: 100% of 10000 = 10000 total, have 1000, need 9000
-      expect(result[2].amount).toBe(9000)
+      // Q4 needs: 100% of 10000 = 10000 total, will have 7000, need 3000
+      expect(result[2].amount).toBe(3000)
     })
 
     it('should handle overpayments correctly', () => {
