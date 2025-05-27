@@ -60,16 +60,16 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
                   type="radio"
                   name="filingStatus"
                   value="single"
-                  checked={filingStatus === 'single' || !filingStatus}
+                  checked={filingStatus === 'single'}
                   onChange={() => setFilingStatus('single')}
                   className="sr-only"
                 />
                 <div className="flex items-center">
                   <div className={`
                     w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center
-                    ${filingStatus === 'single' || !filingStatus ? 'border-blue-500' : 'border-gray-300'}
+                    ${filingStatus === 'single' ? 'border-blue-500' : 'border-gray-300'}
                   `}>
-                    {(filingStatus === 'single' || !filingStatus) && (
+                    {filingStatus === 'single' && (
                       <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     )}
                   </div>

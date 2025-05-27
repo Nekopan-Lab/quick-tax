@@ -251,10 +251,10 @@ export function calculateIndividualTotalIncome(income: IncomeData): number {
 export function calculateEstimatedCAStateTax(
   userIncome: IncomeData,
   spouseIncome: IncomeData,
-  filingStatus: FilingStatus | null,
+  filingStatus: FilingStatus,
   taxYear: TaxYear
 ): number {
-  if (!filingStatus) return 0
+  // filingStatus is always defined now
   
   const userAgg = aggregateIndividualIncome(userIncome)
   const spouseAgg = filingStatus === 'marriedFilingJointly' 
@@ -280,7 +280,7 @@ export function calculateFederalItemizedDeductions(
   deductions: DeductionsData,
   userIncome: IncomeData,
   spouseIncome: IncomeData,
-  filingStatus: FilingStatus | null,
+  filingStatus: FilingStatus,
   includeCaliforniaTax: boolean,
   taxYear: TaxYear
 ): number {
@@ -338,7 +338,7 @@ export function calculateCaliforniaItemizedDeductions(
 export function calculateCaliforniaWithholdings(
   userIncome: IncomeData,
   spouseIncome: IncomeData,
-  filingStatus: FilingStatus | null
+  filingStatus: FilingStatus
 ): number {
   const userAgg = aggregateIndividualIncome(userIncome)
   const spouseAgg = filingStatus === 'marriedFilingJointly' 
@@ -500,16 +500,14 @@ export function calculateCaliforniaEstimatedPayments(
  */
 export function calculateComprehensiveTax(
   taxYear: TaxYear,
-  filingStatus: FilingStatus | null,
+  filingStatus: FilingStatus,
   includeCaliforniaTax: boolean,
   deductions: DeductionsData,
   userIncome: IncomeData,
   spouseIncome: IncomeData,
   estimatedPayments: EstimatedPaymentsData
 ): TaxCalculationResult | null {
-  if (!filingStatus) {
-    return null
-  }
+  // filingStatus is always defined now
 
   // Aggregate income from user and spouse
   const userAgg = aggregateIndividualIncome(userIncome)

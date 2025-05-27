@@ -73,7 +73,7 @@ interface TaxStore {
   setTaxYear: (year: number) => void
   
   // Filing Status
-  filingStatus: 'single' | 'marriedFilingJointly' | null
+  filingStatus: 'single' | 'marriedFilingJointly'
   setFilingStatus: (status: 'single' | 'marriedFilingJointly') => void
   
   // Tax Scope
@@ -156,7 +156,7 @@ export const useStore = create<TaxStore>()(
     (set) => ({
       // Initial state
       taxYear: 2025,
-      filingStatus: null,
+      filingStatus: 'marriedFilingJointly',
       includeCaliforniaTax: true,
       deductions: { ...initialDeductionsData },
       userIncome: { ...initialIncomeData },
@@ -186,7 +186,7 @@ export const useStore = create<TaxStore>()(
       
       clearAllData: () => set({
         taxYear: 2025,
-        filingStatus: null,
+        filingStatus: 'marriedFilingJointly',
         includeCaliforniaTax: true,
         deductions: { ...initialDeductionsData },
         userIncome: { ...initialIncomeData },
