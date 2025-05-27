@@ -507,24 +507,58 @@ export function calculateComprehensiveTax(
   const totalQualifiedDividends = userAgg.investmentIncome.qualifiedDividends + spouseAgg.investmentIncome.qualifiedDividends
   const nonQualifiedDividends = Math.max(0, totalOrdinaryDividends - totalQualifiedDividends)
   
-  // Calculate capital gains/losses with $3,000 loss deduction limit
+  // Calculate capital gains/losses with proper netting
   const totalShortTermGains = userAgg.investmentIncome.shortTermGains + spouseAgg.investmentIncome.shortTermGains
   const totalLongTermGains = userAgg.investmentIncome.longTermGains + spouseAgg.investmentIncome.longTermGains
-  const netCapitalGain = totalShortTermGains + totalLongTermGains
+  
+  // Net short-term and long-term gains/losses separately first
+  const netShortTermGain = totalShortTermGains
+  const netLongTermGain = totalLongTermGains
+  
+  // Then net them together
+  const netCapitalGain = netShortTermGain + netLongTermGain
   
   // Apply $3,000 capital loss limit against ordinary income
   // Note: Married filing separately would be $1,500 but we don't support that filing status
   const capitalLossLimit = 3000
-  const capitalLossDeduction = netCapitalGain < 0 ? Math.max(netCapitalGain, -capitalLossLimit) : 0
+  
+  // Capital loss can offset ordinary income up to $3,000
+  let capitalLossAgainstOrdinary = 0
+  let remainingShortTerm = netShortTermGain
+  let remainingLongTerm = netLongTermGain
+  
+  if (netCapitalGain < 0) {
+    // We have a net capital loss
+    capitalLossAgainstOrdinary = Math.max(netCapitalGain, -capitalLossLimit)
+    
+    // Determine how much of each type remains after the $3,000 limit
+    if (netShortTermGain < 0 && netLongTermGain < 0) {
+      // Both are losses - prorate the $3,000 limit
+      const totalLoss = Math.abs(netCapitalGain)
+      const limitedLoss = Math.min(totalLoss, capitalLossLimit)
+      const shortTermPortion = (Math.abs(netShortTermGain) / totalLoss) * limitedLoss
+      const longTermPortion = (Math.abs(netLongTermGain) / totalLoss) * limitedLoss
+      remainingShortTerm = -shortTermPortion
+      remainingLongTerm = -longTermPortion
+    } else if (netShortTermGain < 0) {
+      // Only short-term is negative, it offsets long-term first
+      remainingShortTerm = Math.max(netCapitalGain, -capitalLossLimit)
+      remainingLongTerm = 0
+    } else {
+      // Only long-term is negative, it offsets short-term first
+      remainingLongTerm = Math.max(netCapitalGain, -capitalLossLimit)
+      remainingShortTerm = 0
+    }
+  }
   
   const federalIncomeBreakdown = {
     ordinaryIncome: userAgg.wageIncome + spouseAgg.wageIncome + 
       nonQualifiedDividends + // Only non-qualified portion of dividends
       userAgg.investmentIncome.interestIncome + spouseAgg.investmentIncome.interestIncome +
-      capitalLossDeduction, // Apply limited capital loss against ordinary income
+      capitalLossAgainstOrdinary, // Apply limited capital loss against ordinary income
     qualifiedDividends: totalQualifiedDividends,
-    longTermCapitalGains: Math.max(0, totalLongTermGains), // Only positive LTCG for preferential rates
-    shortTermCapitalGains: Math.max(0, totalShortTermGains) // Only positive STCG
+    longTermCapitalGains: Math.max(0, remainingLongTerm), // Only positive LTCG for preferential rates
+    shortTermCapitalGains: Math.max(0, remainingShortTerm) // Only positive STCG
   }
 
   // Calculate federal tax
@@ -566,7 +600,7 @@ export function calculateComprehensiveTax(
     Math.round(californiaTaxResult.totalTax - (userAgg.totalWithholdings.state + spouseAgg.totalWithholdings.state + californiaEstimatedPayments)) : 
     undefined
 
-  return {
+  const result = {
     totalIncome,
     adjustedGrossIncome,
     deductionAmount: federalDeduction,
@@ -585,4 +619,9 @@ export function calculateComprehensiveTax(
     federalOwedOrRefund,
     californiaOwedOrRefund
   }
+  
+  // Add income breakdown for testing purposes only
+  ;(result as any)._federalIncomeBreakdown = federalIncomeBreakdown
+  
+  return result
 }
