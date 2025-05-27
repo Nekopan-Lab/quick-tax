@@ -21,5 +21,7 @@ export const numberInputProps = {
         (e.shiftKey || e.ctrlKey || e.metaKey)) {
       e.preventDefault()
     }
-  }
+  },
+  // Use numeric keyboard on mobile devices
+  inputMode: 'decimal' as const
 }
