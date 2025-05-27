@@ -11,11 +11,12 @@ import { Summary } from './components/steps/Summary'
 import { DEMO_USER_INCOME, DEMO_SPOUSE_INCOME, DEMO_DEDUCTIONS, DEMO_ESTIMATED_PAYMENTS, DEMO_DATA_DESCRIPTION } from './utils/demoData'
 
 function App() {
-  const [currentStep, setCurrentStep] = useState(1) // Start at Step 1
   const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   const [showDemoModal, setShowDemoModal] = useState(false)
   
   const { 
+    currentStep,
+    setCurrentStep,
     clearAllData,
     taxYear,
     filingStatus,
@@ -76,6 +77,7 @@ function App() {
     setSpouseIncome(DEMO_SPOUSE_INCOME)
     setDeductions(DEMO_DEDUCTIONS)
     setEstimatedPayments(DEMO_ESTIMATED_PAYMENTS)
+    setCurrentStep(1) // Reset to first step when loading demo
     setShowDemoModal(false)
   }
 

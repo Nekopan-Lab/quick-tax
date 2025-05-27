@@ -68,6 +68,10 @@ export interface EstimatedPaymentsData {
 }
 
 interface TaxStore {
+  // Current Step
+  currentStep: number
+  setCurrentStep: (step: number) => void
+  
   // Tax Year
   taxYear: number
   setTaxYear: (year: number) => void
@@ -155,6 +159,7 @@ export const useStore = create<TaxStore>()(
   persist(
     (set) => ({
       // Initial state
+      currentStep: 1,
       taxYear: 2025,
       filingStatus: 'marriedFilingJointly',
       includeCaliforniaTax: true,
@@ -164,6 +169,7 @@ export const useStore = create<TaxStore>()(
       estimatedPayments: { ...initialEstimatedPaymentsData },
       
       // Actions
+      setCurrentStep: (step) => set({ currentStep: step }),
       setTaxYear: (year) => set({ taxYear: year }),
       setFilingStatus: (status) => set({ filingStatus: status }),
       setIncludeCaliforniaTax: (include) => set({ includeCaliforniaTax: include }),
@@ -185,6 +191,7 @@ export const useStore = create<TaxStore>()(
       })),
       
       clearAllData: () => set({
+        currentStep: 1,
         taxYear: 2025,
         filingStatus: 'marriedFilingJointly',
         includeCaliforniaTax: true,
