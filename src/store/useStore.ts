@@ -1,14 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface FutureRSUVest {
+export interface FutureRSUVest {
   id: string
   date: string
   shares: string
   expectedPrice: string
 }
 
-interface IncomeData {
+export interface IncomeData {
   // Investment Income
   ordinaryDividends: string
   qualifiedDividends: string
@@ -42,7 +42,7 @@ interface IncomeData {
   futureRSUVests: FutureRSUVest[]
 }
 
-interface DeductionsData {
+export interface DeductionsData {
   propertyTax: string
   mortgageInterest: string
   donations: string
@@ -55,7 +55,7 @@ interface DeductionsData {
   otherStateIncomeTax: string
 }
 
-interface EstimatedPaymentsData {
+export interface EstimatedPaymentsData {
   // Federal estimated payments by quarter
   federalQ1: string
   federalQ2: string

@@ -2,13 +2,12 @@ import { useStore } from '../../store/useStore'
 
 interface FilingStatusProps {
   onNext: () => void
-  onPrevious: () => void
 }
 
 // Available tax years - can easily add more years in the future
 const AVAILABLE_TAX_YEARS = [2025] as const
 
-export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
+export function FilingStatus({ onNext }: FilingStatusProps) {
   const { taxYear, setTaxYear, filingStatus, setFilingStatus, includeCaliforniaTax, setIncludeCaliforniaTax } = useStore()
 
   return (
@@ -156,13 +155,7 @@ export function FilingStatus({ onNext, onPrevious }: FilingStatusProps) {
 
       </div>
 
-      <div className="flex justify-between mt-8">
-        <button
-          onClick={onPrevious}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-        >
-          Previous
-        </button>
+      <div className="flex justify-end mt-8">
         <button
           onClick={onNext}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"

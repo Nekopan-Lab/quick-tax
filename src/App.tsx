@@ -3,16 +3,17 @@ import { useStore } from './store/useStore'
 import { calculateComprehensiveTax } from './utils/taxCalculations'
 import { TaxYear } from './types'
 import { StepNavigation } from './components/layout/StepNavigation'
-import { Welcome } from './components/steps/Welcome'
 import { FilingStatus } from './components/steps/FilingStatus'
 import { Deductions } from './components/steps/Deductions'
 import { Income } from './components/steps/Income'
 import { EstimatedPayments } from './components/steps/EstimatedPayments'
 import { Summary } from './components/steps/Summary'
+import { DEMO_USER_INCOME, DEMO_SPOUSE_INCOME, DEMO_DEDUCTIONS, DEMO_ESTIMATED_PAYMENTS, DEMO_DATA_DESCRIPTION } from './utils/demoData'
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1) // Start at Step 1
   const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+  const [showDemoModal, setShowDemoModal] = useState(false)
   
   const { 
     clearAllData,
@@ -22,7 +23,11 @@ function App() {
     deductions,
     userIncome,
     spouseIncome,
-    estimatedPayments
+    estimatedPayments,
+    setUserIncome,
+    setSpouseIncome,
+    setDeductions,
+    setEstimatedPayments
   } = useStore()
 
   // Calculate real-time tax results
@@ -65,12 +70,19 @@ function App() {
     window.location.reload()
   }
 
+  const handleLoadDemo = () => {
+    // Load demo data into the store
+    setUserIncome(DEMO_USER_INCOME)
+    setSpouseIncome(DEMO_SPOUSE_INCOME)
+    setDeductions(DEMO_DEDUCTIONS)
+    setEstimatedPayments(DEMO_ESTIMATED_PAYMENTS)
+    setShowDemoModal(false)
+  }
+
   const renderStep = () => {
     switch (currentStep) {
-      case 0:
-        return <Welcome onStart={() => setCurrentStep(1)} onClearData={handleClearData} />
       case 1:
-        return <FilingStatus onNext={handleNext} onPrevious={handlePrevious} />
+        return <FilingStatus onNext={handleNext} />
       case 2:
         return <Income onNext={handleNext} onPrevious={handlePrevious} />
       case 3:
@@ -176,16 +188,25 @@ function App() {
               </a>
             </div>
             
-            <button
-              onClick={() => {
-                if (confirm('Are you sure you want to delete all stored data? This cannot be undone.')) {
-                  handleClearData()
-                }
-              }}
-              className="text-sm text-red-600 hover:text-red-700 font-medium border border-red-300 rounded-md px-4 py-2 hover:bg-red-50 transition-colors"
-            >
-              Clear All Data
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowDemoModal(true)}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium border border-purple-300 rounded-md px-4 py-2 hover:bg-purple-50 transition-colors"
+              >
+                Load Demo
+              </button>
+              
+              <button
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete all stored data? This cannot be undone.')) {
+                    handleClearData()
+                  }
+                }}
+                className="text-sm text-red-600 hover:text-red-700 font-medium border border-red-300 rounded-md px-4 py-2 hover:bg-red-50 transition-colors"
+              >
+                Clear All Data
+              </button>
+            </div>
           </div>
           
           <div className="mt-6 text-center text-xs text-gray-500">
@@ -220,6 +241,32 @@ function App() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Demo Modal */}
+      {showDemoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4">Load Demo Data</h3>
+            <div className="text-gray-700 whitespace-pre-line text-sm mb-6">
+              {DEMO_DATA_DESCRIPTION}
+            </div>
+            <div className="flex gap-3">
+              <button 
+                className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-medium"
+                onClick={() => setShowDemoModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="flex-1 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium"
+                onClick={handleLoadDemo}
+              >
+                Load Demo
+              </button>
+            </div>
           </div>
         </div>
       )}
