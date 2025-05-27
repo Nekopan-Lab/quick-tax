@@ -323,15 +323,17 @@ export function Summary({ onPrevious }: SummaryProps) {
                               if (taxableInBracket === 0) return null
                               
                               return (
-                                <div key={index} className="flex justify-between items-center">
-                                  <span>
-                                    ${bracket.min.toLocaleString()} - ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()} 
-                                    <span className="text-gray-500 ml-1">({(bracket.rate * 100).toFixed(0)}%)</span>
-                                  </span>
-                                  <span className="text-right">
-                                    ${taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(0)}% = 
-                                    <span className="font-medium ml-1">${Math.round(taxForBracket).toLocaleString()}</span>
-                                  </span>
+                                <div key={index} className="space-y-1 mb-2">
+                                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                    <span className="text-gray-700">
+                                      ${bracket.min.toLocaleString()} - ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()} 
+                                      <span className="text-gray-500 ml-1">({(bracket.rate * 100).toFixed(0)}%)</span>
+                                    </span>
+                                    <span className="text-sm sm:text-right pl-4 sm:pl-0">
+                                      ${taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(0)}% = 
+                                      <span className="font-medium ml-1">${Math.round(taxForBracket).toLocaleString()}</span>
+                                    </span>
+                                  </div>
                                 </div>
                               )
                             }).filter(Boolean)}
@@ -406,13 +408,13 @@ export function Summary({ onPrevious }: SummaryProps) {
                                     const isYourBracket = taxableIncome >= bracket.min && taxableIncome <= bracket.max
                                     
                                     return (
-                                      <div key={index} className={`flex justify-between items-center p-1.5 rounded ${isYourBracket ? 'bg-gray-100 font-medium' : ''}`}>
-                                        <span className="flex items-center">
-                                          <span className="w-12 text-right mr-2">{rate}%</span>
+                                      <div key={index} className={`flex flex-col sm:flex-row sm:justify-between sm:items-center p-1.5 rounded ${isYourBracket ? 'bg-gray-100 font-medium' : ''}`}>
+                                        <span className="flex items-start sm:items-center">
+                                          <span className="w-12 text-right mr-2 flex-shrink-0">{rate}%</span>
                                           <span className="text-gray-500">on income from ${bracket.min.toLocaleString()} to ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()}</span>
                                         </span>
                                         {isYourBracket && (
-                                          <span className="text-sm">← Your bracket</span>
+                                          <span className="text-sm mt-1 sm:mt-0 ml-14 sm:ml-0">← Your bracket</span>
                                         )}
                                       </div>
                                     )
@@ -544,15 +546,17 @@ export function Summary({ onPrevious }: SummaryProps) {
                                 if (taxableInBracket === 0) return null
                                 
                                 return (
-                                  <div key={index} className="flex justify-between items-center">
-                                    <span>
-                                      ${bracket.min.toLocaleString()} - ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()} 
-                                      <span className="text-gray-500 ml-1">({(bracket.rate * 100).toFixed(1)}%)</span>
-                                    </span>
-                                    <span className="text-right">
-                                      ${taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(1)}% = 
-                                      <span className="font-medium ml-1">${Math.round(taxForBracket).toLocaleString()}</span>
-                                    </span>
+                                  <div key={index} className="space-y-1 mb-2">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                      <span className="text-gray-700">
+                                        ${bracket.min.toLocaleString()} - ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()} 
+                                        <span className="text-gray-500 ml-1">({(bracket.rate * 100).toFixed(1)}%)</span>
+                                      </span>
+                                      <span className="text-sm sm:text-right pl-4 sm:pl-0">
+                                        ${taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(1)}% = 
+                                        <span className="font-medium ml-1">${Math.round(taxForBracket).toLocaleString()}</span>
+                                      </span>
+                                    </div>
                                   </div>
                                 )
                               }).filter(Boolean)}

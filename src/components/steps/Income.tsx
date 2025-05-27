@@ -600,22 +600,22 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                               
                               {vest.shares && vest.expectedPrice && (
                                 <div className="mt-3 pt-3 border-t border-gray-200">
-                                  <div className="grid grid-cols-3 gap-2 text-xs">
-                                    <div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                    <div className="flex flex-col sm:block">
                                       <span className="text-gray-600">Est. Value:</span>
-                                      <span className="ml-1 font-medium">${vestValue.toLocaleString()}</span>
+                                      <span className="sm:ml-1 font-medium">${vestValue.toLocaleString()}</span>
                                     </div>
-                                    <div>
-                                      <span className="text-gray-600">Est. Fed Tax Withhold:</span>
-                                      <span className="ml-1 font-medium text-red-600">
+                                    <div className="flex flex-col sm:block">
+                                      <span className="text-gray-600">Est. Fed Tax:</span>
+                                      <span className="sm:ml-1 font-medium text-red-600">
                                         ${Math.round(estimatedFederal).toLocaleString()} 
                                         <span className="text-gray-500 ml-1">({(federalWithholdingRate * 100).toFixed(0)}%)</span>
                                       </span>
                                     </div>
                                     {includeCaliforniaTax && (
-                                      <div>
-                                        <span className="text-gray-600">Est. State Tax Withhold:</span>
-                                        <span className="ml-1 font-medium text-red-600">
+                                      <div className="flex flex-col sm:block">
+                                        <span className="text-gray-600">Est. State Tax:</span>
+                                        <span className="sm:ml-1 font-medium text-red-600">
                                           ${Math.round(estimatedState).toLocaleString()}
                                           <span className="text-gray-500 ml-1">({(stateWithholdingRate * 100).toFixed(0)}%)</span>
                                         </span>
