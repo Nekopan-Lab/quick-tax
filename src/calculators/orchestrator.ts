@@ -24,7 +24,6 @@ import { aggregateIndividualIncome } from './utils/income'
 export interface TaxCalculationResult {
   // Total amounts
   totalIncome: number
-  adjustedGrossIncome: number
   
   // Federal results
   federalTax: FederalTaxResult
@@ -108,7 +107,6 @@ export function calculateComprehensiveTax(
   // Calculate total income with capital loss limit applied
   const capitalLossAdjustment = netCapitalGains < 0 ? netCapitalGains - capitalLossDeduction : 0
   const totalIncome = totalIncomeBeforeLimit - capitalLossAdjustment
-  const agi = totalIncome // Simplified for now
 
   const federalIncomeBreakdown: FederalIncomeBreakdown = {
     ordinaryIncome: userAgg.wageIncome + spouseAgg.wageIncome + 
@@ -190,7 +188,6 @@ export function calculateComprehensiveTax(
 
   return {
     totalIncome: Math.round(totalIncome),
-    adjustedGrossIncome: Math.round(agi),
     federalTax: federalResult,
     federalOwedOrRefund: Math.round(federalOwedOrRefund),
     californiaTax: californiaResult,
