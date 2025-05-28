@@ -1,15 +1,14 @@
-import type { IncomeData, DeductionsData, EstimatedPaymentsData, FutureRSUVest } from '../store/useStore'
+import type { IncomeData, DeductionsData, EstimatedPaymentsData } from '../store/useStore'
 
 /**
- * Demo data based on typical Bay Area tech employee household
+ * Demo data for a moderate income household
  * 
- * Data sources and assumptions:
- * - Median household income for tech workers in Bay Area: ~$350,000-450,000
- * - Typical RSU vesting schedule: quarterly
- * - Average property tax: ~$15,000-20,000 (based on $1.5-2M home value)
- * - Average mortgage interest: ~$35,000-45,000 (assuming recent purchase)
- * - Typical charitable donations: 2-3% of income
- * - Investment income from diversified portfolio
+ * This demo is designed to showcase:
+ * - Household income around $300,000
+ * - Federal standard deduction usage (itemized < $30,000)
+ * - California itemized deduction usage (itemized > $11,080)
+ * - Owing taxes for both federal and California
+ * - Need for estimated tax payments
  */
 
 // Current date for calculating future dates
@@ -30,53 +29,47 @@ const getNextBiweeklyPaydate = (): string => {
   return date.toISOString().split('T')[0]
 }
 
-// Generate future RSU vest dates (quarterly)
-const generateRSUVestDates = (): FutureRSUVest[] => {
-  const vests = []
-  const vestMonths = [2, 5, 8, 11] // March, June, September, December
-  
-  for (const month of vestMonths) {
-    const vestDate = new Date(currentYear, month, 15)
-    if (vestDate > today) {
-      vests.push({
-        id: `demo-vest-${month}`,
-        date: vestDate.toISOString().split('T')[0],
-        shares: '500', // Typical quarterly vest
-        expectedPrice: '185' // Reasonable tech stock price
-      })
-    }
-  }
-  
-  return vests
-}
 
 export const DEMO_USER_INCOME: IncomeData = {
-  // Investment Income (typical for tech employee with some savings)
-  ordinaryDividends: '3500',
-  qualifiedDividends: '2800', // 80% of dividends are qualified
-  interestIncome: '1200', // High-yield savings interest
-  shortTermGains: '-2000', // Some trading losses
-  longTermGains: '15000', // Some stock sales
+  // Investment Income (moderate savings)
+  ordinaryDividends: '1500',
+  qualifiedDividends: '1200', // 80% of dividends are qualified
+  interestIncome: '800', // High-yield savings interest
+  shortTermGains: '500', // Small trading gains
+  longTermGains: '3000', // Some stock sales
   
   // YTD W2 (assuming we're in Q2, so ~40% through year)
-  ytdWage: '85000', // Base salary portion
-  ytdFederalWithhold: '22000',
-  ytdStateWithhold: '7500',
+  ytdWage: '50000', // Base salary portion (~$130k annual)
+  ytdFederalWithhold: '7500', // ~15% withholding (intentionally low)
+  ytdStateWithhold: '2500', // ~5% withholding (intentionally low)
   
   // Future Income - Detailed Mode
   incomeMode: 'detailed',
-  paycheckWage: '7500', // ~$195k base salary annually
-  paycheckFederal: '2100',
-  paycheckState: '650',
+  paycheckWage: '5000', // ~$130k base salary annually
+  paycheckFederal: '750', // 15% federal withholding
+  paycheckState: '250', // 5% state withholding
   payFrequency: 'biweekly',
   nextPayDate: getNextBiweeklyPaydate(),
   
-  // RSU Data (typical tech compensation)
-  rsuVestWage: '46000', // Recent vest
-  rsuVestFederal: '10120', // 22% federal withholding
-  rsuVestState: '4600', // 10% state withholding
-  vestPrice: '180',
-  futureRSUVests: generateRSUVestDates(),
+  // RSU Data (moderate tech compensation)
+  rsuVestWage: '15000', // Recent vest
+  rsuVestFederal: '2250', // 15% federal withholding (lower than typical)
+  rsuVestState: '750', // 5% state withholding
+  vestPrice: '150',
+  futureRSUVests: [
+    {
+      id: 'demo-vest-1',
+      date: new Date(currentYear, 7, 15).toISOString().split('T')[0], // August vest
+      shares: '200',
+      expectedPrice: '150'
+    },
+    {
+      id: 'demo-vest-2',
+      date: new Date(currentYear, 10, 15).toISOString().split('T')[0], // November vest
+      shares: '200',
+      expectedPrice: '150'
+    }
+  ],
   
   // Simple mode fields (not used when in detailed mode)
   futureWage: '',
@@ -86,44 +79,31 @@ export const DEMO_USER_INCOME: IncomeData = {
 
 export const DEMO_SPOUSE_INCOME: IncomeData = {
   // Investment Income (joint investment account)
-  ordinaryDividends: '2500',
-  qualifiedDividends: '2000',
-  interestIncome: '800',
-  shortTermGains: '1000',
-  longTermGains: '8000',
+  ordinaryDividends: '1000',
+  qualifiedDividends: '800',
+  interestIncome: '600',
+  shortTermGains: '0',
+  longTermGains: '2000',
   
-  // YTD W2 (tech PM role)
-  ytdWage: '68000',
-  ytdFederalWithhold: '16000',
-  ytdStateWithhold: '5500',
+  // YTD W2 (non-tech role)
+  ytdWage: '40000',
+  ytdFederalWithhold: '6000', // ~15% withholding (intentionally low)
+  ytdStateWithhold: '2000', // ~5% withholding (intentionally low)
   
   // Future Income - Detailed Mode
   incomeMode: 'detailed',
-  paycheckWage: '6250', // ~$162.5k base salary annually
-  paycheckFederal: '1650',
-  paycheckState: '520',
+  paycheckWage: '3846', // ~$100k base salary annually
+  paycheckFederal: '577', // 15% federal withholding
+  paycheckState: '192', // 5% state withholding
   payFrequency: 'biweekly',
   nextPayDate: getNextBiweeklyPaydate(),
   
   // RSU Data
-  rsuVestWage: '28000', // Recent vest
-  rsuVestFederal: '6160', // 22% federal withholding
-  rsuVestState: '2800', // 10% state withholding
-  vestPrice: '140', // Different company
-  futureRSUVests: [
-    {
-      id: 'demo-spouse-vest-1',
-      date: new Date(currentYear, 5, 20).toISOString().split('T')[0], // June vest
-      shares: '400',
-      expectedPrice: '145'
-    },
-    {
-      id: 'demo-spouse-vest-2',
-      date: new Date(currentYear, 11, 20).toISOString().split('T')[0], // December vest
-      shares: '400',
-      expectedPrice: '145'
-    }
-  ],
+  rsuVestWage: '0', // No recent vest
+  rsuVestFederal: '0',
+  rsuVestState: '0',
+  vestPrice: '',
+  futureRSUVests: [], // No RSUs for spouse
   
   // Simple mode fields (not used)
   futureWage: '',
@@ -132,17 +112,17 @@ export const DEMO_SPOUSE_INCOME: IncomeData = {
 }
 
 export const DEMO_DEDUCTIONS: DeductionsData = {
-  propertyTax: '18000', // ~$1.8M home value at 1% tax rate
-  mortgageInterest: '42000', // Recent purchase with ~$1.2M mortgage at 7%
+  propertyTax: '8000', // ~$800k home value at 1% tax rate
+  mortgageInterest: '12000', // Modest mortgage at 6%
   mortgageLoanDate: 'after-dec-15-2017', // Recent purchase
-  mortgageBalance: '1200000',
-  donations: '8000', // ~2% of gross income
+  mortgageBalance: '400000',
+  donations: '2000', // ~0.7% of gross income
   otherStateIncomeTax: '0' // Not applicable for CA residents
 }
 
 export const DEMO_ESTIMATED_PAYMENTS: EstimatedPaymentsData = {
-  // Federal Q1 payment made, no CA payments yet
-  federalQ1: '2000',
+  // Small federal Q1 payment made, no CA payments yet
+  federalQ1: '500',
   federalQ2: '0',
   federalQ3: '0',
   federalQ4: '0',
@@ -151,12 +131,14 @@ export const DEMO_ESTIMATED_PAYMENTS: EstimatedPaymentsData = {
   californiaQ4: '0'
 }
 
-export const DEMO_DATA_DESCRIPTION = `This demo uses typical data for a Bay Area tech household:
+export const DEMO_DATA_DESCRIPTION = `This demo shows a moderate income household:
 
-• Combined household income: ~$440,000
-• Both spouses work in tech with RSU compensation (22% federal withholding)
-• Own a home valued at ~$1.8M with recent mortgage
-• Moderate investment income from stocks and savings
-• Made a small Q1 federal payment ($2,000), no CA payments yet
+• Combined household income: ~$300,000
+• User has $130k base salary + RSUs, Spouse has $100k base salary
+• Modest home with $22,000 total itemized deductions
+• Uses federal standard deduction ($30,000) but CA itemized ($22,000)
+• Low withholding rates (15% federal, 5% state) result in taxes owed
+• Made minimal Q1 federal payment ($500), no CA payments yet
+• Demonstrates need for estimated tax payments
 
 You can modify any of these values to match your situation, or clear all data to start fresh.`
