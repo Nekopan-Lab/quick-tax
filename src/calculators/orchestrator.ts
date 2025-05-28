@@ -16,11 +16,10 @@ import {
   calculateCaliforniaItemizedDeductions,
   calculateCaliforniaEstimatedPayments,
   calculateEstimatedCAStateTax,
-  calculateCaliforniaWithholdings,
   type IncomeData,
   type CaliforniaTaxResult
 } from './california/calculator'
-import { aggregateIndividualIncome } from './utils/income'
+import { aggregateHouseholdIncome } from './utils/householdIncome'
 
 export interface TaxCalculationResult {
   // Total amounts
@@ -48,31 +47,14 @@ export function calculateComprehensiveTax(
 ): TaxCalculationResult | null {
   // filingStatus is always defined now
 
-  // Aggregate income from user and spouse
-  const userAgg = aggregateIndividualIncome(userIncome)
-  const spouseAgg = filingStatus === 'marriedFilingJointly' 
-    ? aggregateIndividualIncome(spouseIncome)
-    : { 
-        totalIncome: 0, 
-        investmentIncome: {
-          ordinaryDividends: 0, qualifiedDividends: 0, interestIncome: 0,
-          shortTermGains: 0, longTermGains: 0
-        },
-        wageIncome: 0,
-        totalWithholdings: { federal: 0, state: 0 }
-      }
-
+  // Aggregate income for the entire household
+  const household = aggregateHouseholdIncome(userIncome, spouseIncome, filingStatus)
+  
   // Calculate total income before capital loss limit
-  const totalIncomeBeforeLimit = userAgg.totalIncome + spouseAgg.totalIncome
-
-  // Aggregate investment income
-  const totalInvestmentIncome = {
-    ordinaryDividends: userAgg.investmentIncome.ordinaryDividends + spouseAgg.investmentIncome.ordinaryDividends,
-    qualifiedDividends: userAgg.investmentIncome.qualifiedDividends + spouseAgg.investmentIncome.qualifiedDividends,
-    interestIncome: userAgg.investmentIncome.interestIncome + spouseAgg.investmentIncome.interestIncome,
-    shortTermGains: userAgg.investmentIncome.shortTermGains + spouseAgg.investmentIncome.shortTermGains,
-    longTermGains: userAgg.investmentIncome.longTermGains + spouseAgg.investmentIncome.longTermGains
-  }
+  const totalIncomeBeforeLimit = household.totalIncome
+  
+  // Use household aggregated investment income
+  const totalInvestmentIncome = household.investmentIncome
 
   // Prepare income breakdown for federal tax calculation
   // Apply capital loss limit: Net capital losses are limited to $3,000 deduction against ordinary income
@@ -84,7 +66,7 @@ export function calculateComprehensiveTax(
   const totalIncome = totalIncomeBeforeLimit - capitalLossAdjustment
 
   const federalIncomeBreakdown: FederalIncomeBreakdown = {
-    ordinaryIncome: userAgg.wageIncome + spouseAgg.wageIncome + 
+    ordinaryIncome: household.wageIncome + 
                     (totalInvestmentIncome.ordinaryDividends - totalInvestmentIncome.qualifiedDividends) + // Non-qualified dividends
                     totalInvestmentIncome.interestIncome +
                     capitalLossDeduction, // Apply capital loss limit
@@ -92,7 +74,7 @@ export function calculateComprehensiveTax(
     longTermCapitalGains: Math.max(0, totalInvestmentIncome.longTermGains), // Only positive LTCG
     shortTermCapitalGains: Math.max(0, totalInvestmentIncome.shortTermGains), // Only positive STCG
     // Additional detail fields
-    wages: userAgg.wageIncome + spouseAgg.wageIncome,
+    wages: household.wageIncome,
     interestIncome: totalInvestmentIncome.interestIncome,
     ordinaryDividends: totalInvestmentIncome.ordinaryDividends,
     capitalLossDeduction
@@ -121,7 +103,7 @@ export function calculateComprehensiveTax(
   }
 
   // Calculate federal withholdings and payments
-  const federalWithholdings = userAgg.totalWithholdings.federal + spouseAgg.totalWithholdings.federal
+  const federalWithholdings = household.totalWithholdings.federal
   const federalEstimatedPaid = calculateTotalFederalEstimatedPayments(estimatedPayments)
 
   // Calculate federal tax
@@ -152,10 +134,7 @@ export function calculateComprehensiveTax(
     }
 
     // Calculate California withholdings
-    const californiaWithholdings = calculateCaliforniaWithholdings(
-      userAgg.totalWithholdings,
-      filingStatus === 'marriedFilingJointly' ? spouseAgg.totalWithholdings : null
-    )
+    const californiaWithholdings = household.totalWithholdings.state
 
     const californiaEstimatedPaid = calculateTotalCaliforniaEstimatedPayments(estimatedPayments)
 
@@ -206,7 +185,6 @@ export function calculateTotalCaliforniaEstimatedPayments(estimatedPayments: Est
 export { 
   calculateFederalEstimatedPayments,
   calculateCaliforniaEstimatedPayments,
-  calculateCaliforniaWithholdings,
   calculateEstimatedCAStateTax,
   calculateCaliforniaItemizedDeductions,
   type EstimatedPaymentSuggestion

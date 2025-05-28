@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { 
-  calculateCaliforniaWithholdings,
   calculateFederalEstimatedPayments,
   calculateCaliforniaEstimatedPayments,
   TaxCalculationResult
@@ -86,10 +85,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
   const spouseStateWithholdings = (parseFloat(spouseIncome.ytdStateWithhold) || 0) + spouseFutureIncome.totalStateWithhold
   
   const californiaWithholdings = includeCaliforniaTax 
-    ? calculateCaliforniaWithholdings(
-        { state: userStateWithholdings },
-        filingStatus === 'marriedFilingJointly' ? { state: spouseStateWithholdings } : null
-      )
+    ? Math.round(userStateWithholdings + (filingStatus === 'marriedFilingJointly' ? spouseStateWithholdings : 0))
     : 0
     
   // Calculate total estimated payments already made
