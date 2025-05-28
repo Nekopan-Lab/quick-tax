@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { 
   calculateFederalEstimatedPayments,
@@ -6,6 +6,7 @@ import {
   TaxCalculationResult
 } from '../../calculators/orchestrator'
 import { calculateFutureIncome } from '../../calculators/utils/income'
+import '../../styles/print.css'
 
 interface SummaryProps {
   onPrevious: () => void
@@ -33,6 +34,39 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
   
   // State for payment schedule info toggle
   const [showScheduleInfo, setShowScheduleInfo] = useState(false)
+  
+  // Automatically expand all sections when printing
+  useEffect(() => {
+    const beforePrint = () => {
+      setExpandedSections({
+        ordinaryIncomeTax: true,
+        capitalGainsTax: true,
+        caBaseTax: true,
+        mentalHealthTax: true,
+        paymentSchedule: true
+      })
+      setShowScheduleInfo(true)
+    }
+    
+    const afterPrint = () => {
+      setExpandedSections({
+        ordinaryIncomeTax: false,
+        capitalGainsTax: false,
+        caBaseTax: false,
+        mentalHealthTax: false,
+        paymentSchedule: false
+      })
+      setShowScheduleInfo(false)
+    }
+    
+    window.addEventListener('beforeprint', beforePrint)
+    window.addEventListener('afterprint', afterPrint)
+    
+    return () => {
+      window.removeEventListener('beforeprint', beforePrint)
+      window.removeEventListener('afterprint', afterPrint)
+    }
+  }, [])
   
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -119,10 +153,44 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6">Summary & Actionable Insights</h2>
+      <h2 className="text-2xl font-semibold mb-6 print:text-center screen-only">Summary & Actionable Insights</h2>
+      
+      {/* Print-only header focused on estimated payments */}
+      <div className="print-only print-header">
+        <h2 className="text-xl font-bold text-center mb-4">Estimated Tax Payment Schedule</h2>
+        <div className="flex justify-between text-sm mb-4">
+          <div>
+            <strong>Tax Year:</strong> {taxYear}
+          </div>
+          <div>
+            <strong>Filing Status:</strong> {filingStatus === 'single' ? 'Single' : 'Married Filing Jointly'}
+          </div>
+          <div>
+            <strong>Report Date:</strong> {new Date().toLocaleDateString()}
+          </div>
+        </div>
+        <div className="text-center mb-4">
+          <div className="flex justify-center gap-8">
+            <div>
+              <strong>Federal Tax Owed:</strong> 
+              <span className={`ml-2 font-bold ${federalOwed > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                ${Math.abs(federalOwed).toLocaleString()} {federalOwed > 0 ? 'Owed' : 'Overpaid'}
+              </span>
+            </div>
+            {includeCaliforniaTax && (
+              <div>
+                <strong>CA Tax Owed:</strong> 
+                <span className={`ml-2 font-bold ${caOwed > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  ${Math.abs(caOwed).toLocaleString()} {caOwed > 0 ? 'Owed' : 'Overpaid'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       
       {/* Tax Owed/Overpaid Display */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 tax-owed-display">
         <div className={`bg-white rounded-lg shadow-md p-6 border-2 ${
           federalOwed > 0 ? 'border-red-200' : 'border-green-200'
         }`}>
@@ -161,7 +229,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
       </div>
 
       {/* Tax Breakdown */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-8 tax-breakdown-section">
         <h3 className="text-lg font-medium mb-4">Tax Calculation Breakdown</h3>
         
         <div className="space-y-3">
@@ -200,7 +268,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                 >
                   <span>• Ordinary Income Tax: ${taxResults.federalTax.ordinaryIncomeTax.toLocaleString()}</span>
                   <svg
-                    className={`w-4 h-4 transform transition-transform ${expandedSections.ordinaryIncomeTax ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transform transition-transform print:hidden ${expandedSections.ordinaryIncomeTax ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -319,7 +387,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                 >
                   <span>• Long-Term Capital Gains Tax: ${taxResults.federalTax.capitalGainsTax.toLocaleString()}</span>
                   <svg
-                    className={`w-4 h-4 transform transition-transform ${expandedSections.capitalGainsTax ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transform transition-transform print:hidden ${expandedSections.capitalGainsTax ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -460,7 +528,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                   >
                     <span>• Base CA Tax: ${taxResults.californiaTax.baseTax.toLocaleString()}</span>
                     <svg
-                      className={`w-4 h-4 transform transition-transform ${expandedSections.caBaseTax ? 'rotate-180' : ''}`}
+                      className={`w-4 h-4 transform transition-transform print:hidden ${expandedSections.caBaseTax ? 'rotate-180' : ''}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -534,7 +602,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                     >
                       <span>• Mental Health Tax (1%): ${taxResults.californiaTax.mentalHealthTax.toLocaleString()}</span>
                       <svg
-                        className={`w-4 h-4 transform transition-transform ${expandedSections.mentalHealthTax ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transform transition-transform print:hidden ${expandedSections.mentalHealthTax ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -619,7 +687,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                 }`}>
                   <div className="flex items-center gap-2">
                     {payment.isPaid && (
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-green-600 print:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -684,7 +752,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                     }`}>
                       <div className="flex items-center gap-2">
                         {payment.isPaid && (
-                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-green-600 print:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
@@ -719,7 +787,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
         <div className="mt-6 pt-4 border-t">
           <button
             onClick={() => setShowScheduleInfo(!showScheduleInfo)}
-            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 print:hidden"
           >
             <span>{showScheduleInfo ? '▼' : '▶'}</span>
             How is the payment schedule calculated?
@@ -740,21 +808,36 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
               )}
             </div>
           )}
+          
+          {/* Always show payment schedule info when printing */}
+          <div className="print-only mt-3 text-sm text-gray-600 space-y-2">
+            <p>
+              <strong>Federal:</strong> The IRS expects quarterly payments of 25% each.
+              If you miss a quarter, the next payment should catch up to the cumulative percentage:
+              Q1=25%, Q2=50%, Q3=75%, Q4=100% of total annual tax.
+            </p>
+            {includeCaliforniaTax && (
+              <p>
+                <strong>California:</strong> The FTB has a different schedule:
+                Q1=30%, Q2=70%, Q4=100% cumulative (no Q3 payment).
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="flex justify-between mt-8">
         <button
           onClick={onPrevious}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 print:hidden"
         >
           Previous
         </button>
         <button
           onClick={() => window.print()}
-          className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 print:hidden"
         >
-          Print Summary
+          Print Payment Schedule
         </button>
       </div>
     </div>
