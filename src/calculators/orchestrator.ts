@@ -33,18 +33,6 @@ export interface TaxCalculationResult {
   californiaTax?: CaliforniaTaxResult  // Contains total CA tax liability, breakdown, owed/refund, and effective rate
 }
 
-export interface ItemizedDeductionDetails {
-  total: number
-  propertyTax: number
-  stateIncomeTax: number
-  saltTotal: number
-  saltCapApplied: boolean
-  mortgageInterest: number
-  mortgageInterestLimited: boolean
-  mortgageBalance: number
-  mortgageLimit: number
-  donations: number
-}
 
 /**
  * Calculate comprehensive tax results based on all user input
@@ -192,55 +180,6 @@ export function calculateComprehensiveTax(
   }
 }
 
-/**
- * Calculate federal itemized deduction details with all components
- */
-export function calculateFederalItemizedDeductionDetails(
-  deductions: DeductionsData,
-  estimatedCAStateTax: number,
-  includeCaliforniaTax: boolean
-): ItemizedDeductionDetails {
-  const propertyTax = parseFloat(deductions.propertyTax) || 0
-  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
-  const donations = parseFloat(deductions.donations) || 0
-  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
-  
-  // Calculate state income tax for SALT
-  const stateIncomeTax = includeCaliforniaTax 
-    ? estimatedCAStateTax
-    : parseFloat(deductions.otherStateIncomeTax) || 0
-  
-  // SALT components
-  const saltTotal = propertyTax + stateIncomeTax
-  const saltCapApplied = saltTotal > 10000
-  const saltDeduction = Math.min(saltTotal, 10000)
-  
-  // Calculate mortgage interest deduction with limits
-  let deductibleMortgageInterest = mortgageInterest
-  let mortgageInterestLimited = false
-  let mortgageLimit = 0
-  
-  if (mortgageBalance > 0 && deductions.mortgageLoanDate) {
-    mortgageLimit = deductions.mortgageLoanDate === 'before-dec-16-2017' ? 1000000 : 750000
-    if (mortgageBalance > mortgageLimit) {
-      deductibleMortgageInterest = mortgageInterest * (mortgageLimit / mortgageBalance)
-      mortgageInterestLimited = true
-    }
-  }
-  
-  return {
-    total: saltDeduction + deductibleMortgageInterest + donations,
-    propertyTax,
-    stateIncomeTax,
-    saltTotal,
-    saltCapApplied,
-    mortgageInterest: deductibleMortgageInterest,
-    mortgageInterestLimited,
-    mortgageBalance,
-    mortgageLimit,
-    donations
-  }
-}
 
 // Re-export functions that are used by components
 export { 
