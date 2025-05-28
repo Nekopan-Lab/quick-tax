@@ -15,10 +15,10 @@ export interface FederalIncomeBreakdown {
 }
 
 export interface FederalTaxResult {
-  taxableIncome: number
-  ordinaryIncomeTax: number
-  capitalGainsTax: number
-  totalTax: number
+  taxableIncome: number        // Income after deductions
+  ordinaryIncomeTax: number    // Tax on wages, interest, non-qualified dividends, short-term gains
+  capitalGainsTax: number      // Tax on qualified dividends and long-term capital gains
+  totalTax: number             // Total tax liability (before any withholdings or payments)
 }
 
 /**
