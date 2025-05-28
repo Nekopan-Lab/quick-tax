@@ -121,11 +121,16 @@ describe('Federal Tax Calculator', () => {
               type: 'standard',
               amount: standardDeductionSingle
             }
+            const totalIncome = testCase.income.ordinaryIncome + testCase.income.qualifiedDividends + 
+              testCase.income.longTermCapitalGains + testCase.income.shortTermCapitalGains
             const result = calculateFederalTax(
               testCase.income,
               deductionInfo,
               'single',
-              taxYear
+              taxYear,
+              totalIncome,
+              0, // withholdings
+              0  // estimatedPayments
             )
 
             expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
@@ -149,11 +154,16 @@ describe('Federal Tax Calculator', () => {
               type: 'standard',
               amount: standardDeductionMarried
             }
+            const totalIncome = testCase.income.ordinaryIncome + testCase.income.qualifiedDividends + 
+              testCase.income.longTermCapitalGains + testCase.income.shortTermCapitalGains
             const result = calculateFederalTax(
               testCase.income,
               deductionInfo,
               'marriedFilingJointly',
-              taxYear
+              taxYear,
+              totalIncome,
+              0, // withholdings
+              0  // estimatedPayments
             )
 
             expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
@@ -207,11 +217,16 @@ describe('Federal Tax Calculator', () => {
               type: testCase.deduction > 30000 ? 'itemized' : 'standard',
               amount: testCase.deduction
             }
+            const totalIncome = testCase.income.ordinaryIncome + testCase.income.qualifiedDividends + 
+              testCase.income.longTermCapitalGains + testCase.income.shortTermCapitalGains
             const result = calculateFederalTax(
               testCase.income,
               deductionInfo,
               testCase.filingStatus,
-              year
+              year,
+              totalIncome,
+              0, // withholdings
+              0  // estimatedPayments
             )
 
             expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)

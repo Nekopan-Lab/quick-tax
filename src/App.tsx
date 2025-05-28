@@ -42,8 +42,8 @@ function App() {
     estimatedPayments
   )
 
-  const federalOwed = taxResults?.federalOwedOrRefund || 0
-  const californiaOwed = taxResults?.californiaOwedOrRefund || 0
+  const federalOwed = taxResults?.federalTax.owedOrRefund || 0
+  const californiaOwed = taxResults?.californiaTax?.owedOrRefund || 0
 
   // Scroll to top when step changes
   useEffect(() => {

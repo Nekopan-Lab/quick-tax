@@ -18,6 +18,8 @@ export interface CaliforniaTaxResult {
   mentalHealthTax: number    // Additional 1% tax on income over $1M
   totalTax: number           // Total tax liability (before any withholdings or payments)
   deduction: DeductionInfo   // Deduction type and amount used for CA tax calculation
+  owedOrRefund: number       // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
+  effectiveRate: number      // Effective tax rate as percentage
 }
 
 /**
@@ -27,13 +29,17 @@ export interface CaliforniaTaxResult {
  * @param deductionInfo - Deduction type and amount
  * @param filingStatus - Filing status (single or marriedFilingJointly)
  * @param taxYear - Tax year for calculations
+ * @param withholdings - Total California withholdings
+ * @param estimatedPayments - Total estimated payments made
  * @returns California tax calculation result
  */
 export function calculateCaliforniaTax(
   income: number,
   deductionInfo: DeductionInfo,
   filingStatus: FilingStatus,
-  taxYear: TaxYear
+  taxYear: TaxYear,
+  withholdings: number,
+  estimatedPayments: number
 ): CaliforniaTaxResult {
   // Calculate taxable income after deductions
   const taxableIncome = Math.max(0, income - deductionInfo.amount)
@@ -52,12 +58,18 @@ export function calculateCaliforniaTax(
     mentalHealthTax = (taxableIncome - threshold) * rate
   }
   
+  const totalTax = Math.round(baseTax + mentalHealthTax)
+  const owedOrRefund = totalTax - withholdings - estimatedPayments
+  const effectiveRate = income > 0 ? (totalTax / income) * 100 : 0
+  
   return {
     taxableIncome,
     baseTax: Math.round(baseTax),
     mentalHealthTax: Math.round(mentalHealthTax),
-    totalTax: Math.round(baseTax + mentalHealthTax),
-    deduction: deductionInfo
+    totalTax,
+    deduction: deductionInfo,
+    owedOrRefund: Math.round(owedOrRefund),
+    effectiveRate
   }
 }
 
@@ -206,7 +218,7 @@ export function calculateEstimatedCAStateTax(
     amount: standardDeduction
   }
   
-  const caResult = calculateCaliforniaTax(totalIncome, deductionInfo, filingStatus, taxYear)
+  const caResult = calculateCaliforniaTax(totalIncome, deductionInfo, filingStatus, taxYear, 0, 0)
   return caResult.totalTax
 }
 

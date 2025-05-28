@@ -81,8 +81,8 @@ export function Summary({ onPrevious }: SummaryProps) {
     )
   }
 
-  const federalOwed = taxResults.federalOwedOrRefund
-  const caOwed = taxResults.californiaOwedOrRefund || 0
+  const federalOwed = taxResults.federalTax.owedOrRefund
+  const caOwed = taxResults.californiaTax?.owedOrRefund || 0
   
   // Calculate withholdings separately for display
   const userFutureIncome = calculateFutureIncome(userIncome)

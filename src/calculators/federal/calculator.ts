@@ -20,6 +20,8 @@ export interface FederalTaxResult {
   capitalGainsTax: number      // Tax on qualified dividends and long-term capital gains
   totalTax: number             // Total tax liability (before any withholdings or payments)
   deduction: DeductionInfo     // Deduction type and amount used for federal tax calculation
+  owedOrRefund: number         // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
+  effectiveRate: number        // Effective tax rate as percentage
 }
 
 /**
@@ -28,23 +30,29 @@ export interface FederalTaxResult {
  * @param deductionInfo - Deduction type and amount
  * @param filingStatus - Filing status (single or marriedFilingJointly)
  * @param taxYear - Tax year for calculations
+ * @param totalIncome - Total income for effective rate calculation
+ * @param withholdings - Total federal withholdings
+ * @param estimatedPayments - Total estimated payments made
  * @returns Federal tax calculation result
  */
 export function calculateFederalTax(
   income: FederalIncomeBreakdown,
   deductionInfo: DeductionInfo,
   filingStatus: FilingStatus,
-  taxYear: TaxYear
+  taxYear: TaxYear,
+  totalIncome: number,
+  withholdings: number,
+  estimatedPayments: number
 ): FederalTaxResult {
-  // Calculate total income
-  const totalIncome = 
+  // Calculate component income total (for internal calculations)
+  const componentIncome = 
     income.ordinaryIncome + 
     income.qualifiedDividends + 
     income.longTermCapitalGains + 
     income.shortTermCapitalGains
 
   // Calculate taxable income after deductions
-  const taxableIncome = Math.max(0, totalIncome - deductionInfo.amount)
+  const taxableIncome = Math.max(0, componentIncome - deductionInfo.amount)
 
   // Short-term capital gains are taxed as ordinary income
   const ordinaryIncomeForTax = income.ordinaryIncome + income.shortTermCapitalGains
@@ -89,12 +97,18 @@ export function calculateFederalTax(
     }
   }
 
+  const totalTax = Math.round(ordinaryIncomeTax + capitalGainsTax)
+  const owedOrRefund = totalTax - withholdings - estimatedPayments
+  const effectiveRate = totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0
+  
   return {
     taxableIncome,
     ordinaryIncomeTax: Math.round(ordinaryIncomeTax),
     capitalGainsTax: Math.round(capitalGainsTax),
-    totalTax: Math.round(ordinaryIncomeTax + capitalGainsTax),
-    deduction: deductionInfo
+    totalTax,
+    deduction: deductionInfo,
+    owedOrRefund: Math.round(owedOrRefund),
+    effectiveRate
   }
 }
 

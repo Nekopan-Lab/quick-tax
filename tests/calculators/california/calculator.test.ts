@@ -117,7 +117,9 @@ describe('California Tax Calculator', () => {
               testCase.income,
               deductionInfo,
               'single',
-              taxYear
+              taxYear,
+              0, // withholdings
+              0  // estimatedPayments
             )
 
             expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
@@ -148,7 +150,9 @@ describe('California Tax Calculator', () => {
               testCase.income,
               deductionInfo,
               'marriedFilingJointly',
-              taxYear
+              taxYear,
+              0, // withholdings
+              0  // estimatedPayments
             )
 
             expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
@@ -187,7 +191,9 @@ describe('California Tax Calculator', () => {
           incomeAmount,
           deductionInfo,
           'single',
-          year
+          year,
+          0, // withholdings
+          0  // estimatedPayments
         )
 
         // Verify the calculation is the same regardless of income type
@@ -243,7 +249,9 @@ describe('California Tax Calculator', () => {
               testCase.income,
               deductionInfo,
               testCase.filingStatus,
-              year
+              year,
+              0, // withholdings
+              0  // estimatedPayments
             )
 
             expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)

@@ -27,16 +27,10 @@ export interface TaxCalculationResult {
   totalIncome: number
   
   // Federal results
-  federalTax: FederalTaxResult  // Contains total tax liability and breakdown (before any payments)
-  federalOwedOrRefund: number    // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
+  federalTax: FederalTaxResult  // Contains total tax liability, breakdown, owed/refund, and effective rate
   
   // California results (optional)
-  californiaTax?: CaliforniaTaxResult  // Contains total CA tax liability and breakdown (before any payments)
-  californiaOwedOrRefund?: number       // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
-  
-  // Other info
-  federalEffectiveRate: number
-  californiaEffectiveRate?: number
+  californiaTax?: CaliforniaTaxResult  // Contains total CA tax liability, breakdown, owed/refund, and effective rate
 }
 
 export interface ItemizedDeductionDetails {
@@ -133,14 +127,6 @@ export function calculateComprehensiveTax(
     amount: deductionAmount
   }
 
-  // Calculate federal tax
-  const federalResult = calculateFederalTax(
-    federalIncomeBreakdown,
-    federalDeductionInfo,
-    filingStatus,
-    taxYear
-  )
-
   // Calculate federal withholdings and payments
   const federalWithholdings = userAgg.totalWithholdings.federal + spouseAgg.totalWithholdings.federal
   const federalEstimatedPaid = 
@@ -149,14 +135,19 @@ export function calculateComprehensiveTax(
     (parseFloat(estimatedPayments.federalQ3) || 0) +
     (parseFloat(estimatedPayments.federalQ4) || 0)
 
-  // Calculate final amount owed or refunded
-  // Positive = still owe taxes, Negative = getting a refund
-  const federalOwedOrRefund = federalResult.totalTax - federalWithholdings - federalEstimatedPaid
+  // Calculate federal tax
+  const federalResult = calculateFederalTax(
+    federalIncomeBreakdown,
+    federalDeductionInfo,
+    filingStatus,
+    taxYear,
+    totalIncome,
+    federalWithholdings,
+    federalEstimatedPaid
+  )
 
   // Initialize California results
   let californiaResult = undefined
-  let californiaOwedOrRefund = undefined
-  let californiaEffectiveRate = undefined
 
   if (includeCaliforniaTax) {
     // Calculate California deductions
@@ -171,14 +162,6 @@ export function calculateComprehensiveTax(
       amount: caDeductionAmount
     }
 
-    // Calculate California tax
-    californiaResult = calculateCaliforniaTax(
-      totalIncome,
-      caDeductionInfo,
-      filingStatus,
-      taxYear
-    )
-
     // Calculate California withholdings
     const californiaWithholdings = calculateCaliforniaWithholdings(
       userAgg.totalWithholdings,
@@ -190,19 +173,22 @@ export function calculateComprehensiveTax(
       (parseFloat(estimatedPayments.californiaQ2) || 0) +
       (parseFloat(estimatedPayments.californiaQ4) || 0)
 
-    // Calculate final CA amount owed or refunded (same logic as federal)
-    californiaOwedOrRefund = californiaResult.totalTax - californiaWithholdings - californiaEstimatedPaid
-    californiaEffectiveRate = totalIncome > 0 ? (californiaResult.totalTax / totalIncome) * 100 : 0
+    // Calculate California tax
+    californiaResult = calculateCaliforniaTax(
+      totalIncome,
+      caDeductionInfo,
+      filingStatus,
+      taxYear,
+      californiaWithholdings,
+      californiaEstimatedPaid
+    )
+
   }
 
   return {
     totalIncome: Math.round(totalIncome),
     federalTax: federalResult,
-    federalOwedOrRefund: Math.round(federalOwedOrRefund),
-    californiaTax: californiaResult,
-    californiaOwedOrRefund: californiaOwedOrRefund !== undefined ? Math.round(californiaOwedOrRefund) : undefined,
-    federalEffectiveRate: totalIncome > 0 ? (federalResult.totalTax / totalIncome) * 100 : 0,
-    californiaEffectiveRate
+    californiaTax: californiaResult
   }
 }
 
