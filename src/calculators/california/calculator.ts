@@ -129,21 +129,8 @@ export interface CaliforniaItemizedDeductionDetails {
 export function calculateCaliforniaItemizedDeductions(
   deductions: DeductionsData
 ): number {
-  const propertyTax = parseFloat(deductions.propertyTax) || 0
-  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
-  const donations = parseFloat(deductions.donations) || 0
-  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
-  
-  // California doesn't have SALT cap for property tax
-  // Note: CA state income tax cannot be deducted on CA return
-  
-  // Calculate mortgage interest deduction with CA's $1M limit
-  let deductibleMortgageInterest = mortgageInterest
-  if (mortgageBalance > 1000000) {
-    deductibleMortgageInterest = mortgageInterest * (1000000 / mortgageBalance)
-  }
-  
-  return propertyTax + deductibleMortgageInterest + donations
+  const details = calculateCaliforniaItemizedDeductionDetails(deductions)
+  return details.total
 }
 
 /**

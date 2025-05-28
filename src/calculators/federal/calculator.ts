@@ -214,29 +214,12 @@ export function calculateFederalItemizedDeductions(
   estimatedCAStateTax: number,
   includeCaliforniaTax: boolean
 ): number {
-  const propertyTax = parseFloat(deductions.propertyTax) || 0
-  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
-  const donations = parseFloat(deductions.donations) || 0
-  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
-  
-  // Calculate state income tax for SALT
-  const stateIncomeTax = includeCaliforniaTax 
-    ? estimatedCAStateTax
-    : parseFloat(deductions.otherStateIncomeTax) || 0
-  
-  // Apply SALT cap ($10,000 for both single and married filing jointly)
-  const saltDeduction = Math.min(propertyTax + stateIncomeTax, 10000)
-  
-  // Calculate mortgage interest deduction with limits
-  let deductibleMortgageInterest = mortgageInterest
-  if (mortgageBalance > 0 && deductions.mortgageLoanDate) {
-    const mortgageLimit = deductions.mortgageLoanDate === 'before-dec-16-2017' ? 1000000 : 750000
-    if (mortgageBalance > mortgageLimit) {
-      deductibleMortgageInterest = mortgageInterest * (mortgageLimit / mortgageBalance)
-    }
-  }
-  
-  return saltDeduction + deductibleMortgageInterest + donations
+  const details = calculateFederalItemizedDeductionDetails(
+    deductions,
+    estimatedCAStateTax,
+    includeCaliforniaTax
+  )
+  return details.total
 }
 
 /**
