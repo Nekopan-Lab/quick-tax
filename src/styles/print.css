@@ -1,4 +1,4 @@
-/* Print-specific styles for Summary page */
+/* Print-specific styles for Summary page - optimized for letter size */
 @media print {
   /* Hide navigation and non-essential elements */
   header,
