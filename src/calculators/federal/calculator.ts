@@ -1,4 +1,4 @@
-import { FilingStatus } from '@/types'
+import { FilingStatus, DeductionInfo } from '@/types'
 import { 
   TaxYear,
   getFederalTaxBrackets,
@@ -19,19 +19,20 @@ export interface FederalTaxResult {
   ordinaryIncomeTax: number    // Tax on wages, interest, non-qualified dividends, short-term gains
   capitalGainsTax: number      // Tax on qualified dividends and long-term capital gains
   totalTax: number             // Total tax liability (before any withholdings or payments)
+  deduction: DeductionInfo     // Deduction type and amount used for federal tax calculation
 }
 
 /**
  * Calculate federal income tax based on income breakdown and deductions
  * @param income - Breakdown of different income types
- * @param deductions - Total deduction amount (standard or itemized)
+ * @param deductionInfo - Deduction type and amount
  * @param filingStatus - Filing status (single or marriedFilingJointly)
  * @param taxYear - Tax year for calculations
  * @returns Federal tax calculation result
  */
 export function calculateFederalTax(
   income: FederalIncomeBreakdown,
-  deductions: number,
+  deductionInfo: DeductionInfo,
   filingStatus: FilingStatus,
   taxYear: TaxYear
 ): FederalTaxResult {
@@ -43,13 +44,13 @@ export function calculateFederalTax(
     income.shortTermCapitalGains
 
   // Calculate taxable income after deductions
-  const taxableIncome = Math.max(0, totalIncome - deductions)
+  const taxableIncome = Math.max(0, totalIncome - deductionInfo.amount)
 
   // Short-term capital gains are taxed as ordinary income
   const ordinaryIncomeForTax = income.ordinaryIncome + income.shortTermCapitalGains
   
   // Calculate ordinary taxable income (excluding qualified dividends and LTCG)
-  const ordinaryTaxableIncome = Math.max(0, ordinaryIncomeForTax - deductions)
+  const ordinaryTaxableIncome = Math.max(0, ordinaryIncomeForTax - deductionInfo.amount)
   
   // Calculate tax on ordinary income
   const ordinaryIncomeTax = calculateProgressiveTax(
@@ -59,8 +60,8 @@ export function calculateFederalTax(
 
   // Calculate capital gains and qualified dividends tax
   // First, we need to determine how much of the deduction has been used by ordinary income
-  const deductionUsedByOrdinary = Math.min(deductions, ordinaryIncomeForTax)
-  const remainingDeduction = deductions - deductionUsedByOrdinary
+  const deductionUsedByOrdinary = Math.min(deductionInfo.amount, ordinaryIncomeForTax)
+  const remainingDeduction = deductionInfo.amount - deductionUsedByOrdinary
   
   // Apply remaining deduction to capital gains and qualified dividends
   const capitalGainsAndDividends = income.qualifiedDividends + income.longTermCapitalGains
@@ -92,7 +93,8 @@ export function calculateFederalTax(
     taxableIncome,
     ordinaryIncomeTax: Math.round(ordinaryIncomeTax),
     capitalGainsTax: Math.round(capitalGainsTax),
-    totalTax: Math.round(ordinaryIncomeTax + capitalGainsTax)
+    totalTax: Math.round(ordinaryIncomeTax + capitalGainsTax),
+    deduction: deductionInfo
   }
 }
 

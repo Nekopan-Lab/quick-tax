@@ -1,4 +1,4 @@
-import { FilingStatus } from '@/types'
+import { FilingStatus, DeductionInfo } from '@/types'
 import { TaxYear } from '../federal/constants'
 import { 
   getCaliforniaTaxBrackets,
@@ -13,29 +13,30 @@ export interface CaliforniaIncomeBreakdown {
 }
 
 export interface CaliforniaTaxResult {
-  taxableIncome: number
-  baseTax: number
-  mentalHealthTax: number
-  totalTax: number
+  taxableIncome: number      // Income after deductions
+  baseTax: number            // Tax calculated from standard brackets
+  mentalHealthTax: number    // Additional 1% tax on income over $1M
+  totalTax: number           // Total tax liability (before any withholdings or payments)
+  deduction: DeductionInfo   // Deduction type and amount used for CA tax calculation
 }
 
 /**
  * Calculate California income tax
  * California treats all income types (wages, dividends, capital gains) the same
  * @param income - Total income amount
- * @param deductions - Total deduction amount (standard or itemized)
+ * @param deductionInfo - Deduction type and amount
  * @param filingStatus - Filing status (single or marriedFilingJointly)
  * @param taxYear - Tax year for calculations
  * @returns California tax calculation result
  */
 export function calculateCaliforniaTax(
   income: number,
-  deductions: number,
+  deductionInfo: DeductionInfo,
   filingStatus: FilingStatus,
   taxYear: TaxYear
 ): CaliforniaTaxResult {
   // Calculate taxable income after deductions
-  const taxableIncome = Math.max(0, income - deductions)
+  const taxableIncome = Math.max(0, income - deductionInfo.amount)
   
   // Calculate base California tax using progressive brackets
   const baseTax = calculateProgressiveTax(
@@ -55,7 +56,8 @@ export function calculateCaliforniaTax(
     taxableIncome,
     baseTax: Math.round(baseTax),
     mentalHealthTax: Math.round(mentalHealthTax),
-    totalTax: Math.round(baseTax + mentalHealthTax)
+    totalTax: Math.round(baseTax + mentalHealthTax),
+    deduction: deductionInfo
   }
 }
 
@@ -199,8 +201,12 @@ export function calculateEstimatedCAStateTax(
 ): number {
   // Simplified CA tax calculation for SALT estimation
   const standardDeduction = getCaliforniaStandardDeduction(taxYear, filingStatus)
+  const deductionInfo: DeductionInfo = {
+    type: 'standard',
+    amount: standardDeduction
+  }
   
-  const caResult = calculateCaliforniaTax(totalIncome, standardDeduction, filingStatus, taxYear)
+  const caResult = calculateCaliforniaTax(totalIncome, deductionInfo, filingStatus, taxYear)
   return caResult.totalTax
 }
 

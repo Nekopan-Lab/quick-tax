@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { calculateCaliforniaTax, getCaliforniaStandardDeduction } from '@/calculators/california/calculator'
-import { FilingStatus, TaxYear } from '@/types'
+import { FilingStatus, TaxYear, DeductionInfo } from '@/types'
 
 // Test data for different tax years
 const CA_TAX_YEAR_DATA = {
@@ -109,9 +109,13 @@ describe('California Tax Calculator', () => {
       describe('Single Filer', () => {
         yearData.singleTaxTests.forEach((testCase) => {
           it(`should calculate tax correctly for ${testCase.name}`, () => {
+            const deductionInfo: DeductionInfo = {
+              type: 'standard',
+              amount: standardDeductionSingle
+            }
             const result = calculateCaliforniaTax(
               testCase.income,
-              standardDeductionSingle,
+              deductionInfo,
               'single',
               taxYear
             )
@@ -136,9 +140,13 @@ describe('California Tax Calculator', () => {
       describe('Married Filing Jointly', () => {
         yearData.marriedTaxTests.forEach((testCase) => {
           it(`should calculate tax correctly for ${testCase.name}`, () => {
+            const deductionInfo: DeductionInfo = {
+              type: 'standard',
+              amount: standardDeductionMarried
+            }
             const result = calculateCaliforniaTax(
               testCase.income,
-              standardDeductionMarried,
+              deductionInfo,
               'marriedFilingJointly',
               taxYear
             )
@@ -171,9 +179,13 @@ describe('California Tax Calculator', () => {
         const incomeAmount = 100000
         const deduction = CA_TAX_YEAR_DATA[year].standardDeductions.single
         
+        const deductionInfo: DeductionInfo = {
+          type: 'standard',
+          amount: deduction
+        }
         const result = calculateCaliforniaTax(
           incomeAmount,
-          deduction,
+          deductionInfo,
           'single',
           year
         )
@@ -223,9 +235,13 @@ describe('California Tax Calculator', () => {
       describe(`${year} Edge Cases`, () => {
         edgeCases.forEach((testCase) => {
           it(`should handle ${testCase.name}`, () => {
+            const deductionInfo: DeductionInfo = {
+              type: testCase.deduction > 11080 ? 'itemized' : 'standard',
+              amount: testCase.deduction
+            }
             const result = calculateCaliforniaTax(
               testCase.income,
-              testCase.deduction,
+              deductionInfo,
               testCase.filingStatus,
               year
             )

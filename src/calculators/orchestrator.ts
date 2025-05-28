@@ -1,4 +1,4 @@
-import { TaxYear, FilingStatus } from '../types'
+import { TaxYear, FilingStatus, DeductionInfo } from '../types'
 import { 
   calculateFederalTax, 
   getFederalStandardDeduction,
@@ -17,7 +17,8 @@ import {
   calculateCaliforniaEstimatedPayments,
   calculateEstimatedCAStateTax,
   calculateCaliforniaWithholdings,
-  type IncomeData
+  type IncomeData,
+  type CaliforniaTaxResult
 } from './california/calculator'
 import { aggregateIndividualIncome } from './utils/income'
 
@@ -30,16 +31,8 @@ export interface TaxCalculationResult {
   federalOwedOrRefund: number    // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
   
   // California results (optional)
-  californiaTax?: {
-    baseTax: number
-    mentalHealthTax: number
-    totalTax: number             // Total CA tax liability (before any payments)
-  }
-  californiaOwedOrRefund?: number // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
-  
-  // Deduction info
-  deductionType: 'standard' | 'itemized'
-  deductionAmount: number
+  californiaTax?: CaliforniaTaxResult  // Contains total CA tax liability and breakdown (before any payments)
+  californiaOwedOrRefund?: number       // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
   
   // Other info
   federalEffectiveRate: number
@@ -133,11 +126,17 @@ export function calculateComprehensiveTax(
   
   const useItemized = itemizedDeduction > standardDeduction
   const deductionAmount = useItemized ? itemizedDeduction : standardDeduction
+  
+  // Create DeductionInfo object for federal tax calculation
+  const federalDeductionInfo: DeductionInfo = {
+    type: useItemized ? 'itemized' : 'standard',
+    amount: deductionAmount
+  }
 
   // Calculate federal tax
   const federalResult = calculateFederalTax(
     federalIncomeBreakdown,
-    deductionAmount,
+    federalDeductionInfo,
     filingStatus,
     taxYear
   )
@@ -163,12 +162,19 @@ export function calculateComprehensiveTax(
     // Calculate California deductions
     const caStandardDeduction = getCaliforniaStandardDeduction(taxYear, filingStatus)
     const caItemizedDeduction = calculateCaliforniaItemizedDeductions(deductions)
-    const caDeductionAmount = Math.max(caStandardDeduction, caItemizedDeduction)
+    const caUseItemized = caItemizedDeduction > caStandardDeduction
+    const caDeductionAmount = caUseItemized ? caItemizedDeduction : caStandardDeduction
+    
+    // Create DeductionInfo object for California tax calculation
+    const caDeductionInfo: DeductionInfo = {
+      type: caUseItemized ? 'itemized' : 'standard',
+      amount: caDeductionAmount
+    }
 
     // Calculate California tax
     californiaResult = calculateCaliforniaTax(
       totalIncome,
-      caDeductionAmount,
+      caDeductionInfo,
       filingStatus,
       taxYear
     )
@@ -195,8 +201,6 @@ export function calculateComprehensiveTax(
     federalOwedOrRefund: Math.round(federalOwedOrRefund),
     californiaTax: californiaResult,
     californiaOwedOrRefund: californiaOwedOrRefund !== undefined ? Math.round(californiaOwedOrRefund) : undefined,
-    deductionType: useItemized ? 'itemized' : 'standard',
-    deductionAmount: Math.round(deductionAmount),
     federalEffectiveRate: totalIncome > 0 ? (federalResult.totalTax / totalIncome) * 100 : 0,
     californiaEffectiveRate
   }

@@ -4,14 +4,12 @@ import {
   calculateComprehensiveTax,
   calculateCaliforniaWithholdings,
   calculateFederalEstimatedPayments,
-  calculateCaliforniaEstimatedPayments,
-  calculateCaliforniaItemizedDeductions
+  calculateCaliforniaEstimatedPayments
 } from '../../calculators/orchestrator'
 import { calculateFutureIncome } from '../../calculators/utils/income'
 import { TaxYear } from '../../types'
 import { getFederalTaxBrackets, getFederalCapitalGainsBrackets } from '../../calculators/federal/constants'
 import { getCaliforniaTaxBrackets } from '../../calculators/california/constants'
-import { getCaliforniaStandardDeduction } from '../../calculators/california/calculator'
 
 interface SummaryProps {
   onPrevious: () => void
@@ -59,7 +57,7 @@ export function Summary({ onPrevious }: SummaryProps) {
   )
   
   // Calculate taxable income (totalIncome - deductions)
-  const taxableIncome = taxResults ? taxResults.totalIncome - taxResults.deductionAmount : 0
+  const taxableIncome = taxResults ? taxResults.federalTax.taxableIncome : 0
 
   // Show message if calculations can't be performed
   if (!taxResults) {
@@ -245,7 +243,7 @@ export function Summary({ onPrevious }: SummaryProps) {
                         
                         const totalOrdinaryIncome = wages + nonQualifiedDividends + interestIncome + 
                           Math.max(0, shortTermGains) + capitalLossDeduction
-                        const ordinaryTaxableIncome = Math.max(0, totalOrdinaryIncome - taxResults.deductionAmount)
+                        const ordinaryTaxableIncome = Math.max(0, totalOrdinaryIncome - taxResults.federalTax.deduction.amount)
                         
                         let remainingIncome = ordinaryTaxableIncome
                         let cumulativeTax = 0
@@ -304,8 +302,8 @@ export function Summary({ onPrevious }: SummaryProps) {
                                   <span>${totalOrdinaryIncome.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Less: {taxResults.deductionType === 'standard' ? 'Standard' : 'Itemized'} deduction</span>
-                                  <span>-${taxResults.deductionAmount.toLocaleString()}</span>
+                                  <span>Less: {taxResults.federalTax.deduction.type === 'standard' ? 'Standard' : 'Itemized'} deduction</span>
+                                  <span>-${taxResults.federalTax.deduction.amount.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between font-medium">
                                   <span>Ordinary taxable income</span>
@@ -510,9 +508,7 @@ export function Summary({ onPrevious }: SummaryProps) {
                       <div className="space-y-2 text-xs">
                         {(() => {
                           const brackets = getCaliforniaTaxBrackets(taxYear as TaxYear, filingStatus!)
-                          const caDeduction = taxResults.deductionType === 'standard' ? 
-                            getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus!) :
-                            calculateCaliforniaItemizedDeductions(deductions)
+                          const caDeduction = taxResults.californiaTax!.deduction.amount
                           const caTaxableIncome = Math.max(0, taxResults.totalIncome - caDeduction)
                           let remainingIncome = caTaxableIncome
                           let cumulativeTax = 0
@@ -527,7 +523,7 @@ export function Summary({ onPrevious }: SummaryProps) {
                                     <span>${taxResults.totalIncome.toLocaleString()}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span>Less: {taxResults.deductionType === 'standard' ? 'Standard' : 'Itemized'} deduction</span>
+                                    <span>Less: {taxResults.californiaTax!.deduction.type === 'standard' ? 'Standard' : 'Itemized'} deduction</span>
                                     <span>-${caDeduction.toLocaleString()}</span>
                                   </div>
                                   <div className="flex justify-between font-medium pt-1 border-t">
@@ -592,28 +588,11 @@ export function Summary({ onPrevious }: SummaryProps) {
                       <div className="mt-2 ml-4 p-3 bg-gray-50 rounded-md">
                         <h5 className="font-medium text-sm mb-2">Mental Health Tax Calculation</h5>
                         <div className="text-xs space-y-1">
-                          <div>California taxable income: ${(() => {
-                            const caDeduction = taxResults.deductionType === 'standard' ? 
-                              getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus!) :
-                              calculateCaliforniaItemizedDeductions(deductions)
-                            return Math.max(0, taxResults.totalIncome - caDeduction).toLocaleString()
-                          })()}</div>
+                          <div>California taxable income: ${taxResults.californiaTax!.taxableIncome.toLocaleString()}</div>
                           <div>Mental health tax threshold: $1,000,000</div>
-                          <div>Amount over threshold: ${(() => {
-                            const caDeduction = taxResults.deductionType === 'standard' ? 
-                              getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus!) :
-                              calculateCaliforniaItemizedDeductions(deductions)
-                            const caTaxableIncome = Math.max(0, taxResults.totalIncome - caDeduction)
-                            return Math.max(0, caTaxableIncome - 1000000).toLocaleString()
-                          })()}</div>
+                          <div>Amount over threshold: ${Math.max(0, taxResults.californiaTax!.taxableIncome - 1000000).toLocaleString()}</div>
                           <div className="pt-1 border-t">
-                            <span className="font-medium">Tax: 1% × ${(() => {
-                              const caDeduction = taxResults.deductionType === 'standard' ? 
-                                getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus!) :
-                                calculateCaliforniaItemizedDeductions(deductions)
-                              const caTaxableIncome = Math.max(0, taxResults.totalIncome - caDeduction)
-                              return Math.max(0, caTaxableIncome - 1000000).toLocaleString()
-                            })()} = ${taxResults.californiaTax.mentalHealthTax.toLocaleString()}</span>
+                            <span className="font-medium">Tax: 1% × ${Math.max(0, taxResults.californiaTax!.taxableIncome - 1000000).toLocaleString()} = ${taxResults.californiaTax!.mentalHealthTax.toLocaleString()}</span>
                           </div>
                         </div>
                       </div>

@@ -21,5 +21,10 @@ export interface W2Income {
   stateWithhold: number
 }
 
+export interface DeductionInfo {
+  type: 'standard' | 'itemized'
+  amount: number
+}
+
 // Note: TaxCalculationResult interface is defined in utils/taxCalculations.ts
 // as it's only used there and has a more complex structure
