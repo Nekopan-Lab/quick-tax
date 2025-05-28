@@ -34,10 +34,23 @@ This directory contains the iOS wrapper application for QuickTax. The app uses a
    - Go to "Signing & Capabilities"
    - Select your development team
    - Xcode will automatically manage provisioning profiles
+   - Your team ID will be saved locally (not committed to git)
 
 4. Build and run:
    - Select your target device (simulator or physical device)
    - Press Cmd+R or click the Run button
+
+### Development Team Privacy
+
+The project uses Git filters to keep your Apple Development Team ID private:
+- Team IDs are automatically stripped when committing
+- Your local team ID is stored in `ios/.xcode-config` (gitignored)
+- The filters automatically restore your team ID when checking out
+
+If you need to manually set your team ID:
+```bash
+echo "XCODE_DEVELOPMENT_TEAM=YOUR_TEAM_ID" > ios/.xcode-config
+```
 
 ## Development Workflow
 

@@ -56,3 +56,6 @@ fastlane/test_output
 # Synced Web Resources (except .gitkeep)
 QuickTax/QuickTax/WebResources/*
 !QuickTax/QuickTax/WebResources/.gitkeep
+
+# Local Xcode configuration
+.xcode-config
