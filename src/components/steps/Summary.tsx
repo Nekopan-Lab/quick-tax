@@ -1,24 +1,23 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { 
-  calculateComprehensiveTax,
   calculateCaliforniaWithholdings,
   calculateFederalEstimatedPayments,
-  calculateCaliforniaEstimatedPayments
+  calculateCaliforniaEstimatedPayments,
+  TaxCalculationResult
 } from '../../calculators/orchestrator'
 import { calculateFutureIncome } from '../../calculators/utils/income'
-import { TaxYear } from '../../types'
 
 interface SummaryProps {
   onPrevious: () => void
+  taxResults: TaxCalculationResult | null
 }
 
-export function Summary({ onPrevious }: SummaryProps) {
+export function Summary({ onPrevious, taxResults }: SummaryProps) {
   const { 
     taxYear,
     filingStatus,
     includeCaliforniaTax,
-    deductions,
     userIncome,
     spouseIncome,
     estimatedPayments
@@ -43,16 +42,6 @@ export function Summary({ onPrevious }: SummaryProps) {
     }))
   }
 
-  // Calculate real tax data
-  const taxResults = calculateComprehensiveTax(
-    taxYear as TaxYear,
-    filingStatus,
-    includeCaliforniaTax,
-    deductions,
-    userIncome,
-    spouseIncome,
-    estimatedPayments
-  )
   
   // Calculate taxable income (totalIncome - deductions)
   const taxableIncome = taxResults ? taxResults.federalTax.taxableIncome : 0

@@ -92,7 +92,7 @@ function App() {
       case 4:
         return <EstimatedPayments onNext={handleNext} onPrevious={handlePrevious} />
       case 5:
-        return <Summary onPrevious={handlePrevious} />
+        return <Summary onPrevious={handlePrevious} taxResults={taxResults} />
       default:
         return null
     }
