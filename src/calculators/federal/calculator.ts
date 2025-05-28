@@ -5,13 +5,30 @@ import {
   getFederalStandardDeduction,
   getFederalCapitalGainsBrackets
 } from './constants'
-import { calculateProgressiveTax } from '../utils/taxBrackets'
+import { calculateProgressiveTaxWithDetails, TaxBracketDetail } from '../utils/taxBrackets'
 
 export interface FederalIncomeBreakdown {
   ordinaryIncome: number
   qualifiedDividends: number
   longTermCapitalGains: number
   shortTermCapitalGains: number
+  // Additional detail for income components
+  wages: number
+  interestIncome: number
+  ordinaryDividends: number
+  capitalLossDeduction: number
+}
+
+export interface FederalIncomeComponents {
+  wages: number
+  nonQualifiedDividends: number
+  interestIncome: number
+  shortTermGains: number
+  longTermGains: number
+  qualifiedDividends: number
+  capitalLossDeduction: number
+  totalOrdinaryIncome: number
+  ordinaryTaxableIncome: number
 }
 
 export interface FederalTaxResult {
@@ -22,6 +39,9 @@ export interface FederalTaxResult {
   deduction: DeductionInfo     // Deduction type and amount used for federal tax calculation
   owedOrRefund: number         // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
   effectiveRate: number        // Effective tax rate as percentage
+  incomeComponents: FederalIncomeComponents  // Breakdown of income components
+  ordinaryTaxBrackets: TaxBracketDetail[]    // Detailed bracket calculations for ordinary income
+  capitalGainsBrackets: TaxBracketDetail[]   // Detailed bracket calculations for capital gains
 }
 
 /**
@@ -60,8 +80,8 @@ export function calculateFederalTax(
   // Calculate ordinary taxable income (excluding qualified dividends and LTCG)
   const ordinaryTaxableIncome = Math.max(0, ordinaryIncomeForTax - deductionInfo.amount)
   
-  // Calculate tax on ordinary income
-  const ordinaryIncomeTax = calculateProgressiveTax(
+  // Calculate tax on ordinary income with bracket details
+  const ordinaryTaxResult = calculateProgressiveTaxWithDetails(
     ordinaryTaxableIncome,
     getFederalTaxBrackets(taxYear, filingStatus)
   )
@@ -78,6 +98,7 @@ export function calculateFederalTax(
   // For capital gains tax calculation, we need to consider the stack on top of ordinary income
   // The capital gains rate depends on total taxable income
   let capitalGainsTax = 0
+  const capitalGainsBrackets: TaxBracketDetail[] = []
   
   if (taxableCapitalGainsAndDividends > 0) {
     const brackets = getFederalCapitalGainsBrackets(taxYear, filingStatus)
@@ -91,24 +112,52 @@ export function calculateFederalTax(
       const roomInBracket = Math.max(0, bracket.max - currentIncome)
       const taxableInThisBracket = Math.min(remainingCapGains, roomInBracket)
       
-      capitalGainsTax += taxableInThisBracket * bracket.rate
+      if (taxableInThisBracket > 0) {
+        const taxForBracket = taxableInThisBracket * bracket.rate
+        capitalGainsTax += taxForBracket
+        
+        capitalGainsBrackets.push({
+          bracket: { min: bracket.min, max: bracket.max, rate: bracket.rate },
+          taxableInBracket: taxableInThisBracket,
+          taxForBracket: Math.round(taxForBracket)
+        })
+      }
+      
       remainingCapGains -= taxableInThisBracket
       currentIncome += taxableInThisBracket
     }
   }
 
-  const totalTax = Math.round(ordinaryIncomeTax + capitalGainsTax)
+  const totalTax = Math.round(ordinaryTaxResult.totalTax + capitalGainsTax)
   const owedOrRefund = totalTax - withholdings - estimatedPayments
   const effectiveRate = totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0
   
+  // Compute income components using the detailed breakdown
+  const nonQualifiedDividends = income.ordinaryDividends - income.qualifiedDividends
+  
+  const incomeComponents: FederalIncomeComponents = {
+    wages: income.wages,
+    nonQualifiedDividends,
+    interestIncome: income.interestIncome,
+    shortTermGains: income.shortTermCapitalGains,
+    longTermGains: income.longTermCapitalGains,
+    qualifiedDividends: income.qualifiedDividends,
+    capitalLossDeduction: income.capitalLossDeduction,
+    totalOrdinaryIncome: income.ordinaryIncome + income.shortTermCapitalGains,
+    ordinaryTaxableIncome
+  }
+  
   return {
     taxableIncome,
-    ordinaryIncomeTax: Math.round(ordinaryIncomeTax),
+    ordinaryIncomeTax: Math.round(ordinaryTaxResult.totalTax),
     capitalGainsTax: Math.round(capitalGainsTax),
     totalTax,
     deduction: deductionInfo,
     owedOrRefund: Math.round(owedOrRefund),
-    effectiveRate
+    effectiveRate,
+    incomeComponents,
+    ordinaryTaxBrackets: ordinaryTaxResult.bracketDetails,
+    capitalGainsBrackets
   }
 }
 

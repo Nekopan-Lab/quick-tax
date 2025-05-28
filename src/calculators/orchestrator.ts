@@ -90,7 +90,12 @@ export function calculateComprehensiveTax(
                     capitalLossDeduction, // Apply capital loss limit
     qualifiedDividends: totalInvestmentIncome.qualifiedDividends,
     longTermCapitalGains: Math.max(0, totalInvestmentIncome.longTermGains), // Only positive LTCG
-    shortTermCapitalGains: Math.max(0, totalInvestmentIncome.shortTermGains) // Only positive STCG
+    shortTermCapitalGains: Math.max(0, totalInvestmentIncome.shortTermGains), // Only positive STCG
+    // Additional detail fields
+    wages: userAgg.wageIncome + spouseAgg.wageIncome,
+    interestIncome: totalInvestmentIncome.interestIncome,
+    ordinaryDividends: totalInvestmentIncome.ordinaryDividends,
+    capitalLossDeduction
   }
 
   // Calculate estimated CA state tax for SALT deduction if needed

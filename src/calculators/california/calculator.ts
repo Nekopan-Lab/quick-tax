@@ -6,7 +6,7 @@ import {
   getCaliforniaMentalHealthTaxThreshold,
   getCaliforniaMentalHealthTaxRate
 } from './constants'
-import { calculateProgressiveTax } from '../utils/taxBrackets'
+import { calculateProgressiveTaxWithDetails, TaxBracketDetail } from '../utils/taxBrackets'
 
 export interface CaliforniaIncomeBreakdown {
   totalIncome: number // California taxes all income types the same
@@ -20,6 +20,7 @@ export interface CaliforniaTaxResult {
   deduction: DeductionInfo   // Deduction type and amount used for CA tax calculation
   owedOrRefund: number       // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
   effectiveRate: number      // Effective tax rate as percentage
+  taxBrackets: TaxBracketDetail[]  // Detailed bracket calculations
 }
 
 /**
@@ -44,8 +45,8 @@ export function calculateCaliforniaTax(
   // Calculate taxable income after deductions
   const taxableIncome = Math.max(0, income - deductionInfo.amount)
   
-  // Calculate base California tax using progressive brackets
-  const baseTax = calculateProgressiveTax(
+  // Calculate base California tax using progressive brackets with details
+  const taxResult = calculateProgressiveTaxWithDetails(
     taxableIncome,
     getCaliforniaTaxBrackets(taxYear, filingStatus)
   )
@@ -58,18 +59,19 @@ export function calculateCaliforniaTax(
     mentalHealthTax = (taxableIncome - threshold) * rate
   }
   
-  const totalTax = Math.round(baseTax + mentalHealthTax)
+  const totalTax = Math.round(taxResult.totalTax + mentalHealthTax)
   const owedOrRefund = totalTax - withholdings - estimatedPayments
   const effectiveRate = income > 0 ? (totalTax / income) * 100 : 0
   
   return {
     taxableIncome,
-    baseTax: Math.round(baseTax),
+    baseTax: Math.round(taxResult.totalTax),
     mentalHealthTax: Math.round(mentalHealthTax),
     totalTax,
     deduction: deductionInfo,
     owedOrRefund: Math.round(owedOrRefund),
-    effectiveRate
+    effectiveRate,
+    taxBrackets: taxResult.bracketDetails
   }
 }
 

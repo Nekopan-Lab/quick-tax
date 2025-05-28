@@ -8,8 +8,6 @@ import {
 } from '../../calculators/orchestrator'
 import { calculateFutureIncome } from '../../calculators/utils/income'
 import { TaxYear } from '../../types'
-import { getFederalTaxBrackets, getFederalCapitalGainsBrackets } from '../../calculators/federal/constants'
-import { getCaliforniaTaxBrackets } from '../../calculators/california/constants'
 
 interface SummaryProps {
   onPrevious: () => void
@@ -221,32 +219,13 @@ export function Summary({ onPrevious }: SummaryProps) {
                     <h5 className="font-medium text-sm mb-2">Ordinary Income Tax Calculation</h5>
                     <div className="space-y-2 text-xs">
                       {(() => {
-                        const brackets = getFederalTaxBrackets(taxYear as TaxYear, filingStatus!)
+                        const incomeComponents = taxResults.federalTax.incomeComponents
                         
-                        // Calculate wages using the same logic as the main calculation
+                        // Calculate YTD and future wages for display breakdown
                         const userYtdWage = parseFloat(userIncome.ytdWage) || 0
                         const spouseYtdWage = parseFloat(spouseIncome.ytdWage) || 0
                         const userFutureIncome = calculateFutureIncome(userIncome)
                         const spouseFutureIncome = calculateFutureIncome(spouseIncome)
-                        const userTotalWage = userYtdWage + userFutureIncome.totalWage
-                        const spouseTotalWage = spouseYtdWage + spouseFutureIncome.totalWage
-                        const wages = userTotalWage + spouseTotalWage
-                        
-                        const ordinaryDividends = (parseFloat(userIncome.ordinaryDividends) || 0) + (parseFloat(spouseIncome.ordinaryDividends) || 0)
-                        const qualifiedDividends = (parseFloat(userIncome.qualifiedDividends) || 0) + (parseFloat(spouseIncome.qualifiedDividends) || 0)
-                        const nonQualifiedDividends = Math.max(0, ordinaryDividends - qualifiedDividends)
-                        const interestIncome = (parseFloat(userIncome.interestIncome) || 0) + (parseFloat(spouseIncome.interestIncome) || 0)
-                        const shortTermGains = (parseFloat(userIncome.shortTermGains) || 0) + (parseFloat(spouseIncome.shortTermGains) || 0)
-                        const longTermGains = (parseFloat(userIncome.longTermGains) || 0) + (parseFloat(spouseIncome.longTermGains) || 0)
-                        const netCapitalGains = shortTermGains + longTermGains
-                        const capitalLossDeduction = netCapitalGains < 0 ? Math.max(netCapitalGains, -3000) : 0
-                        
-                        const totalOrdinaryIncome = wages + nonQualifiedDividends + interestIncome + 
-                          Math.max(0, shortTermGains) + capitalLossDeduction
-                        const ordinaryTaxableIncome = Math.max(0, totalOrdinaryIncome - taxResults.federalTax.deduction.amount)
-                        
-                        let remainingIncome = ordinaryTaxableIncome
-                        let cumulativeTax = 0
                         
                         return (
                           <>
@@ -255,7 +234,7 @@ export function Summary({ onPrevious }: SummaryProps) {
                               <div className="space-y-1 text-gray-600">
                                 <div className="flex justify-between">
                                   <span>Wages (YTD + Future)</span>
-                                  <span>${wages.toLocaleString()}</span>
+                                  <span>${incomeComponents.wages.toLocaleString()}</span>
                                 </div>
                                 {(userYtdWage > 0 || spouseYtdWage > 0) && (
                                   <div className="pl-4 text-gray-500">
@@ -273,33 +252,33 @@ export function Summary({ onPrevious }: SummaryProps) {
                                     </div>
                                   </div>
                                 )}
-                                {nonQualifiedDividends > 0 && (
+                                {incomeComponents.nonQualifiedDividends > 0 && (
                                   <div className="flex justify-between">
                                     <span>Non-qualified dividends</span>
-                                    <span>${nonQualifiedDividends.toLocaleString()}</span>
+                                    <span>${incomeComponents.nonQualifiedDividends.toLocaleString()}</span>
                                   </div>
                                 )}
-                                {interestIncome > 0 && (
+                                {incomeComponents.interestIncome > 0 && (
                                   <div className="flex justify-between">
                                     <span>Interest income</span>
-                                    <span>${interestIncome.toLocaleString()}</span>
+                                    <span>${incomeComponents.interestIncome.toLocaleString()}</span>
                                   </div>
                                 )}
-                                {shortTermGains > 0 && (
+                                {incomeComponents.shortTermGains > 0 && (
                                   <div className="flex justify-between">
                                     <span>Short-term capital gains</span>
-                                    <span>${shortTermGains.toLocaleString()}</span>
+                                    <span>${incomeComponents.shortTermGains.toLocaleString()}</span>
                                   </div>
                                 )}
-                                {capitalLossDeduction < 0 && (
+                                {incomeComponents.capitalLossDeduction < 0 && (
                                   <div className="flex justify-between">
                                     <span>Capital loss deduction (limited)</span>
-                                    <span className="text-red-600">${capitalLossDeduction.toLocaleString()}</span>
+                                    <span className="text-red-600">${incomeComponents.capitalLossDeduction.toLocaleString()}</span>
                                   </div>
                                 )}
                                 <div className="flex justify-between font-medium pt-1 border-t">
                                   <span>Total ordinary income</span>
-                                  <span>${totalOrdinaryIncome.toLocaleString()}</span>
+                                  <span>${incomeComponents.totalOrdinaryIncome.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Less: {taxResults.federalTax.deduction.type === 'standard' ? 'Standard' : 'Itemized'} deduction</span>
@@ -307,18 +286,13 @@ export function Summary({ onPrevious }: SummaryProps) {
                                 </div>
                                 <div className="flex justify-between font-medium">
                                   <span>Ordinary taxable income</span>
-                                  <span>${ordinaryTaxableIncome.toLocaleString()}</span>
+                                  <span>${incomeComponents.ordinaryTaxableIncome.toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>
                             <div className="font-medium text-gray-700 mb-1">Tax Bracket Breakdown:</div>
-                            {brackets.map((bracket, index) => {
-                              const taxableInBracket = Math.min(Math.max(0, remainingIncome), bracket.max - bracket.min)
-                              const taxForBracket = taxableInBracket * bracket.rate
-                              cumulativeTax += taxForBracket
-                              remainingIncome -= taxableInBracket
-                              
-                              if (taxableInBracket === 0) return null
+                            {taxResults.federalTax.ordinaryTaxBrackets.map((bracketDetail, index) => {
+                              const bracket = bracketDetail.bracket
                               
                               return (
                                 <div key={index} className="space-y-1 mb-2">
@@ -328,13 +302,13 @@ export function Summary({ onPrevious }: SummaryProps) {
                                       <span className="text-gray-500 ml-1">({(bracket.rate * 100).toFixed(0)}%)</span>
                                     </span>
                                     <span className="text-sm sm:text-right pl-4 sm:pl-0">
-                                      ${taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(0)}% = 
-                                      <span className="font-medium ml-1">${Math.round(taxForBracket).toLocaleString()}</span>
+                                      ${bracketDetail.taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(0)}% = 
+                                      <span className="font-medium ml-1">${bracketDetail.taxForBracket.toLocaleString()}</span>
                                     </span>
                                   </div>
                                 </div>
                               )
-                            }).filter(Boolean)}
+                            })}
                           </>
                         )
                       })()}
@@ -364,13 +338,12 @@ export function Summary({ onPrevious }: SummaryProps) {
                     <h5 className="font-medium text-sm mb-2">Capital Gains Tax Calculation</h5>
                     <div className="space-y-2 text-xs">
                       {(() => {
-                        const brackets = getFederalCapitalGainsBrackets(taxYear as TaxYear, filingStatus!)
-                        const ltcg = (parseFloat(userIncome.longTermGains) || 0) + (parseFloat(spouseIncome.longTermGains) || 0)
-                        const qualDiv = (parseFloat(userIncome.qualifiedDividends) || 0) + (parseFloat(spouseIncome.qualifiedDividends) || 0)
+                        const incomeComponents = taxResults.federalTax.incomeComponents
+                        const capitalGainsBrackets = taxResults.federalTax.capitalGainsBrackets
                         
                         // Only positive LTCG gets preferential rates
-                        const ltcgForPreferentialRate = Math.max(0, ltcg)
-                        const totalPreferentialIncome = ltcgForPreferentialRate + qualDiv
+                        const ltcgForPreferentialRate = Math.max(0, incomeComponents.longTermGains)
+                        const totalPreferentialIncome = ltcgForPreferentialRate + incomeComponents.qualifiedDividends
                         
                         if (totalPreferentialIncome <= 0) {
                           return <div className="text-gray-500">No income eligible for preferential capital gains rates</div>
@@ -379,48 +352,50 @@ export function Summary({ onPrevious }: SummaryProps) {
                         return (
                           <>
                             <div className="mb-2 text-gray-600">
-                              {ltcg < 0 ? (
+                              {incomeComponents.longTermGains < 0 ? (
                                 <>
-                                  Long-term capital losses: ${Math.abs(ltcg).toLocaleString()} (limited to $3,000 deduction)<br/>
-                                  Qualified dividends: ${qualDiv.toLocaleString()}<br/>
+                                  Long-term capital losses: ${Math.abs(incomeComponents.longTermGains).toLocaleString()} (limited to $3,000 deduction)<br/>
+                                  Qualified dividends: ${incomeComponents.qualifiedDividends.toLocaleString()}<br/>
                                   <span className="font-medium">Income at preferential rates: ${totalPreferentialIncome.toLocaleString()}</span>
                                 </>
                               ) : (
                                 <>
-                                  Long-term capital gains: ${ltcg.toLocaleString()}<br/>
-                                  Qualified dividends: ${qualDiv.toLocaleString()}<br/>
+                                  Long-term capital gains: ${incomeComponents.longTermGains.toLocaleString()}<br/>
+                                  Qualified dividends: ${incomeComponents.qualifiedDividends.toLocaleString()}<br/>
                                   <span className="font-medium">Total at preferential rates: ${totalPreferentialIncome.toLocaleString()}</span>
                                 </>
                               )}
                             </div>
-                            <div className="mb-3 p-2 bg-white rounded border border-gray-200">
-                              <div className="font-medium text-gray-700 mb-2">How Capital Gains Tax Rates Work:</div>
-                              <div className="space-y-2 text-gray-600">
-                                <div className="text-xs leading-relaxed">
-                                  Your capital gains tax rate depends on your total taxable income (ordinary income + capital gains).
-                                  The income shown in the brackets includes both types of income.
-                                </div>
-                                <div className="space-y-1">
-                                  {brackets.map((bracket, index) => {
-                                    const rate = bracket.rate * 100
-                                    const isYourBracket = taxableIncome >= bracket.min && taxableIncome <= bracket.max
-                                    
-                                    return (
-                                      <div key={index} className={`flex flex-col sm:flex-row sm:justify-between sm:items-center p-1.5 rounded ${isYourBracket ? 'bg-gray-100 font-medium' : ''}`}>
-                                        <span className="flex items-start sm:items-center">
-                                          <span className="w-12 text-right mr-2 flex-shrink-0">{rate}%</span>
-                                          <span className="text-gray-500">on income from ${bracket.min.toLocaleString()} to ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()}</span>
+                            
+                            {capitalGainsBrackets.length > 0 ? (
+                              <>
+                                <div className="font-medium text-gray-700 mb-1">Capital Gains Tax Bracket Breakdown:</div>
+                                {capitalGainsBrackets.map((bracketDetail, index) => {
+                                  const bracket = bracketDetail.bracket
+                                  
+                                  return (
+                                    <div key={index} className="space-y-1 mb-2">
+                                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                        <span className="text-gray-700">
+                                          ${bracket.min.toLocaleString()} - ${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()} 
+                                          <span className="text-gray-500 ml-1">({(bracket.rate * 100).toFixed(0)}%)</span>
                                         </span>
-                                        {isYourBracket && (
-                                          <span className="text-sm mt-1 sm:mt-0 ml-14 sm:ml-0">← Your bracket</span>
-                                        )}
+                                        <span className="text-sm sm:text-right pl-4 sm:pl-0">
+                                          ${bracketDetail.taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(0)}% = 
+                                          <span className="font-medium ml-1">${bracketDetail.taxForBracket.toLocaleString()}</span>
+                                        </span>
                                       </div>
-                                    )
-                                  })}
-                                </div>
+                                    </div>
+                                  )
+                                })}
+                              </>
+                            ) : (
+                              <div className="text-gray-600">
+                                No capital gains tax applies
                               </div>
-                            </div>
-                            <div className="p-2 bg-gray-100 rounded">
+                            )}
+                            
+                            <div className="p-2 bg-gray-100 rounded mt-2">
                               <div className="text-xs space-y-1">
                                 <div className="flex justify-between">
                                   <span>Your total taxable income:</span>
@@ -429,13 +404,6 @@ export function Summary({ onPrevious }: SummaryProps) {
                                 <div className="flex justify-between">
                                   <span>Income at preferential rates:</span>
                                   <span className="font-medium">${totalPreferentialIncome.toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Your capital gains tax rate:</span>
-                                  <span className="font-medium">{
-                                    taxableIncome <= brackets[0].max ? '0%' :
-                                    taxableIncome <= brackets[1].max ? '15%' : '20%'
-                                  }</span>
                                 </div>
                                 <div className="flex justify-between pt-1 border-t border-gray-300">
                                   <span>Tax on capital gains/qualified dividends:</span>
@@ -507,11 +475,8 @@ export function Summary({ onPrevious }: SummaryProps) {
                       <h5 className="font-medium text-sm mb-2">California Tax Bracket Calculation</h5>
                       <div className="space-y-2 text-xs">
                         {(() => {
-                          const brackets = getCaliforniaTaxBrackets(taxYear as TaxYear, filingStatus!)
                           const caDeduction = taxResults.californiaTax!.deduction.amount
-                          const caTaxableIncome = Math.max(0, taxResults.totalIncome - caDeduction)
-                          let remainingIncome = caTaxableIncome
-                          let cumulativeTax = 0
+                          const caTaxableIncome = taxResults.californiaTax!.taxableIncome
                           
                           return (
                             <>
@@ -533,13 +498,8 @@ export function Summary({ onPrevious }: SummaryProps) {
                                 </div>
                               </div>
                               <div className="font-medium text-gray-700 mb-1">Tax Bracket Breakdown:</div>
-                              {brackets.map((bracket, index) => {
-                                const taxableInBracket = Math.min(Math.max(0, remainingIncome), bracket.max - bracket.min)
-                                const taxForBracket = taxableInBracket * bracket.rate
-                                cumulativeTax += taxForBracket
-                                remainingIncome -= taxableInBracket
-                                
-                                if (taxableInBracket === 0) return null
+                              {taxResults.californiaTax!.taxBrackets.map((bracketDetail, index) => {
+                                const bracket = bracketDetail.bracket
                                 
                                 return (
                                   <div key={index} className="space-y-1 mb-2">
@@ -549,13 +509,13 @@ export function Summary({ onPrevious }: SummaryProps) {
                                         <span className="text-gray-500 ml-1">({(bracket.rate * 100).toFixed(1)}%)</span>
                                       </span>
                                       <span className="text-sm sm:text-right pl-4 sm:pl-0">
-                                        ${taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(1)}% = 
-                                        <span className="font-medium ml-1">${Math.round(taxForBracket).toLocaleString()}</span>
+                                        ${bracketDetail.taxableInBracket.toLocaleString()} × {(bracket.rate * 100).toFixed(1)}% = 
+                                        <span className="font-medium ml-1">${bracketDetail.taxForBracket.toLocaleString()}</span>
                                       </span>
                                     </div>
                                   </div>
                                 )
-                              }).filter(Boolean)}
+                              })}
                             </>
                           )
                         })()}
