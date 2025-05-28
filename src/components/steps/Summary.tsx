@@ -169,6 +169,15 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
             <span>Total Income</span>
             <span className="font-medium">${taxResults.totalIncome.toLocaleString()}</span>
           </div>
+          <div className="flex justify-between text-sm text-gray-600 pb-2">
+            <span>Combined Effective Tax Rate</span>
+            <span>
+              {((
+                (taxResults.federalTax.totalTax + (taxResults.californiaTax?.totalTax || 0)) / 
+                taxResults.totalIncome * 100
+              ).toFixed(2))}%
+            </span>
+          </div>
         </div>
 
         {/* Federal Tax Details */}
@@ -423,6 +432,10 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                 ${Math.abs(federalOwed).toLocaleString()}
               </span>
             </div>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Effective Tax Rate</span>
+              <span>{taxResults.federalTax.effectiveRate.toFixed(2)}%</span>
+            </div>
           </div>
         </div>
 
@@ -558,6 +571,10 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                 <span className={caOwed > 0 ? 'text-red-600' : 'text-green-600'}>
                   ${Math.abs(caOwed).toLocaleString()}
                 </span>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Effective Tax Rate</span>
+                <span>{taxResults.californiaTax.effectiveRate.toFixed(2)}%</span>
               </div>
             </div>
           </div>
