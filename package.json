@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:ios": "tsc && vite build && ./ios/Scripts/sync-web-assets.sh",
+    "dev:ios": "npm run build:ios && echo '📱 iOS assets updated. Open Xcode to run.'",
+    "clean:ios": "rm -rf ios/QuickTax/QuickTax/WebResources/*",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",

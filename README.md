@@ -37,7 +37,7 @@ All technology choices and implementations were made by Claude:
 - **State Management**: Zustand
 - **Build Tool**: Vite
 - **Testing**: Vitest
-- **Deployment**: GitHub Pages with custom domain
+- **Deployment**: GitHub Pages (web), Xcode (iOS)
 
 ## 📊 AI Development Stats
 
@@ -63,6 +63,17 @@ src/
 ├── components/          # React UI components
 ├── store/              # State management
 └── types/              # TypeScript definitions
+
+ios/
+├── QuickTax/            # iOS app project
+│   ├── QuickTax.xcodeproj
+│   └── QuickTax/
+│       ├── ViewController.swift    # WebView container
+│       ├── SceneDelegate.swift     # App lifecycle
+│       └── WebResources/          # Bundled web assets
+├── Scripts/             # Build automation
+│   └── sync-web-assets.sh
+└── README.md           # iOS-specific documentation
 ```
 
 ## 🧪 Testing
@@ -82,6 +93,8 @@ Claude implemented comprehensive test coverage:
 
 ## 🚦 Getting Started
 
+### Web Development
+
 ```bash
 # Clone the repository
 git clone https://github.com/denehs/quick-tax.git
@@ -98,6 +111,50 @@ npm test
 # Build for production
 npm run build
 ```
+
+### 📱 iOS Development
+
+The project includes a native iOS wrapper app that bundles the web application:
+
+```bash
+# Build and sync web assets to iOS
+npm run build:ios
+
+# Open in Xcode
+open ios/QuickTax/QuickTax.xcodeproj
+
+# Or use one-command development
+npm run dev:ios  # Builds and syncs, then prompts to open Xcode
+```
+
+#### iOS Features
+- **Universal app** supporting iPhone and iPad
+- **Full-screen WebView** without navigation chrome
+- **Offline support** with bundled web assets
+- **Automated build integration** for easy updates
+
+#### iOS Development Workflow
+1. Make changes to web code
+2. Run `npm run build:ios` to sync to iOS app
+3. Build and run in Xcode (Cmd+R)
+4. Test on simulator or device
+
+For detailed iOS instructions, see [ios/README.md](ios/README.md).
+
+### 🚀 Deployment
+
+#### Web Deployment (GitHub Pages)
+The web version is automatically deployed to GitHub Pages when pushing to the main branch:
+- GitHub Actions handles the build and deployment
+- Available at https://quicktax.denehs.me
+- No manual intervention required
+
+#### iOS Deployment
+The iOS app is deployed separately through Xcode:
+- Local builds for development/testing
+- TestFlight for beta testing
+- App Store for public distribution (if desired)
+- Web and iOS deployments are independent
 
 ## 📜 License
 
