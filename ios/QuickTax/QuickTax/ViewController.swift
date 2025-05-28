@@ -10,8 +10,22 @@ class ViewController: UIViewController {
         let webConfiguration = WKWebViewConfiguration()
         webConfiguration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
         
+        // Add user script to intercept window.print()
+        let printScript = """
+            window.print = function() {
+                window.webkit.messageHandlers.printHandler.postMessage('print');
+            }
+        """
+        let userScript = WKUserScript(source: printScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+        webConfiguration.userContentController.addUserScript(userScript)
+        
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.navigationDelegate = self
+        webView.uiDelegate = self
+        
+        // Add message handler for print
+        webConfiguration.userContentController.add(self, name: "printHandler")
+        
         view = webView
     }
     
@@ -101,5 +115,39 @@ extension ViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         // Allow all navigation
         decisionHandler(.allow)
+    }
+}
+
+// MARK: - WKUIDelegate
+extension ViewController: WKUIDelegate {
+}
+
+// MARK: - WKScriptMessageHandler
+extension ViewController: WKScriptMessageHandler {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "printHandler" {
+            printWebView()
+        }
+    }
+    
+    private func printWebView() {
+        let printController = UIPrintInteractionController.shared
+        
+        let printInfo = UIPrintInfo(dictionary: nil)
+        printInfo.outputType = .general
+        printInfo.jobName = "QuickTax Report"
+        
+        printController.printInfo = printInfo
+        printController.printFormatter = webView.viewPrintFormatter()
+        
+        printController.present(animated: true) { (controller, completed, error) in
+            if completed {
+                print("Print completed")
+            } else if let error = error {
+                print("Print failed: \(error.localizedDescription)")
+            } else {
+                print("Print cancelled")
+            }
+        }
     }
 }
