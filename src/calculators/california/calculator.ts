@@ -112,6 +112,17 @@ export interface IncomeData {
   }>
 }
 
+export interface CaliforniaItemizedDeductionDetails {
+  propertyTax: number
+  mortgageInterest: number
+  mortgageBalance: number
+  mortgageLimit: number
+  effectiveMortgageInterest: number
+  mortgageLimited: boolean
+  donations: number
+  total: number
+}
+
 /**
  * Calculate California itemized deductions (no SALT cap, always $1M mortgage limit)
  */
@@ -133,6 +144,42 @@ export function calculateCaliforniaItemizedDeductions(
   }
   
   return propertyTax + deductibleMortgageInterest + donations
+}
+
+/**
+ * Calculate California itemized deductions with detailed breakdown
+ */
+export function calculateCaliforniaItemizedDeductionDetails(
+  deductions: DeductionsData
+): CaliforniaItemizedDeductionDetails {
+  const propertyTax = parseFloat(deductions.propertyTax) || 0
+  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
+  const donations = parseFloat(deductions.donations) || 0
+  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
+  
+  // California doesn't have SALT cap for property tax
+  // Note: CA state income tax cannot be deducted on CA return
+  
+  // Calculate mortgage interest deduction with CA's $1M limit
+  let deductibleMortgageInterest = mortgageInterest
+  let mortgageLimited = false
+  const mortgageLimit = 1000000
+  
+  if (mortgageBalance > mortgageLimit) {
+    deductibleMortgageInterest = mortgageInterest * (mortgageLimit / mortgageBalance)
+    mortgageLimited = true
+  }
+  
+  return {
+    propertyTax,
+    mortgageInterest,
+    mortgageBalance,
+    mortgageLimit,
+    effectiveMortgageInterest: deductibleMortgageInterest,
+    mortgageLimited,
+    donations,
+    total: propertyTax + deductibleMortgageInterest + donations
+  }
 }
 
 /**

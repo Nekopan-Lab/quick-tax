@@ -1,5 +1,9 @@
 import { useStore } from '../../store/useStore'
 import { numberInputProps } from '../../utils/inputHelpers'
+import { 
+  calculateTotalFederalEstimatedPayments,
+  calculateTotalCaliforniaEstimatedPayments
+} from '../../calculators/orchestrator'
 
 interface EstimatedPaymentsProps {
   onNext: () => void
@@ -9,16 +13,8 @@ interface EstimatedPaymentsProps {
 export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps) {
   const { includeCaliforniaTax, estimatedPayments, setEstimatedPayments } = useStore()
 
-  const totalFederal = 
-    Number(estimatedPayments.federalQ1) + 
-    Number(estimatedPayments.federalQ2) + 
-    Number(estimatedPayments.federalQ3) + 
-    Number(estimatedPayments.federalQ4)
-  
-  const totalCA = 
-    Number(estimatedPayments.californiaQ1) + 
-    Number(estimatedPayments.californiaQ2) + 
-    Number(estimatedPayments.californiaQ4)
+  const totalFederal = calculateTotalFederalEstimatedPayments(estimatedPayments)
+  const totalCA = calculateTotalCaliforniaEstimatedPayments(estimatedPayments)
 
   return (
     <div className="max-w-3xl mx-auto">

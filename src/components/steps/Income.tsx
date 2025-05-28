@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
-import { calculateIndividualTotalIncome } from '../../calculators/utils/income'
+import { 
+  calculateIndividualTotalIncome,
+  calculateWithholdingRates,
+  calculateProjectedPaycheckIncome,
+  calculateRSUVestValue
+} from '../../calculators/utils/income'
 import { numberInputProps } from '../../utils/inputHelpers'
 
 interface IncomeProps {
@@ -42,40 +47,15 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
   const totalIncome = calculateIndividualTotalIncome(currentIncome)
 
   // Calculate tax withholding percentages from last vest
-  const federalWithholdingRate = currentIncome.rsuVestWage && currentIncome.rsuVestFederal ? 
-    (Number(currentIncome.rsuVestFederal) / Number(currentIncome.rsuVestWage)) : 0.22
-  const stateWithholdingRate = currentIncome.rsuVestWage && currentIncome.rsuVestState ? 
-    (Number(currentIncome.rsuVestState) / Number(currentIncome.rsuVestWage)) : 0.1
+  const { federalRate: federalWithholdingRate, stateRate: stateWithholdingRate } = calculateWithholdingRates(currentIncome)
 
-  // Calculate remaining paychecks for projection display
-  const calculateRemainingPaychecks = () => {
-    if (!currentIncome.nextPayDate) return 0
-    
-    const nextPayDate = new Date(currentIncome.nextPayDate)
-    const yearEnd = new Date(nextPayDate.getFullYear(), 11, 31)
-    
-    if (nextPayDate > yearEnd) return 0
-    
-    if (currentIncome.payFrequency === 'biweekly') {
-      const daysRemaining = Math.max(0, (yearEnd.getTime() - nextPayDate.getTime()) / (24 * 60 * 60 * 1000))
-      return Math.floor(daysRemaining / 14) + 1
-    } else {
-      let count = 0
-      let currentMonth = nextPayDate.getMonth()
-      let currentYear = nextPayDate.getFullYear()
-      
-      while (currentYear === nextPayDate.getFullYear() && currentMonth <= 11) {
-        count++
-        currentMonth++
-      }
-      return count
-    }
-  }
-  
-  const remainingPaychecks = calculateRemainingPaychecks()
-  const projectedPaycheckIncome = remainingPaychecks * (Number(currentIncome.paycheckWage) || 0)
-  const projectedPaycheckFederal = remainingPaychecks * (Number(currentIncome.paycheckFederal) || 0)
-  const projectedPaycheckState = remainingPaychecks * (Number(currentIncome.paycheckState) || 0)
+  // Calculate projected paycheck income
+  const {
+    remainingPaychecks,
+    projectedWage: projectedPaycheckIncome,
+    projectedFederalWithhold: projectedPaycheckFederal,
+    projectedStateWithhold: projectedPaycheckState
+  } = calculateProjectedPaycheckIncome(currentIncome)
 
   const addFutureRSUVest = () => {
     const newVest: FutureRSUVest = {
@@ -617,9 +597,13 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     ) : (
                       <div className="space-y-4">
                         {currentIncome.futureRSUVests.map((vest) => {
-                          const vestValue = Number(vest.shares) * Number(vest.expectedPrice)
-                          const estimatedFederal = vestValue * federalWithholdingRate
-                          const estimatedState = vestValue * stateWithholdingRate
+                          const {
+                            vestValue,
+                            estimatedFederal,
+                            estimatedState,
+                            federalRate,
+                            stateRate
+                          } = calculateRSUVestValue(vest.shares, vest.expectedPrice, currentIncome)
 
                           return (
                             <div key={vest.id} className="border rounded-md p-4 bg-gray-50">
@@ -685,7 +669,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                       <span className="text-gray-600">Est. Fed Tax:</span>
                                       <span className="sm:ml-1 font-medium text-red-600">
                                         ${Math.round(estimatedFederal).toLocaleString()} 
-                                        <span className="text-gray-500 ml-1">({(federalWithholdingRate * 100).toFixed(0)}%)</span>
+                                        <span className="text-gray-500 ml-1">({(federalRate * 100).toFixed(0)}%)</span>
                                       </span>
                                     </div>
                                     {includeCaliforniaTax && (
@@ -693,7 +677,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                         <span className="text-gray-600">Est. State Tax:</span>
                                         <span className="sm:ml-1 font-medium text-red-600">
                                           ${Math.round(estimatedState).toLocaleString()}
-                                          <span className="text-gray-500 ml-1">({(stateWithholdingRate * 100).toFixed(0)}%)</span>
+                                          <span className="text-gray-500 ml-1">({(stateRate * 100).toFixed(0)}%)</span>
                                         </span>
                                       </div>
                                     )}

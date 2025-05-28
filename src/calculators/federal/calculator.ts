@@ -192,6 +192,20 @@ export interface EstimatedPaymentSuggestion {
   isPastDue: boolean
 }
 
+export interface FederalItemizedDeductionDetails {
+  propertyTax: number
+  stateIncomeTax: number
+  saltDeduction: number
+  saltCapped: boolean
+  mortgageInterest: number
+  mortgageBalance: number
+  mortgageLimit: number
+  effectiveMortgageInterest: number
+  mortgageLimited: boolean
+  donations: number
+  total: number
+}
+
 /**
  * Calculate federal itemized deductions with SALT cap and mortgage interest limits
  */
@@ -223,6 +237,57 @@ export function calculateFederalItemizedDeductions(
   }
   
   return saltDeduction + deductibleMortgageInterest + donations
+}
+
+/**
+ * Calculate federal itemized deductions with detailed breakdown
+ */
+export function calculateFederalItemizedDeductionDetails(
+  deductions: DeductionsData,
+  estimatedCAStateTax: number,
+  includeCaliforniaTax: boolean
+): FederalItemizedDeductionDetails {
+  const propertyTax = parseFloat(deductions.propertyTax) || 0
+  const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
+  const donations = parseFloat(deductions.donations) || 0
+  const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
+  
+  // Calculate state income tax for SALT
+  const stateIncomeTax = includeCaliforniaTax 
+    ? estimatedCAStateTax
+    : parseFloat(deductions.otherStateIncomeTax) || 0
+  
+  // Apply SALT cap ($10,000 for both single and married filing jointly)
+  const saltTotal = propertyTax + stateIncomeTax
+  const saltDeduction = Math.min(saltTotal, 10000)
+  const saltCapped = saltTotal > 10000
+  
+  // Calculate mortgage interest deduction with limits
+  let deductibleMortgageInterest = mortgageInterest
+  let mortgageLimit = 0
+  let mortgageLimited = false
+  
+  if (mortgageBalance > 0 && deductions.mortgageLoanDate) {
+    mortgageLimit = deductions.mortgageLoanDate === 'before-dec-16-2017' ? 1000000 : 750000
+    if (mortgageBalance > mortgageLimit) {
+      deductibleMortgageInterest = mortgageInterest * (mortgageLimit / mortgageBalance)
+      mortgageLimited = true
+    }
+  }
+  
+  return {
+    propertyTax,
+    stateIncomeTax,
+    saltDeduction,
+    saltCapped,
+    mortgageInterest,
+    mortgageBalance,
+    mortgageLimit,
+    effectiveMortgageInterest: deductibleMortgageInterest,
+    mortgageLimited,
+    donations,
+    total: saltDeduction + deductibleMortgageInterest + donations
+  }
 }
 
 /**

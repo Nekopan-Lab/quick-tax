@@ -122,11 +122,7 @@ export function calculateComprehensiveTax(
 
   // Calculate federal withholdings and payments
   const federalWithholdings = userAgg.totalWithholdings.federal + spouseAgg.totalWithholdings.federal
-  const federalEstimatedPaid = 
-    (parseFloat(estimatedPayments.federalQ1) || 0) +
-    (parseFloat(estimatedPayments.federalQ2) || 0) +
-    (parseFloat(estimatedPayments.federalQ3) || 0) +
-    (parseFloat(estimatedPayments.federalQ4) || 0)
+  const federalEstimatedPaid = calculateTotalFederalEstimatedPayments(estimatedPayments)
 
   // Calculate federal tax
   const federalResult = calculateFederalTax(
@@ -161,10 +157,7 @@ export function calculateComprehensiveTax(
       filingStatus === 'marriedFilingJointly' ? spouseAgg.totalWithholdings : null
     )
 
-    const californiaEstimatedPaid = 
-      (parseFloat(estimatedPayments.californiaQ1) || 0) +
-      (parseFloat(estimatedPayments.californiaQ2) || 0) +
-      (parseFloat(estimatedPayments.californiaQ4) || 0)
+    const californiaEstimatedPaid = calculateTotalCaliforniaEstimatedPayments(estimatedPayments)
 
     // Calculate California tax
     californiaResult = calculateCaliforniaTax(
@@ -185,6 +178,29 @@ export function calculateComprehensiveTax(
   }
 }
 
+
+/**
+ * Calculate total federal estimated tax payments
+ */
+export function calculateTotalFederalEstimatedPayments(estimatedPayments: EstimatedPaymentsData): number {
+  return (
+    (parseFloat(estimatedPayments.federalQ1) || 0) +
+    (parseFloat(estimatedPayments.federalQ2) || 0) +
+    (parseFloat(estimatedPayments.federalQ3) || 0) +
+    (parseFloat(estimatedPayments.federalQ4) || 0)
+  )
+}
+
+/**
+ * Calculate total California estimated tax payments
+ */
+export function calculateTotalCaliforniaEstimatedPayments(estimatedPayments: EstimatedPaymentsData): number {
+  return (
+    (parseFloat(estimatedPayments.californiaQ1) || 0) +
+    (parseFloat(estimatedPayments.californiaQ2) || 0) +
+    (parseFloat(estimatedPayments.californiaQ4) || 0)
+  )
+}
 
 // Re-export functions that are used by components
 export { 

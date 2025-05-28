@@ -166,5 +166,105 @@ export function calculateIndividualTotalIncome(income: IncomeData): number {
   return aggregated.totalIncome
 }
 
+/**
+ * Calculate withholding rates from RSU vest data
+ */
+export function calculateWithholdingRates(income: IncomeData): {
+  federalRate: number
+  stateRate: number
+} {
+  const rsuVestWage = parseFloat(income.rsuVestWage) || 0
+  const rsuVestFederal = parseFloat(income.rsuVestFederal) || 0
+  const rsuVestState = parseFloat(income.rsuVestState) || 0
+  
+  if (rsuVestWage > 0) {
+    return {
+      federalRate: rsuVestFederal / rsuVestWage,
+      stateRate: rsuVestState / rsuVestWage
+    }
+  }
+  
+  // Default rates if no historical data
+  return {
+    federalRate: 0.22, // 22% default federal supplemental rate
+    stateRate: 0.10   // 10% default state rate
+  }
+}
+
+/**
+ * Calculate remaining paychecks for the year
+ */
+export function calculateRemainingPaychecks(nextPayDate: string, payFrequency: 'biweekly' | 'monthly'): number {
+  if (!nextPayDate) return 0
+  
+  const nextPay = new Date(nextPayDate)
+  const yearEnd = new Date(nextPay.getFullYear(), 11, 31)
+  
+  if (nextPay > yearEnd) return 0
+  
+  if (payFrequency === 'biweekly') {
+    const daysRemaining = Math.max(0, (yearEnd.getTime() - nextPay.getTime()) / (24 * 60 * 60 * 1000))
+    return Math.floor(daysRemaining / 14) + 1
+  } else {
+    let count = 0
+    let currentMonth = nextPay.getMonth()
+    let currentYear = nextPay.getFullYear()
+    
+    while (currentYear === nextPay.getFullYear() && currentMonth <= 11) {
+      count++
+      currentMonth++
+    }
+    return count
+  }
+}
+
+/**
+ * Calculate projected paycheck income
+ */
+export function calculateProjectedPaycheckIncome(income: IncomeData): {
+  remainingPaychecks: number
+  projectedWage: number
+  projectedFederalWithhold: number
+  projectedStateWithhold: number
+} {
+  const paycheckWage = parseFloat(income.paycheckWage) || 0
+  const paycheckFederal = parseFloat(income.paycheckFederal) || 0
+  const paycheckState = parseFloat(income.paycheckState) || 0
+  
+  const remainingPaychecks = calculateRemainingPaychecks(income.nextPayDate, income.payFrequency)
+  
+  return {
+    remainingPaychecks,
+    projectedWage: remainingPaychecks * paycheckWage,
+    projectedFederalWithhold: remainingPaychecks * paycheckFederal,
+    projectedStateWithhold: remainingPaychecks * paycheckState
+  }
+}
+
+/**
+ * Calculate RSU vest value and withholdings
+ */
+export function calculateRSUVestValue(shares: string, price: string, income: IncomeData): {
+  vestValue: number
+  estimatedFederal: number
+  estimatedState: number
+  federalRate: number
+  stateRate: number
+} {
+  const numShares = parseFloat(shares) || 0
+  const sharePrice = parseFloat(price) || 0
+  const vestValue = numShares * sharePrice
+  
+  const { federalRate, stateRate } = calculateWithholdingRates(income)
+  
+  return {
+    vestValue,
+    estimatedFederal: vestValue * federalRate,
+    estimatedState: vestValue * stateRate,
+    federalRate,
+    stateRate
+  }
+}
+
 // Re-export types
 export type { IncomeData }
