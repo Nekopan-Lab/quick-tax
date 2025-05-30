@@ -23,18 +23,24 @@
 		B5A8C7D32C5F4A2900123456 /* EstimatedPaymentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7D22C5F4A2900123456 /* EstimatedPaymentsView.swift */; };
 		B5A8C7D52C5F4A2A00123456 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7D42C5F4A2A00123456 /* SummaryView.swift */; };
 		B5A8C7D72C5F4A2B00123456 /* CurrencyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7D62C5F4A2B00123456 /* CurrencyTextField.swift */; };
-		B5A8C7F42C5F4A3B00123456 /* MainContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7F32C5F4A3B00123456 /* MainContainerView.swift */; };
 		B5A8C7D92C5F4A2C00123456 /* FederalTaxConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7D82C5F4A2C00123456 /* FederalTaxConstants.swift */; };
 		B5A8C7DB2C5F4A2D00123456 /* FederalTaxCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7DA2C5F4A2D00123456 /* FederalTaxCalculator.swift */; };
 		B5A8C7DD2C5F4A2E00123456 /* CaliforniaTaxConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7DC2C5F4A2E00123456 /* CaliforniaTaxConstants.swift */; };
 		B5A8C7DF2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7DE2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift */; };
 		B5A8C7E12C5F4A3000123456 /* TaxOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7E02C5F4A3000123456 /* TaxOrchestrator.swift */; };
-		ACE6828754AB4EDE9814101F /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE6828754AB4EDE9814101E /* String+Extensions.swift */; };
-		8850161338CC428C93623086 /* NumberFormatter+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8850161338CC428C93623085 /* NumberFormatter+Extensions.swift */; };
-		B5A8C7F82C5F4A3F00123456 /* NavigationButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7F62C5F4A3D00123456 /* NavigationButtons.swift */; };
-		B5A8C7F92C5F4A4000123456 /* EnvironmentKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7F72C5F4A3E00123456 /* EnvironmentKeys.swift */; };
+		B5A8C7E32C5F4A3100123456 /* NumberFormatter+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7E22C5F4A3100123456 /* NumberFormatter+Extensions.swift */; };
 		B5A8C7E92C5F4A3200123456 /* FederalTaxCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7E82C5F4A3200123456 /* FederalTaxCalculatorTests.swift */; };
 		B5A8C7EB2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7EA2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift */; };
+		B5A8C7FD2C5F4A4400123456 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7FC2C5F4A4300123456 /* DemoData.swift */; };
+		B5A8C7FF2C5F4A4600123456 /* AmountInputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7FE2C5F4A4500123456 /* AmountInputField.swift */; };
+		B5A8C8012C5F4A4800123456 /* ModernComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C8002C5F4A4700123456 /* ModernComponents.swift */; };
+		B5A8C8032C5F4A4A00123456 /* DemoDataCalculationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C8022C5F4A4900123456 /* DemoDataCalculationTests.swift */; };
+		B5A8C8052C5F4A4C00123456 /* TestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C8042C5F4A4B00123456 /* TestHelper.swift */; };
+		B5A8C8072C5F4A4E00123456 /* MainContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C8062C5F4A4D00123456 /* MainContainerView.swift */; };
+		B5A8C8092C5F4A5000123456 /* NavigationButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C8082C5F4A4F00123456 /* NavigationButtons.swift */; };
+		B5A8C80B2C5F4A5200123456 /* EnvironmentKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C80A2C5F4A5100123456 /* EnvironmentKeys.swift */; };
+		B5A8C80D2C5F4A5400123456 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C80C2C5F4A5300123456 /* Theme.swift */; };
+		B5A8C80F2C5F4A5600123456 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C80E2C5F4A5500123456 /* String+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,19 +72,25 @@
 		B5A8C7D22C5F4A2900123456 /* EstimatedPaymentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EstimatedPaymentsView.swift; sourceTree = "<group>"; };
 		B5A8C7D42C5F4A2A00123456 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		B5A8C7D62C5F4A2B00123456 /* CurrencyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyTextField.swift; sourceTree = "<group>"; };
-		B5A8C7F32C5F4A3B00123456 /* MainContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContainerView.swift; sourceTree = "<group>"; };
 		B5A8C7D82C5F4A2C00123456 /* FederalTaxConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FederalTaxConstants.swift; sourceTree = "<group>"; };
 		B5A8C7DA2C5F4A2D00123456 /* FederalTaxCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FederalTaxCalculator.swift; sourceTree = "<group>"; };
 		B5A8C7DC2C5F4A2E00123456 /* CaliforniaTaxConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaliforniaTaxConstants.swift; sourceTree = "<group>"; };
 		B5A8C7DE2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaliforniaTaxCalculator.swift; sourceTree = "<group>"; };
 		B5A8C7E02C5F4A3000123456 /* TaxOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxOrchestrator.swift; sourceTree = "<group>"; };
-		ACE6828754AB4EDE9814101E /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
-		8850161338CC428C93623085 /* NumberFormatter+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumberFormatter+Extensions.swift"; sourceTree = "<group>"; };
+		B5A8C7E22C5F4A3100123456 /* NumberFormatter+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumberFormatter+Extensions.swift"; sourceTree = "<group>"; };
 		B5A8C7E42C5F4A3200123456 /* QuickTaxNativeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuickTaxNativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5A8C7E82C5F4A3200123456 /* FederalTaxCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FederalTaxCalculatorTests.swift; sourceTree = "<group>"; };
 		B5A8C7EA2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaliforniaTaxCalculatorTests.swift; sourceTree = "<group>"; };
-		B5A8C7F62C5F4A3D00123456 /* NavigationButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationButtons.swift; sourceTree = "<group>"; };
-		B5A8C7F72C5F4A3E00123456 /* EnvironmentKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentKeys.swift; sourceTree = "<group>"; };
+		B5A8C7FC2C5F4A4300123456 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		B5A8C7FE2C5F4A4500123456 /* AmountInputField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountInputField.swift; sourceTree = "<group>"; };
+		B5A8C8002C5F4A4700123456 /* ModernComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernComponents.swift; sourceTree = "<group>"; };
+		B5A8C8022C5F4A4900123456 /* DemoDataCalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoDataCalculationTests.swift; sourceTree = "<group>"; };
+		B5A8C8042C5F4A4B00123456 /* TestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelper.swift; sourceTree = "<group>"; };
+		B5A8C8062C5F4A4D00123456 /* MainContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContainerView.swift; sourceTree = "<group>"; };
+		B5A8C8082C5F4A4F00123456 /* NavigationButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationButtons.swift; sourceTree = "<group>"; };
+		B5A8C80A2C5F4A5100123456 /* EnvironmentKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentKeys.swift; sourceTree = "<group>"; };
+		B5A8C80C2C5F4A5300123456 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		B5A8C80E2C5F4A5500123456 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,7 +138,7 @@
 				B5A8C7ED2C5F4A3500123456 /* Views */,
 				B5A8C7EE2C5F4A3600123456 /* Calculators */,
 				B5A8C7EF2C5F4A3700123456 /* Extensions */,
-				B5A8C7F52C5F4A3C00123456 /* Utils */,
+				B5A8C8102C5F4A5700123456 /* Utils */,
 				B5A8C7B62C5F4A1F00123456 /* Assets.xcassets */,
 				B5A8C7BB2C5F4A1F00123456 /* Info.plist */,
 				B5A8C7B82C5F4A1F00123456 /* Preview Content */,
@@ -147,6 +159,8 @@
 			children = (
 				B5A8C7E82C5F4A3200123456 /* FederalTaxCalculatorTests.swift */,
 				B5A8C7EA2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift */,
+				B5A8C8022C5F4A4900123456 /* DemoDataCalculationTests.swift */,
+				B5A8C8042C5F4A4B00123456 /* TestHelper.swift */,
 			);
 			path = QuickTaxNativeTests;
 			sourceTree = "<group>";
@@ -172,7 +186,8 @@
 				B5A8C7D02C5F4A2800123456 /* DeductionsView.swift */,
 				B5A8C7D22C5F4A2900123456 /* EstimatedPaymentsView.swift */,
 				B5A8C7D42C5F4A2A00123456 /* SummaryView.swift */,
-				B5A8C7F32C5F4A3B00123456 /* MainContainerView.swift */,
+				B5A8C8062C5F4A4D00123456 /* MainContainerView.swift */,
+				B5A8C8112C5F4A5800123456 /* Common */,
 				B5A8C7F02C5F4A3800123456 /* Components */,
 			);
 			path = Views;
@@ -191,25 +206,17 @@
 		B5A8C7EF2C5F4A3700123456 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				ACE6828754AB4EDE9814101E /* String+Extensions.swift */,
-				8850161338CC428C93623085 /* NumberFormatter+Extensions.swift */,
+				B5A8C7E22C5F4A3100123456 /* NumberFormatter+Extensions.swift */,
+				B5A8C80E2C5F4A5500123456 /* String+Extensions.swift */,
 			);
 			path = Extensions;
-			sourceTree = "<group>";
-		};
-		B5A8C7F52C5F4A3C00123456 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				B5A8C7F72C5F4A3E00123456 /* EnvironmentKeys.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 		B5A8C7F02C5F4A3800123456 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-					B5A8C7D62C5F4A2B00123456 /* CurrencyTextField.swift */,
-				B5A8C7F62C5F4A3D00123456 /* NavigationButtons.swift */,
+				B5A8C7D62C5F4A2B00123456 /* CurrencyTextField.swift */,
+				B5A8C8082C5F4A4F00123456 /* NavigationButtons.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -230,6 +237,25 @@
 				B5A8C7DE2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift */,
 			);
 			path = California;
+			sourceTree = "<group>";
+		};
+		B5A8C8102C5F4A5700123456 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				B5A8C80A2C5F4A5100123456 /* EnvironmentKeys.swift */,
+				B5A8C7FC2C5F4A4300123456 /* DemoData.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		B5A8C8112C5F4A5800123456 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B5A8C80C2C5F4A5300123456 /* Theme.swift */,
+				B5A8C7FE2C5F4A4500123456 /* AmountInputField.swift */,
+				B5A8C8002C5F4A4700123456 /* ModernComponents.swift */,
+			);
+			path = Common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -345,17 +371,21 @@
 				B5A8C7D12C5F4A2800123456 /* DeductionsView.swift in Sources */,
 				B5A8C7D32C5F4A2900123456 /* EstimatedPaymentsView.swift in Sources */,
 				B5A8C7D52C5F4A2A00123456 /* SummaryView.swift in Sources */,
-				B5A8C7F42C5F4A3B00123456 /* MainContainerView.swift in Sources */,
 				B5A8C7D72C5F4A2B00123456 /* CurrencyTextField.swift in Sources */,
 				B5A8C7D92C5F4A2C00123456 /* FederalTaxConstants.swift in Sources */,
 				B5A8C7DB2C5F4A2D00123456 /* FederalTaxCalculator.swift in Sources */,
 				B5A8C7DD2C5F4A2E00123456 /* CaliforniaTaxConstants.swift in Sources */,
 				B5A8C7DF2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift in Sources */,
 				B5A8C7E12C5F4A3000123456 /* TaxOrchestrator.swift in Sources */,
-				ACE6828754AB4EDE9814101F /* String+Extensions.swift in Sources */,
-				8850161338CC428C93623086 /* NumberFormatter+Extensions.swift in Sources */,
-				B5A8C7F82C5F4A3F00123456 /* NavigationButtons.swift in Sources */,
-				B5A8C7F92C5F4A4000123456 /* EnvironmentKeys.swift in Sources */,
+				B5A8C7E32C5F4A3100123456 /* NumberFormatter+Extensions.swift in Sources */,
+				B5A8C7FD2C5F4A4400123456 /* DemoData.swift in Sources */,
+				B5A8C7FF2C5F4A4600123456 /* AmountInputField.swift in Sources */,
+				B5A8C8012C5F4A4800123456 /* ModernComponents.swift in Sources */,
+				B5A8C8072C5F4A4E00123456 /* MainContainerView.swift in Sources */,
+				B5A8C8092C5F4A5000123456 /* NavigationButtons.swift in Sources */,
+				B5A8C80B2C5F4A5200123456 /* EnvironmentKeys.swift in Sources */,
+				B5A8C80D2C5F4A5400123456 /* Theme.swift in Sources */,
+				B5A8C80F2C5F4A5600123456 /* String+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,6 +395,8 @@
 			files = (
 				B5A8C7E92C5F4A3200123456 /* FederalTaxCalculatorTests.swift in Sources */,
 				B5A8C7EB2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift in Sources */,
+				B5A8C8032C5F4A4A00123456 /* DemoDataCalculationTests.swift in Sources */,
+				B5A8C8052C5F4A4C00123456 /* TestHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -506,6 +538,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"QuickTaxNative/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuickTaxNative/Info.plist;
@@ -538,6 +571,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"QuickTaxNative/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuickTaxNative/Info.plist;
