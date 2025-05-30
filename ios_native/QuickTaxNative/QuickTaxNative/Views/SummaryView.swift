@@ -5,8 +5,10 @@ struct SummaryView: View {
     @State private var taxResult: TaxCalculationResult?
     @State private var isCalculating = false
     @State private var expandedSections = Set<String>()
-    @State private var expandFederalDetails = false
-    @State private var expandCaliforniaDetails = false
+    @State private var expandOrdinaryIncomeTax = false
+    @State private var expandCapitalGainsTax = false
+    @State private var expandCABaseTax = false
+    @State private var expandMentalHealthTax = false
     
     var body: some View {
         NavigationView {
@@ -261,49 +263,77 @@ struct SummaryView: View {
     
     func federalBreakdownDetails(result: TaxCalculationResult, withholdings: Decimal, paid: Decimal, owed: Decimal) -> some View {
         VStack(spacing: 6) {
-            Button(action: { expandFederalDetails.toggle() }) {
-                HStack {
-                    Text("Tax Liability (before withholdings)")
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.totalTax)) ?? "$0")
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    Image(systemName: expandFederalDetails ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+            HStack {
+                Text("Tax Liability")
+                    .font(.subheadline)
+                Spacer()
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.totalTax)) ?? "$0")
+                    .fontWeight(.semibold)
             }
-            .buttonStyle(PlainButtonStyle())
             
-            if expandFederalDetails {
-                VStack(alignment: .leading, spacing: 4) {
-                    if result.federalTax.ordinaryIncomeTax > 0 {
-                        HStack {
-                            Text("  → Ordinary Income Tax")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.ordinaryIncomeTax)) ?? "$0")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+            // Show tax component breakdowns
+            if result.federalTax.ordinaryIncomeTax > 0 {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text("• Ordinary Income Tax")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.ordinaryIncomeTax)) ?? "$0")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
                     
-                    if result.federalTax.capitalGainsTax > 0 {
+                    Button(action: { expandOrdinaryIncomeTax.toggle() }) {
                         HStack {
-                            Text("  → Long-Term Capital Gains Tax")
+                            Text("  View calculation details")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.capitalGainsTax)) ?? "$0")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.blue)
+                            Image(systemName: expandOrdinaryIncomeTax ? "chevron.up" : "chevron.down")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
                         }
                     }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    if expandOrdinaryIncomeTax {
+                        ordinaryIncomeTaxDetails(result: result)
+                            .padding(.top, 4)
+                    }
                 }
-                .padding(.vertical, 4)
+                .padding(.top, 8)
+            }
+            
+            if result.federalTax.capitalGainsTax > 0 {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text("• Long-Term Capital Gains Tax")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.capitalGainsTax)) ?? "$0")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Button(action: { expandCapitalGainsTax.toggle() }) {
+                        HStack {
+                            Text("  View calculation details")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                            Image(systemName: expandCapitalGainsTax ? "chevron.up" : "chevron.down")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    if expandCapitalGainsTax {
+                        capitalGainsTaxDetails(result: result)
+                            .padding(.top, 4)
+                    }
+                }
+                .padding(.top, 8)
             }
             
             HStack {
@@ -369,49 +399,77 @@ struct SummaryView: View {
     
     func californiaBreakdownDetails(caTax: CaliforniaTaxResult, withholdings: Decimal, paid: Decimal, owed: Decimal) -> some View {
         VStack(spacing: 6) {
-            Button(action: { expandCaliforniaDetails.toggle() }) {
-                HStack {
-                    Text("Tax Liability (before withholdings)")
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.totalTax)) ?? "$0")
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    Image(systemName: expandCaliforniaDetails ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+            HStack {
+                Text("Tax Liability")
+                    .font(.subheadline)
+                Spacer()
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.totalTax)) ?? "$0")
+                    .fontWeight(.semibold)
             }
-            .buttonStyle(PlainButtonStyle())
             
-            if expandCaliforniaDetails {
-                VStack(alignment: .leading, spacing: 4) {
-                    if caTax.baseTax > 0 {
-                        HStack {
-                            Text("  → Base CA Tax")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.baseTax)) ?? "$0")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+            // Show tax component breakdowns
+            if caTax.baseTax > 0 {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text("• Base CA Tax")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.baseTax)) ?? "$0")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
                     
-                    if caTax.mentalHealthTax > 0 {
+                    Button(action: { expandCABaseTax.toggle() }) {
                         HStack {
-                            Text("  → Mental Health Tax")
+                            Text("  View calculation details")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.mentalHealthTax)) ?? "$0")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.blue)
+                            Image(systemName: expandCABaseTax ? "chevron.up" : "chevron.down")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
                         }
                     }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    if expandCABaseTax, let taxResult = taxResult {
+                        californiaBaseTaxDetails(caTax: caTax, totalIncome: taxResult.totalIncome)
+                            .padding(.top, 4)
+                    }
                 }
-                .padding(.vertical, 4)
+                .padding(.top, 8)
+            }
+            
+            if caTax.mentalHealthTax > 0 {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text("• Mental Health Tax")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.mentalHealthTax)) ?? "$0")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Button(action: { expandMentalHealthTax.toggle() }) {
+                        HStack {
+                            Text("  View calculation details")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                            Image(systemName: expandMentalHealthTax ? "chevron.up" : "chevron.down")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    if expandMentalHealthTax {
+                        mentalHealthTaxDetails(caTax: caTax)
+                            .padding(.top, 4)
+                    }
+                }
+                .padding(.top, 8)
             }
             
             HStack {
@@ -883,6 +941,393 @@ struct SummaryView: View {
         }
         
         return paychecksRemaining
+    }
+    
+    // MARK: - Tax Detail Views
+    
+    func ordinaryIncomeTaxDetails(result: TaxCalculationResult) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // Income Components
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Ordinary Income Components:")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                
+                VStack(spacing: 1) {
+                    // Render income components
+                    ordinaryIncomeComponentRows(components: result.federalTax.incomeComponents)
+                    
+                    Divider()
+                        .padding(.vertical, 2)
+                    
+                    // Total ordinary income
+                    HStack {
+                        Text("Total ordinary income")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.incomeComponents.totalOrdinaryIncome)) ?? "$0")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    // Less deduction
+                    HStack {
+                        Text("Less: \(result.federalTax.deduction.type == .standard ? "Standard" : "Itemized") deduction")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("-\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.deduction.amount)) ?? "$0")")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    // Ordinary taxable income
+                    HStack {
+                        Text("Ordinary taxable income")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.incomeComponents.ordinaryTaxableIncome)) ?? "$0")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(6)
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(6)
+            }
+            
+            // Tax Bracket Breakdown
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Tax Bracket Breakdown:")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                
+                // Tax brackets
+                ForEach(Array(result.federalTax.ordinaryTaxBrackets.enumerated()), id: \.offset) { index, bracketDetail in
+                    taxBracketRow(bracketDetail: bracketDetail, rateFormat: "%.0f")
+                }
+            }
+        }
+        .padding(6)
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(6)
+    }
+    
+    func capitalGainsTaxDetails(result: TaxCalculationResult) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            let incomeComponents = result.federalTax.incomeComponents
+            let ltcgForPreferentialRate = max(0, incomeComponents.longTermGains)
+            let totalPreferentialIncome = ltcgForPreferentialRate + incomeComponents.qualifiedDividends
+            
+            if totalPreferentialIncome <= 0 {
+                Text("No income eligible for preferential capital gains rates")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .italic()
+            } else {
+                // Income at preferential rates
+                VStack(alignment: .leading, spacing: 4) {
+                    if incomeComponents.longTermGains < 0 {
+                        Text("Long-term capital losses: $\(NSDecimalNumber(decimal: abs(incomeComponents.longTermGains)).intValue.formatted()) (limited to $3,000 deduction)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    } else if incomeComponents.longTermGains > 0 {
+                        HStack {
+                            Text("Long-term capital gains:")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: incomeComponents.longTermGains)) ?? "$0")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    if incomeComponents.qualifiedDividends > 0 {
+                        HStack {
+                            Text("Qualified dividends:")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: incomeComponents.qualifiedDividends)) ?? "$0")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Divider()
+                        .padding(.vertical, 2)
+                    
+                    HStack {
+                        Text("Total at preferential rates:")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: totalPreferentialIncome)) ?? "$0")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(8)
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(6)
+                
+                // Capital Gains Tax Brackets
+                if result.federalTax.capitalGainsBrackets.count > 0 {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Capital Gains Tax Bracket Breakdown:")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        
+                        ForEach(Array(result.federalTax.capitalGainsBrackets.enumerated()), id: \.offset) { index, bracketDetail in
+                            taxBracketRow(bracketDetail: bracketDetail, rateFormat: "%.0f")
+                        }
+                    }
+                }
+                
+                // Summary
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text("Your total taxable income:")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.taxableIncome)) ?? "$0")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Text("Income at preferential rates:")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: totalPreferentialIncome)) ?? "$0")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Divider()
+                        .padding(.vertical, 2)
+                    HStack {
+                        Text("Tax on capital gains/qualified dividends:")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.capitalGainsTax)) ?? "$0")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(8)
+                .background(Color(UIColor.systemGray5))
+                .cornerRadius(6)
+                .padding(.top, 4)
+            }
+        }
+        .padding(8)
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(6)
+    }
+    
+    func californiaBaseTaxDetails(caTax: CaliforniaTaxResult, totalIncome: Decimal) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // California Taxable Income
+            VStack(alignment: .leading, spacing: 4) {
+                Text("California Taxable Income:")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                
+                VStack(spacing: 2) {
+                    HStack {
+                        Text("Total income")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: totalIncome)) ?? "$0")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Less: \(caTax.deduction.type == .standard ? "Standard" : "Itemized") deduction")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("-\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.deduction.amount)) ?? "$0")")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Divider()
+                        .padding(.vertical, 2)
+                    
+                    HStack {
+                        Text("California taxable income")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.taxableIncome)) ?? "$0")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(8)
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(6)
+            }
+            
+            // Tax Bracket Breakdown
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Tax Bracket Breakdown:")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                
+                ForEach(Array(caTax.taxBrackets.enumerated()), id: \.offset) { index, bracketDetail in
+                    taxBracketRow(bracketDetail: bracketDetail, rateFormat: "%.1f")
+                }
+            }
+            
+            Text("Note: California taxes all income types (including capital gains) at the same rates.")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .italic()
+                .padding(.top, 4)
+        }
+        .padding(8)
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(6)
+    }
+    
+    func mentalHealthTaxDetails(caTax: CaliforniaTaxResult) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Mental Health Tax Calculation")
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+            
+            VStack(spacing: 4) {
+                HStack {
+                    Text("California taxable income:")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.taxableIncome)) ?? "$0")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Text("Mental health tax threshold:")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("$1,000,000")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Text("Amount over threshold:")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: max(0, caTax.taxableIncome - 1_000_000))) ?? "$0")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                
+                Divider()
+                    .padding(.vertical, 2)
+                
+                HStack {
+                    Text("Tax: 1% × $\(NSDecimalNumber(decimal: max(0, caTax.taxableIncome - 1_000_000)).intValue.formatted()) = ")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.mentalHealthTax)) ?? "$0")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(8)
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(6)
+    }
+    
+    // MARK: - Helper Views
+    
+    @ViewBuilder
+    func ordinaryIncomeComponentRows(components: FederalIncomeComponents) -> some View {
+        // Wages
+        if components.wages > 0 {
+            incomeComponentRow(label: "Wages (YTD + Future)", amount: components.wages)
+        }
+        
+        // Non-qualified dividends
+        if components.nonQualifiedDividends > 0 {
+            incomeComponentRow(label: "Non-qualified dividends", amount: components.nonQualifiedDividends)
+        }
+        
+        // Interest income
+        if components.interestIncome > 0 {
+            incomeComponentRow(label: "Interest income", amount: components.interestIncome)
+        }
+        
+        // Short-term gains
+        if components.shortTermGains > 0 {
+            incomeComponentRow(label: "Short-term capital gains", amount: components.shortTermGains)
+        }
+        
+        // Capital loss deduction
+        if components.capitalLossDeduction < 0 {
+            incomeComponentRow(label: "Capital loss deduction", amount: components.capitalLossDeduction, isNegative: true)
+        }
+    }
+    
+    func incomeComponentRow(label: String, amount: Decimal, isNegative: Bool = false) -> some View {
+        HStack {
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: amount)) ?? "$0")
+                .font(.caption2)
+                .foregroundColor(isNegative ? .red : .secondary)
+        }
+    }
+    
+    func taxBracketRow(bracketDetail: TaxBracketDetail, rateFormat: String) -> some View {
+        let bracket = bracketDetail.bracket
+        return VStack(alignment: .leading, spacing: 1) {
+            Text("$\(NSDecimalNumber(decimal: bracket.min).intValue.formatted()) - \(bracket.max.map { NSDecimalNumber(decimal: $0).intValue }.map { "$\($0.formatted())" } ?? "∞") (\(String(format: rateFormat, NSDecimalNumber(decimal: bracket.rate * 100).doubleValue))%)")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            HStack {
+                Text("$\(NSDecimalNumber(decimal: bracketDetail.taxableInBracket).intValue.formatted()) × \(String(format: rateFormat, NSDecimalNumber(decimal: bracket.rate * 100).doubleValue))% = $\(NSDecimalNumber(decimal: bracketDetail.taxForBracket).intValue.formatted())")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+        }
+        .padding(.vertical, 1)
     }
 }
 

@@ -294,51 +294,79 @@ struct DetailedIncomeSection: View {
             .background(Color(UIColor.systemBackground))
             .cornerRadius(10)
             
-            // RSU Data
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Last Vest Event")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                VStack(spacing: 12) {
-                    ModernCurrencyField("Taxable Wage (per vest)", value: $income.rsuVestData.taxableWage)
-                    ModernCurrencyField("Federal Withhold (per vest)", value: $income.rsuVestData.federalWithhold)
-                    if includeCaliforniaTax {
-                        ModernCurrencyField("State Withhold (per vest)", value: $income.rsuVestData.stateWithhold)
+            // RSU Section
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    HStack {
+                        Image(systemName: "chart.bar.fill")
+                        Text("RSU Income")
+                            .fontWeight(.semibold)
                     }
-                    ModernCurrencyField("Vest Price (per share)", value: $income.rsuVestData.vestPrice)
+                    .font(.subheadline)
+                    Spacer()
+                }
+                
+                // Last Vest Event (Optional)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Most Recent RSU Vest")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        Text("(Optional - helps estimate future vests)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    VStack(spacing: 12) {
+                        ModernCurrencyField("Taxable Wage (per vest)", value: $income.rsuVestData.taxableWage)
+                        ModernCurrencyField("Federal Withhold (per vest)", value: $income.rsuVestData.federalWithhold)
+                        if includeCaliforniaTax {
+                            ModernCurrencyField("State Withhold (per vest)", value: $income.rsuVestData.stateWithhold)
+                        }
+                        ModernCurrencyField("Vest Price (per share)", value: $income.rsuVestData.vestPrice)
+                    }
+                }
+                
+                Divider()
+                
+                // Future RSU Vests
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Future RSU Vests")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            var newVest = FutureRSUVest()
+                            if let lastVestPrice = income.rsuVestData.vestPrice.toDecimal() {
+                                newVest.expectedPrice = String(describing: lastVestPrice)
+                            }
+                            income.futureRSUVests.append(newVest)
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    ForEach(income.futureRSUVests) { vest in
+                        ModernRSUVestRow(vest: vest, vests: $income.futureRSUVests, income: income, includeCaliforniaTax: includeCaliforniaTax)
+                    }
+                    
+                    if income.futureRSUVests.isEmpty {
+                        Text("No future RSU vests added")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 20)
+                    }
                 }
             }
             .padding()
             .background(Color(UIColor.systemBackground))
             .cornerRadius(10)
-            
-            // Future RSU Vests
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("Future RSU Vests")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        var newVest = FutureRSUVest()
-                        if let lastVestPrice = income.rsuVestData.vestPrice.toDecimal() {
-                            newVest.expectedPrice = String(describing: lastVestPrice)
-                        }
-                        income.futureRSUVests.append(newVest)
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                    }
-                }
-                
-                ForEach(income.futureRSUVests) { vest in
-                    ModernRSUVestRow(vest: vest, vests: $income.futureRSUVests)
-                }
-            }
         }
     }
 }
@@ -346,6 +374,30 @@ struct DetailedIncomeSection: View {
 struct ModernRSUVestRow: View {
     let vest: FutureRSUVest
     @Binding var vests: [FutureRSUVest]
+    let income: IncomeData
+    let includeCaliforniaTax: Bool
+    
+    var vestValue: Decimal {
+        let shares = Decimal(string: vest.shares) ?? 0
+        let price = Decimal(string: vest.expectedPrice) ?? 0
+        return shares * price
+    }
+    
+    var federalWithholding: (amount: Decimal, rate: Decimal) {
+        let rsuVestWage = income.rsuVestData.taxableWage.toDecimal() ?? 0
+        let rsuVestFederal = income.rsuVestData.federalWithhold.toDecimal() ?? 0
+        
+        let rate = rsuVestWage > 0 ? rsuVestFederal / rsuVestWage : Decimal(0.24)
+        return (vestValue * rate, rate)
+    }
+    
+    var stateWithholding: (amount: Decimal, rate: Decimal) {
+        let rsuVestWage = income.rsuVestData.taxableWage.toDecimal() ?? 0
+        let rsuVestState = income.rsuVestData.stateWithhold.toDecimal() ?? 0
+        
+        let rate = rsuVestWage > 0 ? rsuVestState / rsuVestWage : Decimal(0.10)
+        return (vestValue * rate, rate)
+    }
     
     var body: some View {
         VStack(spacing: 12) {
@@ -387,6 +439,47 @@ struct ModernRSUVestRow: View {
                         }
                     }
                 ))
+            }
+            
+            // Show calculated values
+            if vestValue > 0 {
+                VStack(spacing: 6) {
+                    HStack {
+                        Text("Estimated Value:")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: vestValue)) ?? "$0")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                    }
+                    
+                    HStack {
+                        Text("Fed Withhold:")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: federalWithholding.amount)) ?? "$0") (\(String(format: "%.1f", NSDecimalNumber(decimal: federalWithholding.rate * 100).doubleValue))%)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    if includeCaliforniaTax {
+                        HStack {
+                            Text("CA Withhold:")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text("\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: stateWithholding.amount)) ?? "$0") (\(String(format: "%.1f", NSDecimalNumber(decimal: stateWithholding.rate * 100).doubleValue))%)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(Color(UIColor.tertiarySystemFill).opacity(0.5))
+                .cornerRadius(6)
             }
         }
         .padding()

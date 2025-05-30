@@ -61,7 +61,7 @@ struct DeductionsView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             
-                            HStack(spacing: 12) {
+                            VStack(spacing: 10) {
                                 Button(action: {
                                     taxStore.deductions.mortgageLoanDate = .beforeDec162017
                                 }) {
@@ -70,6 +70,7 @@ struct DeductionsView: View {
                                             .foregroundColor(.blue)
                                         Text("Before Dec 16, 2017")
                                             .foregroundColor(.primary)
+                                        Spacer()
                                     }
                                     .font(.subheadline)
                                 }
@@ -82,6 +83,7 @@ struct DeductionsView: View {
                                             .foregroundColor(.blue)
                                         Text("After Dec 15, 2017")
                                             .foregroundColor(.primary)
+                                        Spacer()
                                     }
                                     .font(.subheadline)
                                 }
@@ -96,8 +98,8 @@ struct DeductionsView: View {
                                 Image(systemName: "info.circle")
                                     .foregroundColor(.blue)
                                 Text(taxStore.deductions.mortgageLoanDate == .beforeDec162017 ? 
-                                     "Interest deductible on up to $1M of mortgage debt" : 
-                                     "Interest deductible on up to $750K of mortgage debt")
+                                     "Interest deductible on up to $1M" : 
+                                     "Interest deductible on up to $750K")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }

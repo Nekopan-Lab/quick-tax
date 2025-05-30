@@ -15,11 +15,11 @@ struct EstimatedPaymentsView: View {
                         californiaPaymentsCard
                     }
                     
-                    // Info Card
-                    infoCard
-                    
                     // Payment Summary
                     paymentSummaryCard
+                    
+                    // Info Card
+                    infoCard
                 }
                 .padding()
             }
