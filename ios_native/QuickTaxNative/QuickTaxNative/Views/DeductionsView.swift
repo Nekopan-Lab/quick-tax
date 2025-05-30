@@ -2,262 +2,583 @@ import SwiftUI
 
 struct DeductionsView: View {
     @EnvironmentObject var taxStore: TaxStore
+    @State private var showMortgageInfo = false
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Itemized Deductions (Full Year Estimates)")) {
-                    CurrencyTextField("Property Tax", value: $taxStore.deductions.propertyTax)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Header with deduction comparison
+                    deductionComparisonHeader
                     
-                    CurrencyTextField("Mortgage Interest", value: $taxStore.deductions.mortgageInterest)
+                    // Itemized deductions card
+                    itemizedDeductionsCard
                     
-                    // Show mortgage-related fields only if mortgage interest > 0
-                    if (taxStore.deductions.mortgageInterest.toDecimal() ?? 0) > 0 {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Mortgage Loan Date")
+                    // Standard deduction info
+                    standardDeductionCard
+                    
+                    // Federal breakdown card
+                    federalBreakdownCard
+                    
+                    // California breakdown card (if CA tax is selected)
+                    if taxStore.includeCaliforniaTax {
+                        californiaBreakdownCard
+                    }
+                }
+                .padding()
+            }
+            .background(Color(UIColor.systemGroupedBackground))
+            .navigationTitle("Deductions")
+            .navigationBarTitleDisplayMode(.large)
+        }
+        .onChange(of: taxStore.deductions) { _ in 
+            taxStore.saveData()
+            // Update mortgage visibility
+            showMortgageInfo = (taxStore.deductions.mortgageInterest.toDecimal() ?? 0) > 0
+        }
+        .onAppear {
+            showMortgageInfo = (taxStore.deductions.mortgageInterest.toDecimal() ?? 0) > 0
+        }
+    }
+    
+    var deductionComparisonHeader: some View {
+        VStack(spacing: 16) {
+            Text("Deduction Comparison")
+                .font(.headline)
+            
+            if taxStore.includeCaliforniaTax {
+                // Side-by-side comparison for Federal and California
+                HStack(spacing: 12) {
+                    federalDeductionCard
+                    californiaDeductionCard
+                }
+            } else {
+                // Single federal card when CA tax not selected
+                federalDeductionCard
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(16)
+    }
+    
+    var federalDeductionCard: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 4) {
+                Image(systemName: "flag.fill")
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                Text("Federal (IRS)")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            }
+            
+            let federalItemized = calculateFederalItemizedTotal()
+            let federalStandard = standardDeductionAmount()
+            let useItemized = federalItemized > federalStandard
+            
+            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: max(federalItemized, federalStandard))) ?? "$0")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text(useItemized ? "ITEMIZED" : "STANDARD")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(useItemized ? Color.green.opacity(0.1) : Color.gray.opacity(0.1))
+                .foregroundColor(useItemized ? .green : .secondary)
+                .cornerRadius(4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(UIColor.tertiarySystemFill))
+        .cornerRadius(10)
+    }
+    
+    var californiaDeductionCard: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 4) {
+                Image(systemName: "star.fill")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                Text("California (FTB)")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+            }
+            
+            let californiaItemized = calculateCaliforniaItemizedTotal()
+            let californiaStandard = californiaStandardDeduction()
+            let useItemized = californiaItemized > californiaStandard
+            
+            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: max(californiaItemized, californiaStandard))) ?? "$0")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text(useItemized ? "ITEMIZED" : "STANDARD")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(useItemized ? Color.green.opacity(0.1) : Color.gray.opacity(0.1))
+                .foregroundColor(useItemized ? .green : .secondary)
+                .cornerRadius(4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(UIColor.tertiarySystemFill))
+        .cornerRadius(10)
+    }
+    
+    var itemizedDeductionsCard: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Label("Itemized Deductions", systemImage: "doc.text.magnifyingglass")
+                    .font(.headline)
+                Spacer()
+                Text("Full Year Estimates")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            VStack(spacing: 12) {
+                ModernDeductionField("Property Tax", value: $taxStore.deductions.propertyTax, icon: "house")
+                
+                ModernDeductionField("Mortgage Interest", value: $taxStore.deductions.mortgageInterest, icon: "percent")
+                
+                // Mortgage details (shown when mortgage interest > 0)
+                if showMortgageInfo {
+                    VStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Loan Origination Date")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             
-                            Picker("Loan Date", selection: $taxStore.deductions.mortgageLoanDate) {
-                                ForEach(MortgageLoanDate.allCases, id: \.self) { date in
-                                    Text(date.displayName).tag(date)
+                            HStack(spacing: 12) {
+                                Button(action: {
+                                    taxStore.deductions.mortgageLoanDate = .beforeDec162017
+                                }) {
+                                    HStack {
+                                        Image(systemName: taxStore.deductions.mortgageLoanDate == .beforeDec162017 ? "checkmark.circle.fill" : "circle")
+                                            .foregroundColor(.blue)
+                                        Text("Before Dec 16, 2017")
+                                            .foregroundColor(.primary)
+                                    }
+                                    .font(.subheadline)
+                                }
+                                
+                                Button(action: {
+                                    taxStore.deductions.mortgageLoanDate = .afterDec152017
+                                }) {
+                                    HStack {
+                                        Image(systemName: taxStore.deductions.mortgageLoanDate == .afterDec152017 ? "checkmark.circle.fill" : "circle")
+                                            .foregroundColor(.blue)
+                                        Text("After Dec 15, 2017")
+                                            .foregroundColor(.primary)
+                                    }
+                                    .font(.subheadline)
                                 }
                             }
-                            .pickerStyle(SegmentedPickerStyle())
                         }
                         
-                        CurrencyTextField("Mortgage Balance", value: $taxStore.deductions.mortgageBalance)
+                        ModernDeductionField("Mortgage Balance", value: $taxStore.deductions.mortgageBalance, icon: "dollarsign.circle")
+                        
+                        // Show limit info
+                        if let balance = taxStore.deductions.mortgageBalance.toDecimal(), balance > 0 {
+                            HStack {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.blue)
+                                Text(taxStore.deductions.mortgageLoanDate == .beforeDec162017 ? 
+                                     "Interest deductible on up to $1M of mortgage debt" : 
+                                     "Interest deductible on up to $750K of mortgage debt")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(10)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(8)
+                        }
                     }
-                    
-                    CurrencyTextField("Charitable Donations", value: $taxStore.deductions.donations)
-                    
-                    // Show other state income tax only if California tax is not selected
-                    if !taxStore.includeCaliforniaTax {
-                        CurrencyTextField("Other State Income Tax", value: $taxStore.deductions.otherStateIncomeTax)
-                    }
+                    .padding()
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(10)
                 }
                 
-                Section(header: Text("Deduction Comparison"), footer: deductionExplanation) {
-                    DeductionComparisonView()
-                }
-            }
-            .navigationTitle("Deductions")
-            .onChange(of: taxStore.deductions) { _ in
-                taxStore.saveData()
-            }
-        }
-    }
-    
-    var deductionExplanation: some View {
-        Text("The calculator will automatically use whichever deduction method (Standard or Itemized) gives you the greater benefit for both Federal and California taxes separately.")
-            .font(.caption)
-            .foregroundColor(.secondary)
-    }
-}
-
-struct DeductionComparisonView: View {
-    @EnvironmentObject var taxStore: TaxStore
-    
-    var federalStandardDeduction: Decimal {
-        FederalTaxConstants.StandardDeductions.amount(for: taxStore.filingStatus)
-    }
-    
-    var californiaStandardDeduction: Decimal {
-        CaliforniaTaxConstants.StandardDeductions.amount(for: taxStore.filingStatus)
-    }
-    
-    var federalItemizedDeduction: Decimal {
-        calculateFederalItemized()
-    }
-    
-    var californiaItemizedDeduction: Decimal {
-        calculateCaliforniaItemized()
-    }
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            // Federal Comparison
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Federal")
-                    .font(.headline)
+                ModernDeductionField("Charitable Donations", value: $taxStore.deductions.donations, icon: "heart")
                 
-                HStack {
-                    Label("Standard", systemImage: "doc.plaintext")
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: federalStandardDeduction as NSNumber) ?? "$0")
-                        .foregroundColor(federalStandardDeduction > federalItemizedDeduction ? .green : .secondary)
-                }
-                
-                HStack {
-                    Label("Itemized", systemImage: "doc.text")
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: federalItemizedDeduction as NSNumber) ?? "$0")
-                        .foregroundColor(federalItemizedDeduction > federalStandardDeduction ? .green : .secondary)
-                }
-                
-                if federalItemizedDeduction > 0 {
-                    DisclosureGroup("Itemized Breakdown") {
-                        ItemizedBreakdownView(
-                            propertyTax: taxStore.deductions.propertyTax.toDecimal() ?? 0,
-                            stateIncomeTax: taxStore.includeCaliforniaTax ? 0 : (taxStore.deductions.otherStateIncomeTax.toDecimal() ?? 0),
-                            saltCap: FederalTaxConstants.Limits.saltDeductionCap,
-                            mortgageInterest: calculateAllowedMortgageInterest(for: .federal),
-                            donations: taxStore.deductions.donations.toDecimal() ?? 0,
-                            showSaltCap: true
-                        )
-                    }
-                    .font(.caption)
+                if !taxStore.includeCaliforniaTax {
+                    ModernDeductionField("Other State Income Tax", value: $taxStore.deductions.otherStateIncomeTax, icon: "building.columns")
                 }
             }
             
-            if taxStore.includeCaliforniaTax {
+            // SALT cap warning for federal deductions
+            if calculateFederalSALT() > 10000 {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Federal SALT Cap Applied")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        Text("State and local taxes are limited to $10,000 for federal deductions")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(10)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(12)
+    }
+    
+    var standardDeductionCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Standard Deduction", systemImage: "checkmark.shield")
+                .font(.headline)
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Federal")
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: standardDeductionAmount())) ?? "$0")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                }
+                
+                Spacer()
+                
+                if taxStore.includeCaliforniaTax {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("California")
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: californiaStandardDeduction())) ?? "$0")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                    }
+                }
+            }
+            
+            Text("Automatically applied if higher than itemized deductions")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(12)
+    }
+    
+    var federalBreakdownCard: some View {
+        let federalItemized = calculateFederalItemizedTotal()
+        let federalStandard = standardDeductionAmount()
+        let federalUseStandard = federalStandard > federalItemized
+        
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "flag.fill")
+                    .foregroundColor(.blue)
+                Text("Federal (IRS)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(federalUseStandard ? "STANDARD" : "ITEMIZED")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(federalUseStandard ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
+                    .foregroundColor(federalUseStandard ? .blue : .green)
+                    .cornerRadius(4)
+            }
+            
+            VStack(spacing: 8) {
+                // Property Tax
+                let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
+                HStack {
+                    Text("Property Tax:")
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: propertyTax)) ?? "$0")
+                        .fontWeight(.medium)
+                }
+                
+                // Estimated CA State Tax (for SALT)
+                if taxStore.includeCaliforniaTax {
+                    HStack {
+                        Text("Est. CA State Tax:")
+                        Spacer()
+                        Text("$0") // Simplified for now
+                            .fontWeight(.medium)
+                    }
+                }
+                
+                // SALT Cap Applied
+                let federalSALT = calculateFederalSALT()
+                if federalSALT > 0 {
+                    HStack {
+                        Text("SALT Cap Applied:")
+                            .foregroundColor(.orange)
+                        Spacer()
+                        Text("$\(min(NSDecimalNumber(decimal: federalSALT).intValue, 10000).formatted()) (max $10,000)")
+                            .foregroundColor(.orange)
+                            .fontWeight(.medium)
+                    }
+                }
+                
+                // Mortgage Interest
+                let mortgageInterest = taxStore.deductions.mortgageInterest.toDecimal() ?? 0
+                if mortgageInterest > 0 {
+                    HStack {
+                        Text("Mortgage Interest:")
+                        Spacer()
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: mortgageInterest)) ?? "$0")
+                            .fontWeight(.medium)
+                    }
+                    
+                    // Show mortgage limitation if applicable
+                    if let balance = taxStore.deductions.mortgageBalance.toDecimal(), balance > 0 {
+                        let federalLimit: Decimal = taxStore.deductions.mortgageLoanDate == .beforeDec162017 ? 1_000_000 : 750_000
+                        if balance > federalLimit {
+                            let limitedInterest = mortgageInterest * (federalLimit / balance)
+                            HStack {
+                                HStack(spacing: 4) {
+                                    Text("→")
+                                        .foregroundColor(.orange)
+                                    Text("Limited to $\(NSDecimalNumber(decimal: federalLimit).intValue.formatted()) loan:")
+                                        .foregroundColor(.orange)
+                                }
+                                Spacer()
+                                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: limitedInterest)) ?? "$0")
+                                    .foregroundColor(.orange)
+                                    .fontWeight(.medium)
+                            }
+                            .font(.subheadline)
+                        }
+                    }
+                }
+                
+                // Donations
+                let donations = taxStore.deductions.donations.toDecimal() ?? 0
+                HStack {
+                    Text("Donations:")
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: donations)) ?? "$0")
+                        .fontWeight(.medium)
+                }
+                
                 Divider()
                 
-                // California Comparison
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("California")
-                        .font(.headline)
-                    
-                    HStack {
-                        Label("Standard", systemImage: "doc.plaintext")
-                        Spacer()
-                        Text(NumberFormatter.currencyWholeNumber.string(from: californiaStandardDeduction as NSNumber) ?? "$0")
-                            .foregroundColor(californiaStandardDeduction > californiaItemizedDeduction ? .green : .secondary)
-                    }
-                    
-                    HStack {
-                        Label("Itemized", systemImage: "doc.text")
-                        Spacer()
-                        Text(NumberFormatter.currencyWholeNumber.string(from: californiaItemizedDeduction as NSNumber) ?? "$0")
-                            .foregroundColor(californiaItemizedDeduction > californiaStandardDeduction ? .green : .secondary)
-                    }
-                    
-                    if californiaItemizedDeduction > 0 {
-                        DisclosureGroup("Itemized Breakdown") {
-                            ItemizedBreakdownView(
-                                propertyTax: taxStore.deductions.propertyTax.toDecimal() ?? 0,
-                                stateIncomeTax: 0,
-                                saltCap: 0,
-                                mortgageInterest: calculateAllowedMortgageInterest(for: .california),
-                                donations: taxStore.deductions.donations.toDecimal() ?? 0,
-                                showSaltCap: false
-                            )
-                        }
-                        .font(.caption)
-                    }
+                // Total Federal Itemized
+                HStack {
+                    Text("Total Federal Itemized:")
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: federalItemized)) ?? "$0")
+                        .fontWeight(.semibold)
                 }
+                
+                // Explanation
+                Text("Itemized ($\(NSDecimalNumber(decimal: federalItemized).intValue.formatted())) is \(federalUseStandard ? "less than" : "greater than") standard ($\(NSDecimalNumber(decimal: federalStandard).intValue.formatted()))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+        )
+        .cornerRadius(12)
     }
     
-    func calculateFederalItemized() -> Decimal {
-        let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
-        let stateIncomeTax = taxStore.includeCaliforniaTax ? 0 : (taxStore.deductions.otherStateIncomeTax.toDecimal() ?? 0)
-        let saltDeduction = min(propertyTax + stateIncomeTax, FederalTaxConstants.Limits.saltDeductionCap)
-        let mortgageInterest = calculateAllowedMortgageInterest(for: .federal)
-        let donations = taxStore.deductions.donations.toDecimal() ?? 0
+    var californiaBreakdownCard: some View {
+        let californiaItemized = calculateCaliforniaItemizedTotal()
+        let californiaStandard = californiaStandardDeduction()
+        let californiaUseStandard = californiaStandard > californiaItemized
         
-        return saltDeduction + mortgageInterest + donations
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "star.fill")
+                    .foregroundColor(.orange)
+                Text("California (FTB)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(californiaUseStandard ? "STANDARD" : "ITEMIZED")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(californiaUseStandard ? Color.orange.opacity(0.1) : Color.green.opacity(0.1))
+                    .foregroundColor(californiaUseStandard ? .orange : .green)
+                    .cornerRadius(4)
+            }
+            
+            VStack(spacing: 8) {
+                // Property Tax
+                let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
+                HStack {
+                    Text("Property Tax:")
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: propertyTax)) ?? "$0")
+                        .fontWeight(.medium)
+                }
+                
+                // Mortgage Interest (no limitations shown for CA)
+                let mortgageInterest = taxStore.deductions.mortgageInterest.toDecimal() ?? 0
+                HStack {
+                    Text("Mortgage Interest:")
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: mortgageInterest)) ?? "$0")
+                        .fontWeight(.medium)
+                }
+                
+                // Donations
+                let donations = taxStore.deductions.donations.toDecimal() ?? 0
+                HStack {
+                    Text("Donations:")
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: donations)) ?? "$0")
+                        .fontWeight(.medium)
+                }
+                
+                Divider()
+                
+                // Total CA Itemized
+                HStack {
+                    Text("Total CA Itemized:")
+                        .fontWeight(.semibold)
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: californiaItemized)) ?? "$0")
+                        .fontWeight(.semibold)
+                }
+                
+                // Explanation
+                Text("Itemized ($\(NSDecimalNumber(decimal: californiaItemized).intValue.formatted())) is \(californiaUseStandard ? "less than" : "greater than") standard ($\(NSDecimalNumber(decimal: californiaStandard).intValue.formatted()))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+        )
+        .cornerRadius(12)
     }
     
-    func calculateCaliforniaItemized() -> Decimal {
-        let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
-        let mortgageInterest = calculateAllowedMortgageInterest(for: .california)
-        let donations = taxStore.deductions.donations.toDecimal() ?? 0
-        
-        return propertyTax + mortgageInterest + donations
-    }
-    
-    enum TaxType {
-        case federal, california
-    }
-    
-    func calculateAllowedMortgageInterest(for taxType: TaxType) -> Decimal {
+    func calculateFederalItemizedTotal() -> Decimal {
+        let _ = taxStore.deductions.propertyTax.toDecimal() ?? 0
         let mortgageInterest = taxStore.deductions.mortgageInterest.toDecimal() ?? 0
-        let mortgageBalance = taxStore.deductions.mortgageBalance.toDecimal() ?? 0
+        let donations = taxStore.deductions.donations.toDecimal() ?? 0
         
-        guard mortgageInterest > 0 else { return 0 }
-        
-        let limit: Decimal
-        switch taxType {
-        case .federal:
-            switch taxStore.deductions.mortgageLoanDate {
-            case .beforeDec162017:
-                limit = FederalTaxConstants.Limits.mortgageInterestLimitBefore2017
-            case .afterDec152017:
-                limit = FederalTaxConstants.Limits.mortgageInterestLimitAfter2017
+        // Apply federal mortgage interest limit
+        var deductibleMortgageInterest = mortgageInterest
+        if let balance = taxStore.deductions.mortgageBalance.toDecimal(), balance > 0 && mortgageInterest > 0 {
+            let federalLimit: Decimal = taxStore.deductions.mortgageLoanDate == .beforeDec162017 ? 1_000_000 : 750_000
+            if balance > federalLimit {
+                deductibleMortgageInterest = mortgageInterest * (federalLimit / balance)
             }
-        case .california:
-            limit = CaliforniaTaxConstants.Limits.mortgageInterestLimit
         }
         
-        if mortgageBalance > 0 && mortgageBalance > limit {
-            return mortgageInterest * (limit / mortgageBalance)
+        // Federal SALT calculation with $10,000 cap
+        let federalSALT = min(calculateFederalSALT(), 10000)
+        
+        return federalSALT + deductibleMortgageInterest + donations
+    }
+    
+    func calculateCaliforniaItemizedTotal() -> Decimal {
+        let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
+        let mortgageInterest = taxStore.deductions.mortgageInterest.toDecimal() ?? 0
+        let donations = taxStore.deductions.donations.toDecimal() ?? 0
+        
+        // Apply California mortgage interest limit (always $1M regardless of loan date)
+        var deductibleMortgageInterest = mortgageInterest
+        if let balance = taxStore.deductions.mortgageBalance.toDecimal(), balance > 0 && mortgageInterest > 0 {
+            let californiaLimit: Decimal = 1_000_000
+            if balance > californiaLimit {
+                deductibleMortgageInterest = mortgageInterest * (californiaLimit / balance)
+            }
+        }
+        
+        // California has no SALT cap, but can't deduct CA state tax on CA return
+        // So only property tax is deductible (no state income tax)
+        return propertyTax + deductibleMortgageInterest + donations
+    }
+    
+    func calculateFederalSALT() -> Decimal {
+        let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
+        
+        if taxStore.includeCaliforniaTax {
+            // For federal SALT, include estimated CA state tax (simplified calculation)
+            // In a real implementation, this would be calculated based on total income
+            return propertyTax // For now, just property tax
         } else {
-            return mortgageInterest
+            let otherStateTax = taxStore.deductions.otherStateIncomeTax.toDecimal() ?? 0
+            return propertyTax + otherStateTax
+        }
+    }
+    
+    func standardDeductionAmount() -> Decimal {
+        switch taxStore.filingStatus {
+        case .single:
+            return 15000
+        case .marriedFilingJointly:
+            return 30000
+        }
+    }
+    
+    func californiaStandardDeduction() -> Decimal {
+        switch taxStore.filingStatus {
+        case .single:
+            return 5540
+        case .marriedFilingJointly:
+            return 11080
         }
     }
 }
 
-struct ItemizedBreakdownView: View {
-    let propertyTax: Decimal
-    let stateIncomeTax: Decimal
-    let saltCap: Decimal
-    let mortgageInterest: Decimal
-    let donations: Decimal
-    let showSaltCap: Bool
+struct ModernDeductionField: View {
+    let label: String
+    @Binding var value: String
+    let icon: String
+    
+    init(_ label: String, value: Binding<String>, icon: String) {
+        self.label = label
+        self._value = value
+        self.icon = icon
+    }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if showSaltCap {
-                HStack {
-                    Text("Property Tax")
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: propertyTax as NSNumber) ?? "$0")
-                }
-                
-                if stateIncomeTax > 0 {
-                    HStack {
-                        Text("State Income Tax")
-                        Spacer()
-                        Text(NumberFormatter.currencyWholeNumber.string(from: stateIncomeTax as NSNumber) ?? "$0")
-                    }
-                }
-                
-                if propertyTax + stateIncomeTax > saltCap {
-                    HStack {
-                        Text("SALT Cap Applied")
-                            .foregroundColor(.orange)
-                        Spacer()
-                        Text(NumberFormatter.currencyWholeNumber.string(from: saltCap as NSNumber) ?? "$0")
-                            .foregroundColor(.orange)
-                    }
-                }
-            } else {
-                HStack {
-                    Text("Property Tax")
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: propertyTax as NSNumber) ?? "$0")
-                }
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.secondary)
+                    .font(.caption)
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
             
-            if mortgageInterest > 0 {
-                HStack {
-                    Text("Mortgage Interest")
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: mortgageInterest as NSNumber) ?? "$0")
-                }
+            HStack {
+                Text("$")
+                    .foregroundColor(.secondary)
+                TextField("0", text: $value)
+                    .keyboardType(.numberPad)
             }
-            
-            if donations > 0 {
-                HStack {
-                    Text("Donations")
-                    Spacer()
-                    Text(NumberFormatter.currencyWholeNumber.string(from: donations as NSNumber) ?? "$0")
-                }
-            }
+            .padding(12)
+            .background(Color(UIColor.tertiarySystemFill))
+            .cornerRadius(8)
         }
-        .foregroundColor(.secondary)
     }
 }
 

@@ -4,373 +4,736 @@ struct SummaryView: View {
     @EnvironmentObject var taxStore: TaxStore
     @State private var taxResult: TaxCalculationResult?
     @State private var isCalculating = false
+    @State private var expandedSections = Set<String>()
     
     var body: some View {
         NavigationView {
             ScrollView {
                 if isCalculating {
-                    ProgressView("Calculating...")
-                        .padding()
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Calculating your taxes...")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(40)
                 } else if let result = taxResult {
                     VStack(spacing: 20) {
-                        // Tax Overview Cards
-                        HStack(spacing: 16) {
-                            TaxOverviewCard(
-                                title: "Federal Tax",
-                                amount: result.federalTax.owedOrRefund,
-                                isRefund: result.federalTax.owedOrRefund < 0,
-                                effectiveRate: result.federalTax.effectiveRate
-                            )
-                            
-                            if let californiaTax = result.californiaTax {
-                                TaxOverviewCard(
-                                    title: "California Tax",
-                                    amount: californiaTax.owedOrRefund,
-                                    isRefund: californiaTax.owedOrRefund < 0,
-                                    effectiveRate: californiaTax.effectiveRate
-                                )
-                            }
-                        }
-                        .padding(.horizontal)
+                        // Federal and California Tax Owed/Overpaid Cards
+                        taxOwedCards(result: result)
                         
-                        // Income Summary
-                        SummarySection(title: "Income Summary") {
-                            SummaryRow(label: "Total Income", value: result.displayTotalIncome)
-                        }
+                        // Tax Breakdown Section
+                        taxBreakdownSection(result: result)
                         
-                        // Federal Tax Details
-                        FederalTaxDetailsView(federalTax: result.federalTax)
-                        
-                        // California Tax Details
-                        if let californiaTax = result.californiaTax {
-                            CaliforniaTaxDetailsView(californiaTax: californiaTax)
-                        }
-                        
-                        // Estimated Payment Suggestions
-                        EstimatedPaymentSuggestionsView(taxResult: result)
+                        // Estimated Tax Payments Section
+                        estimatedPaymentsSection(result: result)
                     }
-                    .padding(.vertical)
+                    .padding()
                 } else {
-                    VStack(spacing: 16) {
-                        Image(systemName: "doc.text.magnifyingglass")
-                            .font(.system(size: 60))
-                            .foregroundColor(.secondary)
+                    VStack(spacing: 20) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.orange)
                         
-                        Text("Enter your income and deduction information to see your tax calculation")
-                            .multilineTextAlignment(.center)
+                        Text("Complete Setup Required")
+                            .font(.headline)
+                        
+                        Text("Please complete the Tax Information and other steps to see your tax calculation summary.")
+                            .font(.body)
                             .foregroundColor(.secondary)
-                            .padding(.horizontal)
+                            .multilineTextAlignment(.center)
                     }
-                    .padding(.top, 100)
+                    .padding(40)
                 }
             }
-            .navigationTitle("Tax Summary")
-            .onAppear {
-                calculateTaxes()
+            .background(Color(UIColor.systemGroupedBackground))
+            .navigationTitle("Summary & Results")
+            .navigationBarTitleDisplayMode(.large)
+        }
+        .onAppear {
+            calculateTaxes()
+        }
+        .onChange(of: taxStore.filingStatus) { _ in calculateTaxes() }
+        .onChange(of: taxStore.includeCaliforniaTax) { _ in calculateTaxes() }
+        .onChange(of: taxStore.userIncome) { _ in calculateTaxes() }
+        .onChange(of: taxStore.spouseIncome) { _ in calculateTaxes() }
+        .onChange(of: taxStore.deductions) { _ in calculateTaxes() }
+        .onChange(of: taxStore.estimatedPayments) { _ in calculateTaxes() }
+    }
+    
+    // MARK: - Tax Owed Cards
+    func taxOwedCards(result: TaxCalculationResult) -> some View {
+        VStack(spacing: 12) {
+            // Federal Tax Card
+            federalTaxOwedCard(result: result)
+            
+            // California Tax Card (if selected)
+            if taxStore.includeCaliforniaTax, let caTax = result.californiaTax {
+                californiaTaxOwedCard(caTax: caTax)
             }
-            .onChange(of: taxStore.userIncome) { _ in calculateTaxes() }
-            .onChange(of: taxStore.spouseIncome) { _ in calculateTaxes() }
-            .onChange(of: taxStore.deductions) { _ in calculateTaxes() }
-            .onChange(of: taxStore.estimatedPayments) { _ in calculateTaxes() }
-            .onChange(of: taxStore.filingStatus) { _ in calculateTaxes() }
-            .onChange(of: taxStore.includeCaliforniaTax) { _ in calculateTaxes() }
         }
     }
     
+    func federalTaxOwedCard(result: TaxCalculationResult) -> some View {
+        let federalOwed = result.federalTax.owedOrRefund
+        
+        return VStack(spacing: 12) {
+            HStack {
+                Image(systemName: "flag.fill")
+                    .foregroundColor(.blue)
+                Text("Federal Tax (IRS)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Spacer()
+            }
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    if federalOwed > 0 {
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: federalOwed)) ?? "$0")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.red)
+                        Text("Owed")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    } else {
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(federalOwed))) ?? "$0")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.green)
+                        Text("Overpaid")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Tax Year \(taxStore.taxYear.displayName)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(String(format: "%.2f", NSDecimalNumber(decimal: result.federalTax.effectiveRate).doubleValue))% effective rate")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(federalOwed > 0 ? Color.red.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 2)
+        )
+        .cornerRadius(12)
+    }
+    
+    func californiaTaxOwedCard(caTax: CaliforniaTaxResult) -> some View {
+        let caOwed = caTax.owedOrRefund
+        
+        return VStack(spacing: 12) {
+            HStack {
+                Image(systemName: "star.fill")
+                    .foregroundColor(.orange)
+                Text("California Tax (FTB)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Spacer()
+            }
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    if caOwed > 0 {
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caOwed)) ?? "$0")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.red)
+                        Text("Owed")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    } else {
+                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(caOwed))) ?? "$0")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.green)
+                        Text("Overpaid")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Tax Year \(taxStore.taxYear.displayName)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(String(format: "%.2f", NSDecimalNumber(decimal: caTax.effectiveRate).doubleValue))% effective rate")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(caOwed > 0 ? Color.red.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 2)
+        )
+        .cornerRadius(12)
+    }
+    
+    // MARK: - Tax Breakdown Section
+    func taxBreakdownSection(result: TaxCalculationResult) -> some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Tax Calculation Breakdown")
+                    .font(.headline)
+                Spacer()
+            }
+            
+            // Basic breakdown
+            VStack(spacing: 8) {
+                HStack {
+                    Text("Total Income")
+                    Spacer()
+                    Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.totalIncome)) ?? "$0")
+                        .fontWeight(.semibold)
+                }
+                
+                HStack {
+                    Text("Combined Effective Tax Rate")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    let combinedRate = (result.federalTax.totalTax + (result.californiaTax?.totalTax ?? 0)) / result.totalIncome * 100
+                    Text("\(String(format: "%.2f", NSDecimalNumber(decimal: combinedRate).doubleValue))%")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding()
+            .background(Color(UIColor.tertiarySystemFill))
+            .cornerRadius(8)
+            
+            // Federal breakdown card
+            federalBreakdownCard(result: result)
+            
+            // California breakdown card (if selected)
+            if taxStore.includeCaliforniaTax, let caTax = result.californiaTax {
+                californiaBreakdownCard(caTax: caTax)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(12)
+    }
+    
+    func federalBreakdownCard(result: TaxCalculationResult) -> some View {
+        let federalWithholdings = calculateFederalWithholdings()
+        let federalQ1 = taxStore.estimatedPayments.federalQ1.toDecimal() ?? 0
+        let federalQ2 = taxStore.estimatedPayments.federalQ2.toDecimal() ?? 0
+        let federalQ3 = taxStore.estimatedPayments.federalQ3.toDecimal() ?? 0
+        let federalQ4 = taxStore.estimatedPayments.federalQ4.toDecimal() ?? 0
+        let federalPaid = federalQ1 + federalQ2 + federalQ3 + federalQ4
+        let owed = result.federalTax.owedOrRefund
+        
+        return VStack(alignment: .leading, spacing: 12) {
+            federalBreakdownHeader
+            federalBreakdownDetails(result: result, withholdings: federalWithholdings, paid: federalPaid, owed: owed)
+        }
+        .padding()
+        .background(Color.blue.opacity(0.05))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+        )
+        .cornerRadius(8)
+    }
+    
+    var federalBreakdownHeader: some View {
+        HStack {
+            Image(systemName: "flag.fill")
+                .foregroundColor(.blue)
+            Text("Federal Tax Details (IRS)")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            Spacer()
+        }
+    }
+    
+    func federalBreakdownDetails(result: TaxCalculationResult, withholdings: Decimal, paid: Decimal, owed: Decimal) -> some View {
+        VStack(spacing: 6) {
+            HStack {
+                Text("Tax Liability (before withholdings)")
+                    .font(.subheadline)
+                Spacer()
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.totalTax)) ?? "$0")
+                    .fontWeight(.semibold)
+            }
+            
+            HStack {
+                Text("Total Withholdings")
+                    .font(.subheadline)
+                Spacer()
+                Text("-\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: withholdings)) ?? "$0")")
+                    .fontWeight(.semibold)
+            }
+            
+            HStack {
+                Text("Estimated Payments Made")
+                    .font(.subheadline)
+                Spacer()
+                Text("-\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: paid)) ?? "$0")")
+                    .fontWeight(.semibold)
+            }
+            
+            Divider()
+            
+            HStack {
+                Text("Net Tax Owed/Overpaid")
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(owed))) ?? "$0")
+                    .fontWeight(.bold)
+                    .foregroundColor(owed > 0 ? .red : .green)
+            }
+        }
+    }
+    
+    func californiaBreakdownCard(caTax: CaliforniaTaxResult) -> some View {
+        let californiaWithholdings = calculateCaliforniaWithholdings()
+        let caQ1 = taxStore.estimatedPayments.californiaQ1.toDecimal() ?? 0
+        let caQ2 = taxStore.estimatedPayments.californiaQ2.toDecimal() ?? 0
+        let caQ4 = taxStore.estimatedPayments.californiaQ4.toDecimal() ?? 0
+        let californiaPaid = caQ1 + caQ2 + caQ4
+        let owed = caTax.owedOrRefund
+        
+        return VStack(alignment: .leading, spacing: 12) {
+            californiaBreakdownHeader
+            californiaBreakdownDetails(caTax: caTax, withholdings: californiaWithholdings, paid: californiaPaid, owed: owed)
+        }
+        .padding()
+        .background(Color.orange.opacity(0.05))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+        )
+        .cornerRadius(8)
+    }
+    
+    var californiaBreakdownHeader: some View {
+        HStack {
+            Image(systemName: "star.fill")
+                .foregroundColor(.orange)
+            Text("California Tax Details (FTB)")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            Spacer()
+        }
+    }
+    
+    func californiaBreakdownDetails(caTax: CaliforniaTaxResult, withholdings: Decimal, paid: Decimal, owed: Decimal) -> some View {
+        VStack(spacing: 6) {
+            HStack {
+                Text("Tax Liability (before withholdings)")
+                    .font(.subheadline)
+                Spacer()
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.totalTax)) ?? "$0")
+                    .fontWeight(.semibold)
+            }
+            
+            HStack {
+                Text("Total Withholdings")
+                    .font(.subheadline)
+                Spacer()
+                Text("-\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: withholdings)) ?? "$0")")
+                    .fontWeight(.semibold)
+            }
+            
+            HStack {
+                Text("Estimated Payments Made")
+                    .font(.subheadline)
+                Spacer()
+                Text("-\(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: paid)) ?? "$0")")
+                    .fontWeight(.semibold)
+            }
+            
+            Divider()
+            
+            HStack {
+                Text("Net Tax Owed/Overpaid")
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(owed))) ?? "$0")
+                    .fontWeight(.bold)
+                    .foregroundColor(owed > 0 ? .red : .green)
+            }
+        }
+    }
+    
+    // MARK: - Estimated Payments Section
+    func estimatedPaymentsSection(result: TaxCalculationResult) -> some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Estimated Tax Payments")
+                    .font(.headline)
+                Spacer()
+            }
+            
+            // Federal estimated payments
+            federalEstimatedPaymentsCard(result: result)
+            
+            // California estimated payments (if selected)
+            if taxStore.includeCaliforniaTax, let caTax = result.californiaTax {
+                californiaEstimatedPaymentsCard(caTax: caTax)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(12)
+    }
+    
+    func federalEstimatedPaymentsCard(result: TaxCalculationResult) -> some View {
+        let federalOwed = result.federalTax.owedOrRefund
+        let paymentSuggestions = calculateFederalPaymentSuggestions(federalOwed: federalOwed)
+        
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "flag.fill")
+                    .foregroundColor(.blue)
+                Text("Federal Estimated Payments (IRS)")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Spacer()
+            }
+            
+            if paymentSuggestions.allSatisfy({ $0.isPaid }) && federalOwed != 0 {
+                allPaymentsMadeView(owed: federalOwed)
+            } else {
+                paymentScheduleView(paymentSuggestions: paymentSuggestions, owed: federalOwed)
+            }
+        }
+        .padding()
+        .background(Color.blue.opacity(0.05))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+        )
+        .cornerRadius(8)
+    }
+    
+    func allPaymentsMadeView(owed: Decimal) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("✅ All quarterly payments have been made.")
+                .fontWeight(.medium)
+            
+            Text("Based on current data, you would \(owed > 0 ? "owe \(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: owed)) ?? "$0")" : "be refunded \(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(owed))) ?? "$0")") when filing taxes.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Text("This is an estimation only and not professional tax advice.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.yellow.opacity(0.1))
+        .cornerRadius(8)
+    }
+    
+    func paymentScheduleView(paymentSuggestions: [PaymentSuggestion], owed: Decimal) -> some View {
+        VStack(spacing: 8) {
+            ForEach(paymentSuggestions, id: \.quarter) { payment in
+                PaymentRowView(payment: payment)
+            }
+            
+            if owed <= 0 && !paymentSuggestions.allSatisfy({ $0.isPaid }) {
+                Text("No additional payments needed - you're on track for a refund.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 4)
+            }
+        }
+    }
+    
+    func californiaEstimatedPaymentsCard(caTax: CaliforniaTaxResult) -> some View {
+        let caOwed = caTax.owedOrRefund
+        let paymentSuggestions = calculateCaliforniaPaymentSuggestions(caOwed: caOwed)
+        
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "star.fill")
+                    .foregroundColor(.orange)
+                Text("California Estimated Payments (FTB)")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Spacer()
+            }
+            
+            if paymentSuggestions.allSatisfy({ $0.isPaid }) && caOwed != 0 {
+                allPaymentsMadeView(owed: caOwed)
+            } else {
+                VStack(spacing: 8) {
+                    paymentScheduleView(paymentSuggestions: paymentSuggestions, owed: caOwed)
+                    
+                    Text("ℹ️ California requires 3 payments (no Q3 payment)")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .padding(.top, 8)
+                }
+            }
+        }
+        .padding()
+        .background(Color.orange.opacity(0.05))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+        )
+        .cornerRadius(8)
+    }
+    
+    // MARK: - Helper Functions
     func calculateTaxes() {
         isCalculating = true
         
-        // Simulate async calculation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.taxResult = TaxOrchestrator.calculateTaxes(store: taxStore)
-            self.isCalculating = false
+        Task {
+            let result = TaxOrchestrator.calculateTaxes(store: taxStore)
+            
+            await MainActor.run {
+                self.taxResult = result
+                self.isCalculating = false
+            }
         }
+    }
+    
+    func calculateFederalPaymentSuggestions(federalOwed: Decimal) -> [PaymentSuggestion] {
+        // Calculate total estimated payments already made
+        let fedQ1 = taxStore.estimatedPayments.federalQ1.toDecimal() ?? 0
+        let fedQ2 = taxStore.estimatedPayments.federalQ2.toDecimal() ?? 0
+        let fedQ3 = taxStore.estimatedPayments.federalQ3.toDecimal() ?? 0
+        let fedQ4 = taxStore.estimatedPayments.federalQ4.toDecimal() ?? 0
+        let federalPaid = fedQ1 + fedQ2 + fedQ3 + fedQ4
+        
+        // Total tax that needs to be paid via estimated payments
+        let totalTaxForEstimatedPayments = federalOwed + federalPaid
+        
+        let q1Paid = taxStore.estimatedPayments.federalQ1.toDecimal() ?? 0
+        let q2Paid = taxStore.estimatedPayments.federalQ2.toDecimal() ?? 0
+        let q3Paid = taxStore.estimatedPayments.federalQ3.toDecimal() ?? 0
+        let q4Paid = taxStore.estimatedPayments.federalQ4.toDecimal() ?? 0
+        
+        var cumulativePaid: Decimal = 0
+        var suggestions: [PaymentSuggestion] = []
+        
+        // Q1 Payment
+        let q1DueDate = dateFromString("April 15, 2025")
+        let q1IsPastDue = q1DueDate <= Date()
+        if q1Paid > 0 {
+            cumulativePaid += q1Paid
+            suggestions.append(PaymentSuggestion(quarter: "Q1", dueDate: "April 15, 2025", amount: q1Paid, isPaid: true, isPastDue: false))
+        } else if q1IsPastDue {
+            suggestions.append(PaymentSuggestion(quarter: "Q1", dueDate: "April 15, 2025", amount: 0, isPaid: false, isPastDue: true))
+        } else {
+            let q1Amount = max(0, totalTaxForEstimatedPayments * 0.25 - cumulativePaid)
+            cumulativePaid += q1Amount
+            suggestions.append(PaymentSuggestion(quarter: "Q1", dueDate: "April 15, 2025", amount: q1Amount, isPaid: false, isPastDue: false))
+        }
+        
+        // Q2 Payment
+        let q2DueDate = dateFromString("June 16, 2025")
+        let q2IsPastDue = q2DueDate <= Date()
+        if q2Paid > 0 {
+            cumulativePaid += q2Paid
+            suggestions.append(PaymentSuggestion(quarter: "Q2", dueDate: "June 16, 2025", amount: q2Paid, isPaid: true, isPastDue: false))
+        } else if q2IsPastDue {
+            suggestions.append(PaymentSuggestion(quarter: "Q2", dueDate: "June 16, 2025", amount: 0, isPaid: false, isPastDue: true))
+        } else {
+            let q2Amount = max(0, totalTaxForEstimatedPayments * 0.50 - cumulativePaid)
+            cumulativePaid += q2Amount
+            suggestions.append(PaymentSuggestion(quarter: "Q2", dueDate: "June 16, 2025", amount: q2Amount, isPaid: false, isPastDue: false))
+        }
+        
+        // Q3 Payment
+        let q3DueDate = dateFromString("September 15, 2025")
+        let q3IsPastDue = q3DueDate <= Date()
+        if q3Paid > 0 {
+            cumulativePaid += q3Paid
+            suggestions.append(PaymentSuggestion(quarter: "Q3", dueDate: "September 15, 2025", amount: q3Paid, isPaid: true, isPastDue: false))
+        } else if q3IsPastDue {
+            suggestions.append(PaymentSuggestion(quarter: "Q3", dueDate: "September 15, 2025", amount: 0, isPaid: false, isPastDue: true))
+        } else {
+            let q3Amount = max(0, totalTaxForEstimatedPayments * 0.75 - cumulativePaid)
+            cumulativePaid += q3Amount
+            suggestions.append(PaymentSuggestion(quarter: "Q3", dueDate: "September 15, 2025", amount: q3Amount, isPaid: false, isPastDue: false))
+        }
+        
+        // Q4 Payment
+        let q4DueDate = dateFromString("January 15, 2026")
+        let q4IsPastDue = q4DueDate <= Date()
+        if q4Paid > 0 {
+            cumulativePaid += q4Paid
+            suggestions.append(PaymentSuggestion(quarter: "Q4", dueDate: "January 15, 2026", amount: q4Paid, isPaid: true, isPastDue: false))
+        } else if q4IsPastDue {
+            suggestions.append(PaymentSuggestion(quarter: "Q4", dueDate: "January 15, 2026", amount: 0, isPaid: false, isPastDue: true))
+        } else {
+            let q4Amount = max(0, totalTaxForEstimatedPayments * 1.00 - cumulativePaid)
+            suggestions.append(PaymentSuggestion(quarter: "Q4", dueDate: "January 15, 2026", amount: q4Amount, isPaid: false, isPastDue: false))
+        }
+        
+        return suggestions
+    }
+    
+    func calculateCaliforniaPaymentSuggestions(caOwed: Decimal) -> [PaymentSuggestion] {
+        // Calculate total estimated payments already made
+        let californiaPaid = (taxStore.estimatedPayments.californiaQ1.toDecimal() ?? 0) + 
+                            (taxStore.estimatedPayments.californiaQ2.toDecimal() ?? 0) + 
+                            (taxStore.estimatedPayments.californiaQ4.toDecimal() ?? 0)
+        
+        // Total tax that needs to be paid via estimated payments
+        let totalTaxForEstimatedPayments = caOwed + californiaPaid
+        
+        let caQ1Paid = taxStore.estimatedPayments.californiaQ1.toDecimal() ?? 0
+        let caQ2Paid = taxStore.estimatedPayments.californiaQ2.toDecimal() ?? 0
+        let caQ4Paid = taxStore.estimatedPayments.californiaQ4.toDecimal() ?? 0
+        
+        var cumulativePaid: Decimal = 0
+        var suggestions: [PaymentSuggestion] = []
+        
+        // Q1 Payment (30%)
+        let caQ1DueDate = dateFromString("April 15, 2025")
+        let caQ1IsPastDue = caQ1DueDate <= Date()
+        if caQ1Paid > 0 {
+            cumulativePaid += caQ1Paid
+            suggestions.append(PaymentSuggestion(quarter: "Q1", dueDate: "April 15, 2025", amount: caQ1Paid, isPaid: true, isPastDue: false))
+        } else if caQ1IsPastDue {
+            suggestions.append(PaymentSuggestion(quarter: "Q1", dueDate: "April 15, 2025", amount: 0, isPaid: false, isPastDue: true))
+        } else {
+            let caQ1Amount = max(0, totalTaxForEstimatedPayments * 0.30 - cumulativePaid)
+            cumulativePaid += caQ1Amount
+            suggestions.append(PaymentSuggestion(quarter: "Q1", dueDate: "April 15, 2025", amount: caQ1Amount, isPaid: false, isPastDue: false))
+        }
+        
+        // Q2 Payment (70% cumulative)
+        let caQ2DueDate = dateFromString("June 16, 2025")
+        let caQ2IsPastDue = caQ2DueDate <= Date()
+        if caQ2Paid > 0 {
+            cumulativePaid += caQ2Paid
+            suggestions.append(PaymentSuggestion(quarter: "Q2", dueDate: "June 16, 2025", amount: caQ2Paid, isPaid: true, isPastDue: false))
+        } else if caQ2IsPastDue {
+            suggestions.append(PaymentSuggestion(quarter: "Q2", dueDate: "June 16, 2025", amount: 0, isPaid: false, isPastDue: true))
+        } else {
+            let caQ2Amount = max(0, totalTaxForEstimatedPayments * 0.70 - cumulativePaid)
+            cumulativePaid += caQ2Amount
+            suggestions.append(PaymentSuggestion(quarter: "Q2", dueDate: "June 16, 2025", amount: caQ2Amount, isPaid: false, isPastDue: false))
+        }
+        
+        // Q4 Payment (100% cumulative)
+        let caQ4DueDate = dateFromString("January 15, 2026")
+        let caQ4IsPastDue = caQ4DueDate <= Date()
+        if caQ4Paid > 0 {
+            cumulativePaid += caQ4Paid
+            suggestions.append(PaymentSuggestion(quarter: "Q4", dueDate: "January 15, 2026", amount: caQ4Paid, isPaid: true, isPastDue: false))
+        } else if caQ4IsPastDue {
+            suggestions.append(PaymentSuggestion(quarter: "Q4", dueDate: "January 15, 2026", amount: 0, isPaid: false, isPastDue: true))
+        } else {
+            let caQ4Amount = max(0, totalTaxForEstimatedPayments * 1.00 - cumulativePaid)
+            suggestions.append(PaymentSuggestion(quarter: "Q4", dueDate: "January 15, 2026", amount: caQ4Amount, isPaid: false, isPastDue: false))
+        }
+        
+        return suggestions
+    }
+    
+    func isPastDue(_ dueDate: Date) -> Bool {
+        return Date() > dueDate
+    }
+    
+    func dateFromString(_ dateString: String) -> Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d, yyyy"
+        return formatter.date(from: dateString) ?? Date()
+    }
+    
+    func calculateFederalWithholdings() -> Decimal {
+        let userYtdFederal = taxStore.userIncome.ytdW2Income.federalWithhold.toDecimal() ?? 0
+        let spouseYtdFederal = taxStore.spouseIncome.ytdW2Income.federalWithhold.toDecimal() ?? 0
+        
+        // Calculate future federal withholdings based on income mode
+        var userFutureFederal: Decimal = 0
+        var spouseFutureFederal: Decimal = 0
+        
+        if taxStore.userIncome.incomeMode == .simple {
+            userFutureFederal = taxStore.userIncome.futureIncome.federalWithhold.toDecimal() ?? 0
+        }
+        
+        if taxStore.spouseIncome.incomeMode == .simple {
+            spouseFutureFederal = taxStore.spouseIncome.futureIncome.federalWithhold.toDecimal() ?? 0
+        }
+        
+        return userYtdFederal + spouseYtdFederal + userFutureFederal + spouseFutureFederal
+    }
+    
+    func calculateCaliforniaWithholdings() -> Decimal {
+        let userYtdState = taxStore.userIncome.ytdW2Income.stateWithhold.toDecimal() ?? 0
+        let spouseYtdState = taxStore.spouseIncome.ytdW2Income.stateWithhold.toDecimal() ?? 0
+        
+        // Calculate future state withholdings based on income mode
+        var userFutureState: Decimal = 0
+        var spouseFutureState: Decimal = 0
+        
+        if taxStore.userIncome.incomeMode == .simple {
+            userFutureState = taxStore.userIncome.futureIncome.stateWithhold.toDecimal() ?? 0
+        }
+        
+        if taxStore.spouseIncome.incomeMode == .simple {
+            spouseFutureState = taxStore.spouseIncome.futureIncome.stateWithhold.toDecimal() ?? 0
+        }
+        
+        return userYtdState + spouseYtdState + userFutureState + spouseFutureState
     }
 }
 
-struct TaxOverviewCard: View {
-    let title: String
+struct PaymentSuggestion {
+    let quarter: String
+    let dueDate: String
     let amount: Decimal
-    let isRefund: Bool
-    let effectiveRate: Decimal
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Text(isRefund ? "Refund" : "Owed")
-                .font(.headline)
-                .foregroundColor(isRefund ? .green : .orange)
-            
-            Text(NumberFormatter.currencyWholeNumber.string(from: abs(amount) as NSNumber) ?? "$0")
-                .font(.title2)
-                .bold()
-            
-            Text("Effective Rate: \(NumberFormatter.percentage.string(from: (effectiveRate * 100) as NSNumber) ?? "0%")")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-    }
+    let isPaid: Bool
+    let isPastDue: Bool
 }
 
-struct SummarySection<Content: View>: View {
-    let title: String
-    let content: Content
-    
-    init(title: String, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.content = content()
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.headline)
-                .padding(.horizontal)
-            
-            VStack(spacing: 8) {
-                content
-            }
-            .padding()
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
-        }
-    }
-}
-
-struct SummaryRow: View {
-    let label: String
-    let value: String
+struct PaymentRowView: View {
+    let payment: PaymentSuggestion
     
     var body: some View {
         HStack {
-            Text(label)
-                .foregroundColor(.secondary)
-            Spacer()
-            Text(value)
-                
-        }
-    }
-}
-
-struct FederalTaxDetailsView: View {
-    let federalTax: FederalTaxResult
-    @State private var showBrackets = false
-    
-    var body: some View {
-        SummarySection(title: "Federal Tax Details") {
-            SummaryRow(label: "Adjusted Gross Income", value: federalTax.displayTaxableIncome)
-            SummaryRow(label: "Deduction (\(federalTax.deduction.type.displayName))", value: federalTax.deduction.displayAmount)
-            SummaryRow(label: "Taxable Income", value: federalTax.displayTaxableIncome)
-            
-            Divider()
-            
-            SummaryRow(label: "Ordinary Income Tax", value: NumberFormatter.currencyWholeNumber.string(from: federalTax.ordinaryIncomeTax as NSNumber) ?? "$0")
-            SummaryRow(label: "Capital Gains Tax", value: NumberFormatter.currencyWholeNumber.string(from: federalTax.capitalGainsTax as NSNumber) ?? "$0")
-            SummaryRow(label: "Total Tax", value: federalTax.displayTotalTax)
-            
-            Button(action: { showBrackets.toggle() }) {
-                HStack {
-                    Text("View Tax Brackets")
-                    Spacer()
-                    Image(systemName: showBrackets ? "chevron.up" : "chevron.down")
-                }
-                .foregroundColor(.accentColor)
-            }
-            
-            if showBrackets {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Ordinary Income Brackets")
-                        .font(.caption)
-                        
-                    
-                    ForEach(federalTax.ordinaryTaxBrackets, id: \.bracket.min) { detail in
-                        HStack {
-                            Text("\(detail.bracket.displayRate) on \(detail.displayTaxableAmount)")
-                                .font(.caption)
-                            Spacer()
-                            Text(detail.displayTax)
-                                .font(.caption)
-                                
-                        }
-                    }
-                    
-                    if !federalTax.capitalGainsBrackets.isEmpty {
-                        Text("Capital Gains Brackets")
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text(payment.quarter)
+                        .fontWeight(.medium)
+                    if payment.isPaid {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
                             .font(.caption)
-                            
-                            .padding(.top, 8)
-                        
-                        ForEach(federalTax.capitalGainsBrackets, id: \.bracket.min) { detail in
-                            HStack {
-                                Text("\(detail.bracket.displayRate) on \(detail.displayTaxableAmount)")
-                                    .font(.caption)
-                                Spacer()
-                                Text(detail.displayTax)
-                                    .font(.caption)
-                                    
-                            }
-                        }
                     }
                 }
-                .padding(.top, 8)
-            }
-        }
-    }
-}
-
-struct CaliforniaTaxDetailsView: View {
-    let californiaTax: CaliforniaTaxResult
-    @State private var showBrackets = false
-    
-    var body: some View {
-        SummarySection(title: "California Tax Details") {
-            SummaryRow(label: "Adjusted Gross Income", value: californiaTax.displayTaxableIncome)
-            SummaryRow(label: "Deduction (\(californiaTax.deduction.type.displayName))", value: californiaTax.deduction.displayAmount)
-            SummaryRow(label: "Taxable Income", value: californiaTax.displayTaxableIncome)
-            
-            Divider()
-            
-            SummaryRow(label: "Base Tax", value: NumberFormatter.currencyWholeNumber.string(from: californiaTax.baseTax as NSNumber) ?? "$0")
-            if californiaTax.mentalHealthTax > 0 {
-                SummaryRow(label: "Mental Health Tax", value: NumberFormatter.currencyWholeNumber.string(from: californiaTax.mentalHealthTax as NSNumber) ?? "$0")
-            }
-            SummaryRow(label: "Total Tax", value: californiaTax.displayTotalTax)
-            
-            Button(action: { showBrackets.toggle() }) {
-                HStack {
-                    Text("View Tax Brackets")
-                    Spacer()
-                    Image(systemName: showBrackets ? "chevron.up" : "chevron.down")
-                }
-                .foregroundColor(.accentColor)
-            }
-            
-            if showBrackets {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(californiaTax.taxBrackets, id: \.bracket.min) { detail in
-                        HStack {
-                            Text("\(detail.bracket.displayRate) on \(detail.displayTaxableAmount)")
-                                .font(.caption)
-                            Spacer()
-                            Text(detail.displayTax)
-                                .font(.caption)
-                                
-                        }
-                    }
-                }
-                .padding(.top, 8)
-            }
-        }
-    }
-}
-
-struct EstimatedPaymentSuggestionsView: View {
-    let taxResult: TaxCalculationResult
-    @EnvironmentObject var taxStore: TaxStore
-    
-    var suggestions: (federal: [EstimatedPaymentSuggestion], california: [EstimatedPaymentSuggestion]) {
-        TaxOrchestrator.calculateEstimatedPaymentSuggestions(
-            taxResult: taxResult,
-            estimatedPayments: taxStore.estimatedPayments,
-            includeCaliforniaTax: taxStore.includeCaliforniaTax
-        )
-    }
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            if !suggestions.federal.isEmpty {
-                EstimatedPaymentSectionView(
-                    title: "Federal Estimated Payment Schedule",
-                    suggestions: suggestions.federal,
-                    showAllPaid: taxResult.federalTax.owedOrRefund <= 0
-                )
-            }
-            
-            if !suggestions.california.isEmpty {
-                EstimatedPaymentSectionView(
-                    title: "California Estimated Payment Schedule",
-                    suggestions: suggestions.california,
-                    showAllPaid: taxResult.californiaTax?.owedOrRefund ?? 0 <= 0
-                )
-            }
-        }
-    }
-}
-
-struct EstimatedPaymentSectionView: View {
-    let title: String
-    let suggestions: [EstimatedPaymentSuggestion]
-    let showAllPaid: Bool
-    
-    var body: some View {
-        SummarySection(title: title) {
-            if showAllPaid {
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                    Text("All payments made or you have a refund")
-                        .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 8)
-            } else {
-                ForEach(suggestions) { suggestion in
-                    EstimatedPaymentRow(suggestion: suggestion)
-                }
-            }
-        }
-    }
-}
-
-struct EstimatedPaymentRow: View {
-    let suggestion: EstimatedPaymentSuggestion
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(suggestion.quarter)
-                    
-                Text(suggestion.displayDueDate)
+                Text(payment.dueDate)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             Spacer()
             
-            if suggestion.isPaid {
-                Label("Paid", systemImage: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.caption)
-            } else if suggestion.isPastDue {
-                Text("Past Due")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            } else {
-                Text(suggestion.displayAmount)
-                    
-                    .foregroundColor(.blue)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: payment.amount)) ?? "$0")
+                    .fontWeight(.semibold)
+                    .foregroundColor(payment.isPaid ? .green : payment.isPastDue ? .secondary : .primary)
+                
+                if payment.isPaid {
+                    Text("(Paid)")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                } else if payment.isPastDue {
+                    Text("(Past Due)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .padding(.vertical, 4)
-        .background(backgroundColor)
-    }
-    
-    var backgroundColor: Color {
-        if suggestion.isPaid {
-            return Color.green.opacity(0.1)
-        } else if suggestion.isPastDue {
-            return Color.gray.opacity(0.1)
-        } else {
-            return Color.blue.opacity(0.1)
-        }
     }
 }
 
