@@ -98,7 +98,7 @@ class CaliforniaTaxCalculatorTests: XCTestCase {
     
     func testSingleFilerCapitalGainsTaxedAsOrdinary() {
         // California treats all income types the same
-        let income = IncomeData()
+        var income = IncomeData()
         income.ytdW2Income.taxableWage = "50000"
         income.investmentIncome.longTermGains = "25000"
         
@@ -243,7 +243,7 @@ class CaliforniaTaxCalculatorTests: XCTestCase {
     }
     
     func testWithholdingAndRefund() {
-        let income = IncomeData()
+        var income = IncomeData()
         income.ytdW2Income.taxableWage = "75000"
         income.ytdW2Income.stateWithhold = "5000"
         
@@ -259,7 +259,7 @@ class CaliforniaTaxCalculatorTests: XCTestCase {
         )
         
         XCTAssertEqual(result.totalTax, 3017)
-        XCTAssertEqual(result.owedOrRefund, -1983) // Negative means refund
+        XCTAssertEqual(result.owedOrRefund, -1983) // Negative means refund (5000 - 3017)
     }
     
     // MARK: - Helper Methods

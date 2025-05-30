@@ -28,8 +28,7 @@
 		B5A8C7DD2C5F4A2E00123456 /* CaliforniaTaxConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7DC2C5F4A2E00123456 /* CaliforniaTaxConstants.swift */; };
 		B5A8C7DF2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7DE2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift */; };
 		B5A8C7E12C5F4A3000123456 /* TaxOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7E02C5F4A3000123456 /* TaxOrchestrator.swift */; };
-		ACE6828754AB4EDE9814101F /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACE6828754AB4EDE9814101E /* String+Extensions.swift */; };
-		8850161338CC428C93623086 /* NumberFormatter+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8850161338CC428C93623085 /* NumberFormatter+Extensions.swift */; };
+		B5A8C7E32C5F4A3100123456 /* NumberFormatter+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7E22C5F4A3100123456 /* NumberFormatter+Extensions.swift */; };
 		B5A8C7E92C5F4A3200123456 /* FederalTaxCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7E82C5F4A3200123456 /* FederalTaxCalculatorTests.swift */; };
 		B5A8C7EB2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7EA2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift */; };
 /* End PBXBuildFile section */
@@ -68,8 +67,7 @@
 		B5A8C7DC2C5F4A2E00123456 /* CaliforniaTaxConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaliforniaTaxConstants.swift; sourceTree = "<group>"; };
 		B5A8C7DE2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaliforniaTaxCalculator.swift; sourceTree = "<group>"; };
 		B5A8C7E02C5F4A3000123456 /* TaxOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxOrchestrator.swift; sourceTree = "<group>"; };
-		ACE6828754AB4EDE9814101E /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
-		8850161338CC428C93623085 /* NumberFormatter+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumberFormatter+Extensions.swift"; sourceTree = "<group>"; };
+		B5A8C7E22C5F4A3100123456 /* NumberFormatter+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumberFormatter+Extensions.swift"; sourceTree = "<group>"; };
 		B5A8C7E42C5F4A3200123456 /* QuickTaxNativeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuickTaxNativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5A8C7E82C5F4A3200123456 /* FederalTaxCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FederalTaxCalculatorTests.swift; sourceTree = "<group>"; };
 		B5A8C7EA2C5F4A3300123456 /* CaliforniaTaxCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaliforniaTaxCalculatorTests.swift; sourceTree = "<group>"; };
@@ -183,8 +181,7 @@
 		B5A8C7EF2C5F4A3700123456 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				ACE6828754AB4EDE9814101E /* String+Extensions.swift */,
-				8850161338CC428C93623085 /* NumberFormatter+Extensions.swift */,
+				B5A8C7E22C5F4A3100123456 /* NumberFormatter+Extensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -334,8 +331,7 @@
 				B5A8C7DD2C5F4A2E00123456 /* CaliforniaTaxConstants.swift in Sources */,
 				B5A8C7DF2C5F4A2F00123456 /* CaliforniaTaxCalculator.swift in Sources */,
 				B5A8C7E12C5F4A3000123456 /* TaxOrchestrator.swift in Sources */,
-				ACE6828754AB4EDE9814101F /* String+Extensions.swift in Sources */,
-				8850161338CC428C93623086 /* NumberFormatter+Extensions.swift in Sources */,
+				B5A8C7E32C5F4A3100123456 /* NumberFormatter+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

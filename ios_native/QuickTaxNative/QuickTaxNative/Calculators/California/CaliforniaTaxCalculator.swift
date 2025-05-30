@@ -27,13 +27,17 @@ class CaliforniaTaxCalculator {
             income: taxableIncome,
             brackets: CaliforniaTaxConstants.TaxBrackets.brackets(for: filingStatus)
         )
-        let baseTax = taxBrackets.reduce(0) { $0 + $1.taxForBracket }
+        var baseTax = taxBrackets.reduce(0) { $0 + $1.taxForBracket }
+        var roundedBaseTax = Decimal()
+        NSDecimalRound(&roundedBaseTax, &baseTax, 0, .plain)
         
         // Step 5: Calculate mental health tax
         let mentalHealthTax = calculateMentalHealthTax(taxableIncome: taxableIncome)
         
         // Step 6: Calculate total tax
-        let totalTax = baseTax + mentalHealthTax
+        var totalTax = roundedBaseTax + mentalHealthTax
+        var roundedTotalTax = Decimal()
+        NSDecimalRound(&roundedTotalTax, &totalTax, 0, .plain)
         
         // Step 7: Calculate withholding and payments
         let totalWithholding = calculateTotalWithholding(
@@ -43,16 +47,16 @@ class CaliforniaTaxCalculator {
         let totalEstimatedPayments = calculateTotalEstimatedPayments(estimatedPayments)
         
         // Step 8: Calculate owed or refund
-        let owedOrRefund = totalTax - totalWithholding - totalEstimatedPayments
+        let owedOrRefund = roundedTotalTax - totalWithholding - totalEstimatedPayments
         
         // Step 9: Calculate effective rate
-        let effectiveRate = totalIncome > 0 ? totalTax / totalIncome : 0
+        let effectiveRate = totalIncome > 0 ? roundedTotalTax / totalIncome : 0
         
         return CaliforniaTaxResult(
             taxableIncome: taxableIncome,
-            baseTax: baseTax,
+            baseTax: roundedBaseTax,
             mentalHealthTax: mentalHealthTax,
-            totalTax: totalTax,
+            totalTax: roundedTotalTax,
             deduction: deductionInfo,
             owedOrRefund: owedOrRefund,
             effectiveRate: effectiveRate,
@@ -171,11 +175,15 @@ class CaliforniaTaxCalculator {
         let donations = deductions.donations.toDecimal() ?? 0
         
         // California doesn't have SALT cap and doesn't allow CA income tax deduction
-        let totalItemized = propertyTax + allowedMortgageInterest + donations
+        var totalItemized = propertyTax + allowedMortgageInterest + donations
+        
+        // Round the total itemized deductions
+        var roundedTotalItemized = Decimal()
+        NSDecimalRound(&roundedTotalItemized, &totalItemized, 0, .plain)
         
         // Return the higher deduction
-        if totalItemized > standardDeduction {
-            return DeductionInfo(type: .itemized, amount: totalItemized)
+        if roundedTotalItemized > standardDeduction {
+            return DeductionInfo(type: .itemized, amount: roundedTotalItemized)
         } else {
             return DeductionInfo(type: .standard, amount: standardDeduction)
         }
@@ -204,7 +212,7 @@ class CaliforniaTaxCalculator {
                 details.append(TaxBracketDetail(
                     bracket: bracket,
                     taxableInBracket: taxableInBracket,
-                    taxForBracket: taxForBracket.rounded()
+                    taxForBracket: taxForBracket
                 ))
                 remainingIncome -= taxableInBracket
             }

@@ -210,11 +210,15 @@ class FederalTaxCalculator {
         }
         
         let donations = deductions.donations.toDecimal() ?? 0
-        let totalItemized = saltDeduction + allowedMortgageInterest + donations
+        var totalItemized = saltDeduction + allowedMortgageInterest + donations
+        
+        // Round the total itemized deductions
+        var roundedTotalItemized = Decimal()
+        NSDecimalRound(&roundedTotalItemized, &totalItemized, 0, .plain)
         
         // Return the higher deduction
-        if totalItemized > standardDeduction {
-            return DeductionInfo(type: .itemized, amount: totalItemized)
+        if roundedTotalItemized > standardDeduction {
+            return DeductionInfo(type: .itemized, amount: roundedTotalItemized)
         } else {
             return DeductionInfo(type: .standard, amount: standardDeduction)
         }
@@ -274,7 +278,7 @@ class FederalTaxCalculator {
                 details.append(TaxBracketDetail(
                     bracket: bracket,
                     taxableInBracket: taxableInBracket,
-                    taxForBracket: taxForBracket.rounded()
+                    taxForBracket: taxForBracket
                 ))
                 remainingIncome -= taxableInBracket
             }
@@ -317,7 +321,7 @@ class FederalTaxCalculator {
                 details.append(TaxBracketDetail(
                     bracket: bracket,
                     taxableInBracket: taxableInBracket,
-                    taxForBracket: taxForBracket.rounded()
+                    taxForBracket: taxForBracket
                 ))
                 remainingGains -= taxableInBracket
             }
@@ -384,3 +388,4 @@ extension Decimal {
         return result
     }
 }
+
