@@ -34,27 +34,26 @@ struct NavigationButtons: View {
             
             Spacer()
             
-            // Next button
-            Button(action: {
-                if currentTab < 4 {
+            // Next button (hidden on Summary page)
+            if currentTab < 4 {
+                Button(action: {
                     selectedTab.wrappedValue = currentTab + 1
+                }) {
+                    HStack {
+                        Text("Next")
+                            .font(.system(size: 16, weight: .medium))
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.buttonPrimary)
+                    )
                 }
-            }) {
-                HStack {
-                    Text("Next")
-                        .font(.system(size: 16, weight: .medium))
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .foregroundColor(currentTab < 4 ? .white : .secondary)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(currentTab < 4 ? Color.buttonPrimary : Color(UIColor.tertiarySystemFill))
-                )
             }
-            .disabled(currentTab >= 4)
         }
         .padding(.horizontal)
         .padding(.vertical, 16)

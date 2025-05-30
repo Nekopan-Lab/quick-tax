@@ -34,113 +34,177 @@ struct MainContainerView: View {
             Text("QuickTax")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .padding(.top, 10)
-                .padding(.bottom, 5)
+                .padding(.bottom, 10)
             
             // Tax Status Header
-            HStack(spacing: 20) {
-                // Federal Tax Status
-                VStack(spacing: 4) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flag.fill")
-                            .font(.caption)
-                            .foregroundColor(.emeraldGreen)
-                        Text("Federal")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                HStack(spacing: 20) {
+                    // Federal Tax Status
+                    VStack(spacing: 4) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "flag.fill")
+                                .font(.caption)
+                                .foregroundColor(.emeraldGreen)
+                            Text("Federal")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        if let result = taxResult {
+                            let federalOwed = result.federalTax.owedOrRefund
+                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(federalOwed))) ?? "$0")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(federalOwed > 0 ? .error : .success)
+                            Text(federalOwed > 0 ? "Owed" : "Overpaid")
+                                .font(.caption2)
+                                .foregroundColor(federalOwed > 0 ? .error : .success)
+                        } else {
+                            Text("$0")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(.secondary)
+                            Text("—")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
                     
-                    if let result = taxResult {
-                        let federalOwed = result.federalTax.owedOrRefund
-                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(federalOwed))) ?? "$0")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(federalOwed > 0 ? .error : .success)
-                        Text(federalOwed > 0 ? "Owed" : "Overpaid")
-                            .font(.caption2)
-                            .foregroundColor(federalOwed > 0 ? .error : .success)
-                    } else {
-                        Text("$0")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(.secondary)
-                        Text("—")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                
-                // Divider
-                Rectangle()
-                    .fill(Color.secondary.opacity(0.3))
-                    .frame(width: 1, height: 50)
-                
-                // California Tax Status
-                VStack(spacing: 4) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "star.fill")
-                            .font(.caption)
-                            .foregroundColor(.goldAccent)
-                        Text("California")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    // Divider
+                    Rectangle()
+                        .fill(Color.secondary.opacity(0.3))
+                        .frame(width: 1, height: 50)
                     
-                    if let result = taxResult, taxStore.includeCaliforniaTax, let caTax = result.californiaTax {
-                        let caOwed = caTax.owedOrRefund
-                        Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(caOwed))) ?? "$0")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(caOwed > 0 ? .error : .success)
-                        Text(caOwed > 0 ? "Owed" : "Overpaid")
-                            .font(.caption2)
-                            .foregroundColor(caOwed > 0 ? .error : .success)
-                    } else if taxStore.includeCaliforniaTax {
-                        Text("$0")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(.secondary)
-                        Text("—")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("N/A")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(.secondary)
-                        Text("Not Selected")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                    // California Tax Status
+                    VStack(spacing: 4) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.caption)
+                                .foregroundColor(.goldAccent)
+                            Text("California")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        if let result = taxResult, taxStore.includeCaliforniaTax, let caTax = result.californiaTax {
+                            let caOwed = caTax.owedOrRefund
+                            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(caOwed))) ?? "$0")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(caOwed > 0 ? .error : .success)
+                            Text(caOwed > 0 ? "Owed" : "Overpaid")
+                                .font(.caption2)
+                                .foregroundColor(caOwed > 0 ? .error : .success)
+                        } else if taxStore.includeCaliforniaTax {
+                            Text("$0")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(.secondary)
+                            Text("—")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("N/A")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(.secondary)
+                            Text("Not Selected")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
             .background(
-                Color(UIColor.secondarySystemBackground)
-                    .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+                Color(UIColor.secondarySystemGroupedBackground)
+                    .shadow(color: .black.opacity(0.08), radius: 3, x: 0, y: 2)
             )
         }
     }
     
     var customNavigationBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(0..<5) { index in
-                    Button(action: { selectedTab = index }) {
-                        Text(tabTitle(for: index))
-                            .font(.system(size: 14, weight: selectedTab == index ? .semibold : .regular))
-                            .foregroundColor(selectedTab == index ? .white : .primary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(
-                                Capsule()
-                                    .fill(selectedTab == index ? Color.emeraldGreen : Color(UIColor.secondarySystemFill))
-                            )
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 0) {
+                    ForEach(0..<5) { index in
+                        HStack(spacing: 0) {
+                            // Step indicator
+                            Button(action: { selectedTab = index }) {
+                                VStack(spacing: 8) {
+                                    // Circle with number or checkmark
+                                    ZStack {
+                                        Circle()
+                                            .fill(
+                                                index < selectedTab ? Color.emeraldGreen :
+                                                index == selectedTab ? Color.emeraldGreen :
+                                                Color.gray.opacity(0.2)
+                                            )
+                                            .frame(width: 36, height: 36)
+                                        
+                                        if index == selectedTab {
+                                            // Current step - outer ring
+                                            Circle()
+                                                .stroke(Color.emeraldGreen.opacity(0.3), lineWidth: 3)
+                                                .frame(width: 44, height: 44)
+                                        }
+                                        
+                                        if index < selectedTab {
+                                            // Completed step - checkmark
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 16, weight: .bold))
+                                                .foregroundColor(.white)
+                                        } else if index == 4 {
+                                            // Summary step - special icon
+                                            Image(systemName: "chart.pie.fill")
+                                                .font(.system(size: 16, weight: .medium))
+                                                .foregroundColor(index == selectedTab ? .white : Color.emeraldGreen)
+                                        } else {
+                                            // Future step - number
+                                            Text("\(index + 1)")
+                                                .font(.system(size: 16, weight: .semibold))
+                                                .foregroundColor(
+                                                    index == selectedTab ? .white : Color.primary
+                                                )
+                                        }
+                                    }
+                                    
+                                    // Step label
+                                    Text(tabTitle(for: index))
+                                        .font(.system(size: 11, weight: index == selectedTab ? .semibold : .regular))
+                                        .foregroundColor(
+                                            index < selectedTab ? Color.emeraldGreen :
+                                            index == selectedTab ? Color.emeraldGreen :
+                                            Color.secondary
+                                        )
+                                        .lineLimit(1)
+                                        .frame(width: 70)
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .id(index)
+                            
+                            // Connecting line (not after Summary)
+                            if index < 4 {
+                                Rectangle()
+                                    .fill(
+                                        index < selectedTab ? Color.emeraldGreen : Color.gray.opacity(0.2)
+                                    )
+                                    .frame(width: 20, height: 2)
+                                    .offset(y: -11)
+                            }
+                        }
                     }
-                    .buttonStyle(PlainButtonStyle())
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .padding(.bottom, 8)
+            }
+            .background(Color(UIColor.systemGroupedBackground))
+            .onChange(of: selectedTab) { newValue in
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    proxy.scrollTo(newValue, anchor: .center)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
-        .background(Color(UIColor.systemBackground))
     }
     
     @ViewBuilder
