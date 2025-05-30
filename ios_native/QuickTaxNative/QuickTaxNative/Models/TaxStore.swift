@@ -44,6 +44,9 @@ class TaxStore: ObservableObject {
         if let encoded = try? encoder.encode(data) {
             UserDefaults.standard.set(encoded, forKey: storageKey)
         }
+        
+        // Notify that tax data has changed
+        NotificationCenter.default.post(name: .taxDataChanged, object: nil)
     }
     
     func loadData() {

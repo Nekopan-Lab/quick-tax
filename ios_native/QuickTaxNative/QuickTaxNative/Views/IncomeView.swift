@@ -2,61 +2,96 @@ import SwiftUI
 
 struct IncomeView: View {
     @EnvironmentObject var taxStore: TaxStore
+    @Environment(\.selectedTab) var mainSelectedTab
     @State private var selectedTab = 0
-    @State private var showSpouseIncome = false
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 // Tab selector for married filing jointly
                 if taxStore.filingStatus == .marriedFilingJointly {
-                    Picker("", selection: $selectedTab) {
-                        Text("Your Income").tag(0)
-                        if showSpouseIncome {
-                            Text("Spouse Income").tag(1)
+                    HStack(spacing: 0) {
+                        Button(action: { 
+                            selectedTab = 0
+                        }) {
+                            VStack(spacing: 4) {
+                                Text("You")
+                                    .font(.system(size: 15, weight: selectedTab == 0 ? .semibold : .regular))
+                                    .foregroundColor(selectedTab == 0 ? .blue : .secondary)
+                                
+                                Rectangle()
+                                    .fill(selectedTab == 0 ? Color.blue : Color.clear)
+                                    .frame(height: 2)
+                            }
+                            .frame(maxWidth: .infinity)
                         }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Button(action: { 
+                            selectedTab = 1
+                        }) {
+                            VStack(spacing: 4) {
+                                Text("Spouse")
+                                    .font(.system(size: 15, weight: selectedTab == 1 ? .semibold : .regular))
+                                    .foregroundColor(selectedTab == 1 ? .blue : .secondary)
+                                
+                                Rectangle()
+                                    .fill(selectedTab == 1 ? Color.blue : Color.clear)
+                                    .frame(height: 2)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .background(Color(UIColor.systemGroupedBackground))
                 }
                 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        if selectedTab == 0 {
-                            ModernIncomeFormView(income: $taxStore.userIncome, includeCaliforniaTax: taxStore.includeCaliforniaTax)
-                        } else {
-                            ModernIncomeFormView(income: $taxStore.spouseIncome, includeCaliforniaTax: taxStore.includeCaliforniaTax)
-                        }
-                        
-                        if taxStore.filingStatus == .marriedFilingJointly && !showSpouseIncome && selectedTab == 0 {
-                            Button(action: {
-                                showSpouseIncome = true
-                                selectedTab = 1
-                            }) {
-                                HStack {
-                                    Image(systemName: "person.badge.plus")
-                                        .font(.title3)
-                                    Text("Add Spouse Income")
-                                        .fontWeight(.medium)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(12)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            if selectedTab == 0 {
+                                ModernIncomeFormView(income: $taxStore.userIncome, includeCaliforniaTax: taxStore.includeCaliforniaTax)
+                                    .id("top")
+                            } else {
+                                ModernIncomeFormView(income: $taxStore.spouseIncome, includeCaliforniaTax: taxStore.includeCaliforniaTax)
+                                    .id("top")
                             }
-                            .padding(.horizontal)
+                            
+                            if taxStore.filingStatus == .marriedFilingJointly && selectedTab == 0 {
+                                Button(action: {
+                                    selectedTab = 1
+                                    withAnimation {
+                                        proxy.scrollTo("top", anchor: .top)
+                                    }
+                                }) {
+                                    HStack {
+                                        Image(systemName: "person.2.fill")
+                                            .font(.title3)
+                                        Text("Switch to Spouse Income")
+                                            .fontWeight(.medium)
+                                        Spacer()
+                                        Image(systemName: "arrow.right.circle.fill")
+                                            .font(.title3)
+                                    }
+                                    .foregroundColor(.blue)
+                                    .padding()
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(12)
+                                }
+                                .padding(.horizontal)
+                            }
+                            
+                            // Navigation buttons
+                            NavigationButtons(currentTab: 1)
                         }
+                        .padding(.bottom, 20)
                     }
-                    .padding(.bottom, 20)
                 }
                 .background(Color(UIColor.systemGroupedBackground))
             }
-            .navigationTitle("Income")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarHidden(true)
         }
         .onChange(of: taxStore.userIncome) { _ in taxStore.saveData() }
         .onChange(of: taxStore.spouseIncome) { _ in taxStore.saveData() }

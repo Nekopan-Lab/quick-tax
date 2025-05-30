@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EstimatedPaymentsView: View {
     @EnvironmentObject var taxStore: TaxStore
+    @Environment(\.selectedTab) var selectedTab
     
     var body: some View {
         NavigationView {
@@ -20,12 +21,14 @@ struct EstimatedPaymentsView: View {
                     
                     // Info Card
                     infoCard
+                    
+                    // Navigation buttons
+                    NavigationButtons(currentTab: 3)
                 }
                 .padding()
             }
             .background(Color(UIColor.systemGroupedBackground))
-            .navigationTitle("Estimated Payments")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
         }
         .onChange(of: taxStore.estimatedPayments) { _ in
             taxStore.saveData()

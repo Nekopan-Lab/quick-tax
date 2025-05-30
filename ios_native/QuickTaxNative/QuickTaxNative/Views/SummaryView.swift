@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SummaryView: View {
     @EnvironmentObject var taxStore: TaxStore
+    @Environment(\.selectedTab) var selectedTab
     @State private var taxResult: TaxCalculationResult?
     @State private var isCalculating = false
     @State private var expandedSections = Set<String>()
@@ -25,14 +26,14 @@ struct SummaryView: View {
                     .padding(40)
                 } else if let result = taxResult {
                     VStack(spacing: 20) {
-                        // Federal and California Tax Owed/Overpaid Cards
-                        taxOwedCards(result: result)
-                        
                         // Tax Breakdown Section
                         taxBreakdownSection(result: result)
                         
                         // Estimated Tax Payments Section
                         estimatedPaymentsSection(result: result)
+                        
+                        // Navigation buttons
+                        NavigationButtons(currentTab: 4)
                     }
                     .padding()
                 } else {
@@ -53,8 +54,7 @@ struct SummaryView: View {
                 }
             }
             .background(Color(UIColor.systemGroupedBackground))
-            .navigationTitle("Summary & Results")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
         }
         .onAppear {
             calculateTaxes()
@@ -116,9 +116,6 @@ struct SummaryView: View {
                     Text("Tax Year \(taxStore.taxYear.displayName)")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("\(String(format: "%.2f", NSDecimalNumber(decimal: result.federalTax.effectiveRate * 100).doubleValue))% effective rate")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -167,9 +164,6 @@ struct SummaryView: View {
                     Text("Tax Year \(taxStore.taxYear.displayName)")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("\(String(format: "%.2f", NSDecimalNumber(decimal: caTax.effectiveRate * 100).doubleValue))% effective rate")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -191,8 +185,8 @@ struct SummaryView: View {
                 Spacer()
             }
             
-            // Basic breakdown
-            VStack(spacing: 8) {
+            // Income and Tax Rate Summary
+            VStack(spacing: 12) {
                 HStack {
                     Text("Total Income")
                     Spacer()
@@ -200,15 +194,19 @@ struct SummaryView: View {
                         .fontWeight(.semibold)
                 }
                 
+                Divider()
+                
+                // Combined Effective Tax Rate
                 HStack {
-                    Text("Combined Effective Tax Rate")
+                    Text("Combined Effective Rate")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .fontWeight(.semibold)
                     Spacer()
                     let combinedRate = (result.federalTax.totalTax + (result.californiaTax?.totalTax ?? 0)) / result.totalIncome * 100
                     Text("\(String(format: "%.2f", NSDecimalNumber(decimal: combinedRate).doubleValue))%")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .fontWeight(.bold)
+                        .foregroundColor(.blue)
                 }
             }
             .padding()
@@ -269,6 +267,17 @@ struct SummaryView: View {
                 Spacer()
                 Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: result.federalTax.totalTax)) ?? "$0")
                     .fontWeight(.semibold)
+            }
+            
+            HStack {
+                Text("Effective Tax Rate")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("\(String(format: "%.2f", NSDecimalNumber(decimal: result.federalTax.effectiveRate * 100).doubleValue))%")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
             }
             
             // Show tax component breakdowns
@@ -355,7 +364,7 @@ struct SummaryView: View {
             Divider()
             
             HStack {
-                Text("Net Tax Owed/Overpaid")
+                Text(owed > 0 ? "Owed" : "Overpaid")
                     .fontWeight(.semibold)
                 Spacer()
                 Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(owed))) ?? "$0")
@@ -405,6 +414,17 @@ struct SummaryView: View {
                 Spacer()
                 Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caTax.totalTax)) ?? "$0")
                     .fontWeight(.semibold)
+            }
+            
+            HStack {
+                Text("Effective Tax Rate")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("\(String(format: "%.2f", NSDecimalNumber(decimal: caTax.effectiveRate * 100).doubleValue))%")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
             }
             
             // Show tax component breakdowns
@@ -491,7 +511,7 @@ struct SummaryView: View {
             Divider()
             
             HStack {
-                Text("Net Tax Owed/Overpaid")
+                Text(owed > 0 ? "Owed" : "Overpaid")
                     .fontWeight(.semibold)
                 Spacer()
                 Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(owed))) ?? "$0")
@@ -605,7 +625,7 @@ struct SummaryView: View {
                 VStack(spacing: 8) {
                     paymentScheduleView(paymentSuggestions: paymentSuggestions, owed: caOwed)
                     
-                    Text("ℹ️ California requires 3 payments (no Q3 payment)")
+                    Text("California requires 3 payments (no Q3 payment)")
                         .font(.caption)
                         .foregroundColor(.orange)
                         .padding(.top, 8)

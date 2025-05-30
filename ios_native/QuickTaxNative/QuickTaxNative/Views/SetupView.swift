@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SetupView: View {
     @EnvironmentObject var taxStore: TaxStore
+    @Environment(\.selectedTab) var selectedTab
     @State private var showDeleteAlert = false
     @State private var showPrivacySheet = false
     @State private var showDemoSheet = false
@@ -10,9 +11,6 @@ struct SetupView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Header Card
-                    headerCard
-                    
                     // Tax Configuration
                     VStack(spacing: 16) {
                         taxYearCard
@@ -25,12 +23,17 @@ struct SetupView: View {
                     
                     // Privacy Notice
                     privacyCard
+                    
+                    // Important Notice (moved to bottom)
+                    headerCard
+                    
+                    // Navigation buttons
+                    NavigationButtons(currentTab: 0)
                 }
                 .padding()
             }
             .background(Color(UIColor.systemGroupedBackground))
-            .navigationTitle("Tax Information")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
             .alert("Delete All Data?", isPresented: $showDeleteAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) {

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DeductionsView: View {
     @EnvironmentObject var taxStore: TaxStore
+    @Environment(\.selectedTab) var selectedTab
     @State private var showMortgageInfo = false
     @State private var expandFederalDetails = false
     @State private var expandCaliforniaDetails = false
@@ -20,12 +21,14 @@ struct DeductionsView: View {
                     if taxStore.includeCaliforniaTax {
                         californiaBreakdownCard
                     }
+                    
+                    // Navigation buttons
+                    NavigationButtons(currentTab: 2)
                 }
                 .padding()
             }
             .background(Color(UIColor.systemGroupedBackground))
-            .navigationTitle("Deductions")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
         }
         .onChange(of: taxStore.deductions) { _ in 
             taxStore.saveData()
