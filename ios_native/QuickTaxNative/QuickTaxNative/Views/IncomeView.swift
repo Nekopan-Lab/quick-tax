@@ -8,9 +8,6 @@ struct IncomeView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Income Header
-                incomeHeader
-                
                 // Tab selector for married filing jointly
                 if taxStore.filingStatus == .marriedFilingJointly {
                     Picker("", selection: $selectedTab) {
@@ -63,49 +60,6 @@ struct IncomeView: View {
         }
         .onChange(of: taxStore.userIncome) { _ in taxStore.saveData() }
         .onChange(of: taxStore.spouseIncome) { _ in taxStore.saveData() }
-    }
-    
-    var incomeHeader: some View {
-        VStack(spacing: 8) {
-            Text("Total Income")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Text(totalIncomeFormatted)
-                .font(.system(size: 36, weight: .semibold, design: .rounded))
-                .foregroundColor(.primary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(Color(UIColor.secondarySystemBackground))
-    }
-    
-    var totalIncomeFormatted: String {
-        let userTotal = calculateTotalIncome(taxStore.userIncome)
-        let spouseTotal = showSpouseIncome ? calculateTotalIncome(taxStore.spouseIncome) : 0
-        let total = userTotal + spouseTotal
-        
-        return NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: total)) ?? "$0"
-    }
-    
-    func calculateTotalIncome(_ income: IncomeData) -> Decimal {
-        var total: Decimal = 0
-        
-        // Investment income
-        total += income.investmentIncome.ordinaryDividends.toDecimal() ?? 0
-        total += income.investmentIncome.interestIncome.toDecimal() ?? 0
-        total += income.investmentIncome.shortTermGains.toDecimal() ?? 0
-        total += income.investmentIncome.longTermGains.toDecimal() ?? 0
-        
-        // W2 income
-        total += income.ytdW2Income.taxableWage.toDecimal() ?? 0
-        
-        // Future income
-        if income.incomeMode == .simple {
-            total += income.futureIncome.taxableWage.toDecimal() ?? 0
-        }
-        
-        return total
     }
 }
 
@@ -174,8 +128,58 @@ struct ModernIncomeFormView: View {
             .padding()
             .background(Color(UIColor.secondarySystemGroupedBackground))
             .cornerRadius(12)
+            
+            // Total Income Display
+            HStack {
+                Text("Total Income")
+                    .font(.headline)
+                Spacer()
+                Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: calculateTotalIncome())) ?? "$0")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
+            .padding()
+            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .cornerRadius(12)
         }
         .padding(.horizontal)
+    }
+    
+    func calculateTotalIncome() -> Decimal {
+        var total: Decimal = 0
+        
+        // Investment income
+        total += income.investmentIncome.ordinaryDividends.toDecimal() ?? 0
+        total += income.investmentIncome.interestIncome.toDecimal() ?? 0
+        total += income.investmentIncome.shortTermGains.toDecimal() ?? 0
+        total += income.investmentIncome.longTermGains.toDecimal() ?? 0
+        
+        // W2 income
+        total += income.ytdW2Income.taxableWage.toDecimal() ?? 0
+        
+        // Future income
+        if income.incomeMode == .simple {
+            total += income.futureIncome.taxableWage.toDecimal() ?? 0
+        } else {
+            // Paycheck income
+            let paycheckWage = income.paycheckData.taxableWage.toDecimal() ?? 0
+            let paycheckCount = TaxOrchestrator.calculateRemainingPaychecks(
+                frequency: income.paycheckData.frequency,
+                nextDate: income.paycheckData.nextPaymentDate
+            )
+            total += paycheckWage * Decimal(paycheckCount)
+            
+            // Future RSU vests
+            for vest in income.futureRSUVests {
+                if vest.date >= Date() {
+                    let shares = Decimal(string: vest.shares) ?? 0
+                    let price = Decimal(string: vest.expectedPrice) ?? 0
+                    total += shares * price
+                }
+            }
+        }
+        
+        return total
     }
     
     func incomeSection<Content: View>(
@@ -292,7 +296,7 @@ struct DetailedIncomeSection: View {
             
             // RSU Data
             VStack(alignment: .leading, spacing: 12) {
-                Text("Most Recent RSU Vest")
+                Text("Last Vest Event")
                     .font(.subheadline)
                     .fontWeight(.medium)
                 

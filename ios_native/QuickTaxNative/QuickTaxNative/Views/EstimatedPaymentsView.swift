@@ -7,9 +7,6 @@ struct EstimatedPaymentsView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Payment Summary Header
-                    paymentSummaryHeader
-                    
                     // Federal Payments Card
                     federalPaymentsCard
                     
@@ -20,6 +17,9 @@ struct EstimatedPaymentsView: View {
                     
                     // Info Card
                     infoCard
+                    
+                    // Payment Summary
+                    paymentSummaryCard
                 }
                 .padding()
             }
@@ -32,7 +32,7 @@ struct EstimatedPaymentsView: View {
         }
     }
     
-    var paymentSummaryHeader: some View {
+    var paymentSummaryCard: some View {
         VStack(spacing: 16) {
             Text("Total Payments Made")
                 .font(.headline)
@@ -175,21 +175,7 @@ struct EstimatedPaymentsView: View {
             
             VStack(alignment: .leading, spacing: 8) {
                 BulletPoint(text: "Enter payments you've already made for the 2025 tax year", icon: "checkmark.circle")
-                BulletPoint(text: "Include any overpayment credits from 2024 taxes", icon: "arrow.forward.circle")
                 BulletPoint(text: "Payments reduce your tax liability or increase your refund", icon: "minus.circle")
-            }
-            
-            Divider()
-                .padding(.vertical, 4)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Important Dates")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                Text("Mark your calendar for upcoming payment deadlines to avoid penalties")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
         }
         .padding()

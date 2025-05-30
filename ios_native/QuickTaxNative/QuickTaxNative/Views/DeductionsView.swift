@@ -3,14 +3,13 @@ import SwiftUI
 struct DeductionsView: View {
     @EnvironmentObject var taxStore: TaxStore
     @State private var showMortgageInfo = false
+    @State private var expandFederalDetails = false
+    @State private var expandCaliforniaDetails = false
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Header with deduction comparison
-                    deductionComparisonHeader
-                    
                     // Itemized deductions card
                     itemizedDeductionsCard
                     
@@ -39,100 +38,6 @@ struct DeductionsView: View {
         .onAppear {
             showMortgageInfo = (taxStore.deductions.mortgageInterest.toDecimal() ?? 0) > 0
         }
-    }
-    
-    var deductionComparisonHeader: some View {
-        VStack(spacing: 16) {
-            Text("Deduction Comparison")
-                .font(.headline)
-            
-            if taxStore.includeCaliforniaTax {
-                // Side-by-side comparison for Federal and California
-                HStack(spacing: 12) {
-                    federalDeductionCard
-                    californiaDeductionCard
-                }
-            } else {
-                // Single federal card when CA tax not selected
-                federalDeductionCard
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(16)
-    }
-    
-    var federalDeductionCard: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 4) {
-                Image(systemName: "flag.fill")
-                    .font(.caption)
-                    .foregroundColor(.blue)
-                Text("Federal (IRS)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-            }
-            
-            let federalItemized = calculateFederalItemizedTotal()
-            let federalStandard = standardDeductionAmount()
-            let useItemized = federalItemized > federalStandard
-            
-            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: max(federalItemized, federalStandard))) ?? "$0")
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-            
-            Text(useItemized ? "ITEMIZED" : "STANDARD")
-                .font(.caption2)
-                .fontWeight(.semibold)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(useItemized ? Color.green.opacity(0.1) : Color.gray.opacity(0.1))
-                .foregroundColor(useItemized ? .green : .secondary)
-                .cornerRadius(4)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(UIColor.tertiarySystemFill))
-        .cornerRadius(10)
-    }
-    
-    var californiaDeductionCard: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 4) {
-                Image(systemName: "star.fill")
-                    .font(.caption)
-                    .foregroundColor(.orange)
-                Text("California (FTB)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-            }
-            
-            let californiaItemized = calculateCaliforniaItemizedTotal()
-            let californiaStandard = californiaStandardDeduction()
-            let useItemized = californiaItemized > californiaStandard
-            
-            Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: max(californiaItemized, californiaStandard))) ?? "$0")
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-            
-            Text(useItemized ? "ITEMIZED" : "STANDARD")
-                .font(.caption2)
-                .fontWeight(.semibold)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(useItemized ? Color.green.opacity(0.1) : Color.gray.opacity(0.1))
-                .foregroundColor(useItemized ? .green : .secondary)
-                .cornerRadius(4)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(UIColor.tertiarySystemFill))
-        .cornerRadius(10)
     }
     
     var itemizedDeductionsCard: some View {
@@ -280,24 +185,32 @@ struct DeductionsView: View {
         let federalUseStandard = federalStandard > federalItemized
         
         return VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "flag.fill")
-                    .foregroundColor(.blue)
-                Text("Federal (IRS)")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(federalUseStandard ? "STANDARD" : "ITEMIZED")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(federalUseStandard ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
-                    .foregroundColor(federalUseStandard ? .blue : .green)
-                    .cornerRadius(4)
+            Button(action: { expandFederalDetails.toggle() }) {
+                HStack {
+                    Image(systemName: "flag.fill")
+                        .foregroundColor(.blue)
+                    Text("Federal (IRS)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Text(federalUseStandard ? "STANDARD" : "ITEMIZED")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(federalUseStandard ? Color.blue.opacity(0.1) : Color.green.opacity(0.1))
+                        .foregroundColor(federalUseStandard ? .blue : .green)
+                        .cornerRadius(4)
+                    Image(systemName: expandFederalDetails ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
+            .buttonStyle(PlainButtonStyle())
             
-            VStack(spacing: 8) {
+            if expandFederalDetails {
+                VStack(spacing: 8) {
                 // Property Tax
                 let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
                 HStack {
@@ -387,6 +300,7 @@ struct DeductionsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
         .padding()
@@ -404,24 +318,32 @@ struct DeductionsView: View {
         let californiaUseStandard = californiaStandard > californiaItemized
         
         return VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "star.fill")
-                    .foregroundColor(.orange)
-                Text("California (FTB)")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(californiaUseStandard ? "STANDARD" : "ITEMIZED")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(californiaUseStandard ? Color.orange.opacity(0.1) : Color.green.opacity(0.1))
-                    .foregroundColor(californiaUseStandard ? .orange : .green)
-                    .cornerRadius(4)
+            Button(action: { expandCaliforniaDetails.toggle() }) {
+                HStack {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.orange)
+                    Text("California (FTB)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Text(californiaUseStandard ? "STANDARD" : "ITEMIZED")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(californiaUseStandard ? Color.orange.opacity(0.1) : Color.green.opacity(0.1))
+                        .foregroundColor(californiaUseStandard ? .orange : .green)
+                        .cornerRadius(4)
+                    Image(systemName: expandCaliforniaDetails ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
+            .buttonStyle(PlainButtonStyle())
             
-            VStack(spacing: 8) {
+            if expandCaliforniaDetails {
+                VStack(spacing: 8) {
                 // Property Tax
                 let propertyTax = taxStore.deductions.propertyTax.toDecimal() ?? 0
                 HStack {
@@ -465,6 +387,7 @@ struct DeductionsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
         .padding()
