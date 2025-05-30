@@ -7,6 +7,7 @@ This is the native iOS implementation of Quick Tax, an estimated tax calculator 
 - **Tax Year 2025 Support**: Calculates estimated taxes for the 2025 tax year
 - **Filing Status**: Supports Single and Married Filing Jointly
 - **Income Types**: W2 wages, investment income, capital gains, dividends, RSUs
+- **Capital Gains/Losses**: Simple plus/minus button for entering gains or losses
 - **Deductions**: Standard vs. itemized deduction comparison
 - **Real-time Calculations**: Updates as you type
 - **Estimated Payments**: Track quarterly payments and get suggestions

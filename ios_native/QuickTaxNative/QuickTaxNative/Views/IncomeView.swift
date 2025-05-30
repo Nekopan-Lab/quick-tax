@@ -88,10 +88,24 @@ struct IncomeView: View {
                         }
                         .padding(.bottom, 20)
                     }
+                    .onTapGesture {
+                        // Dismiss keyboard when tapping outside text fields
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 }
                 .background(Color(UIColor.systemGroupedBackground))
             }
             .navigationBarHidden(true)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        // Dismiss keyboard
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                }
+            }
         }
         .onChange(of: taxStore.userIncome) { _ in taxStore.saveData() }
         .onChange(of: taxStore.spouseIncome) { _ in taxStore.saveData() }
@@ -114,9 +128,18 @@ struct ModernIncomeFormView: View {
                     ModernCurrencyField("Ordinary Dividends", value: $income.investmentIncome.ordinaryDividends)
                     ModernCurrencyField("Qualified Dividends", value: $income.investmentIncome.qualifiedDividends)
                     ModernCurrencyField("Interest Income", value: $income.investmentIncome.interestIncome)
-                    ModernCurrencyField("Short-Term Capital Gains/Losses", value: $income.investmentIncome.shortTermGains)
-                    ModernCurrencyField("Long-Term Capital Gains/Losses", value: $income.investmentIncome.longTermGains)
+                    ModernCurrencyField("Short-Term Capital Gains/Losses", value: $income.investmentIncome.shortTermGains, allowNegative: true)
+                    ModernCurrencyField("Long-Term Capital Gains/Losses", value: $income.investmentIncome.longTermGains, allowNegative: true)
                 }
+                
+                // Capital loss carryover note
+                Text("Note: If your total capital losses exceed your capital gains, you can deduct up to $3,000 against ordinary income. Any remaining losses carry forward to future years.")
+                    .font(.caption2)
+                    .foregroundColor(Color(red: 0.7, green: 0.5, blue: 0.0))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color(red: 1.0, green: 0.95, blue: 0.8))
+                    .cornerRadius(6)
             }
             
             // YTD W2 Income Section
@@ -244,10 +267,14 @@ struct ModernIncomeFormView: View {
 struct ModernCurrencyField: View {
     let label: String
     @Binding var value: String
+    var allowNegative: Bool = false
+    @FocusState private var isFocused: Bool
+    @State private var isNegative: Bool = false
     
-    init(_ label: String, value: Binding<String>) {
+    init(_ label: String, value: Binding<String>, allowNegative: Bool = false) {
         self.label = label
         self._value = value
+        self.allowNegative = allowNegative
     }
     
     var body: some View {
@@ -257,14 +284,57 @@ struct ModernCurrencyField: View {
                 .foregroundColor(.secondary)
             
             HStack {
+                if allowNegative {
+                    Button(action: {
+                        isNegative.toggle()
+                        updateValueSign()
+                    }) {
+                        Image(systemName: isNegative ? "minus.circle.fill" : "plus.circle.fill")
+                            .foregroundColor(isNegative ? .red : .green)
+                            .font(.title3)
+                    }
+                }
+                
                 Text("$")
                     .foregroundColor(.secondary)
-                TextField("0", text: $value)
+                
+                TextField("0", text: Binding(
+                    get: { 
+                        // Remove negative sign for display
+                        value.replacingOccurrences(of: "-", with: "")
+                    },
+                    set: { newValue in
+                        // Only allow numbers
+                        let filtered = newValue.filter { $0.isNumber || $0 == "." }
+                        value = isNegative ? "-\(filtered)" : filtered
+                    }
+                ))
                     .keyboardType(.numberPad)
+                    .focused($isFocused)
+                    .onChange(of: value) { newValue in
+                        // Update isNegative state based on value
+                        if !newValue.isEmpty {
+                            isNegative = newValue.hasPrefix("-")
+                        }
+                    }
             }
             .padding(12)
             .background(Color(UIColor.tertiarySystemFill))
             .cornerRadius(8)
+        }
+        .onAppear {
+            // Set initial negative state based on existing value
+            isNegative = value.hasPrefix("-")
+        }
+    }
+    
+    private func updateValueSign() {
+        if isNegative {
+            if !value.hasPrefix("-") && !value.isEmpty && value != "0" {
+                value = "-" + value
+            }
+        } else {
+            value = value.replacingOccurrences(of: "-", with: "")
         }
     }
 }

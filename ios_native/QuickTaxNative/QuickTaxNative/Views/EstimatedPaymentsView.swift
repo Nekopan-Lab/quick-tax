@@ -27,8 +27,22 @@ struct EstimatedPaymentsView: View {
                 }
                 .padding()
             }
+            .onTapGesture {
+                // Dismiss keyboard when tapping outside text fields
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            }
             .background(Color(UIColor.systemGroupedBackground))
             .navigationBarHidden(true)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        // Dismiss keyboard
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                }
+            }
         }
         .onChange(of: taxStore.estimatedPayments) { _ in
             taxStore.saveData()
