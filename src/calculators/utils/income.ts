@@ -69,6 +69,8 @@ export function calculateFutureIncome(income: IncomeData): {
     // Only process if there's actual vest value
     if (vestValue > 0) {
       // Estimate withholdings based on most recent RSU vest data if available
+      // NOTE: rsuVestWage is a PAST vest already included in YTD W2 wage
+      // We use it ONLY to calculate withholding rates, NOT to add to income
       const rsuVestWage = parseFloat(income.rsuVestWage) || 0
       const rsuVestFederal = parseFloat(income.rsuVestFederal) || 0
       const rsuVestState = parseFloat(income.rsuVestState) || 0
@@ -103,6 +105,10 @@ export function calculateFutureIncome(income: IncomeData): {
 
 /**
  * Aggregate income data for a single person (user or spouse)
+ * 
+ * IMPORTANT: The rsuVestWage field represents a PAST RSU vest that is already
+ * included in the YTD W2 wage. It is used ONLY to calculate withholding rates
+ * for future RSU vests, NOT added to total income.
  */
 export function aggregateIndividualIncome(income: IncomeData): {
   totalIncome: number

@@ -116,9 +116,10 @@ class TaxOrchestrator {
             )
             total += paycheckWage * Decimal(paycheckCount)
             
-            // NOTE: We do NOT include past RSU vest wage here
-            // The web app only counts future income
-            // total += income.rsuVestData.taxableWage.toDecimal() ?? 0
+            // IMPORTANT: We do NOT include past RSU vest wage (rsuVestData.taxableWage) here
+            // This field represents a PAST RSU vest that is already included in YTD W2 wage
+            // It is used ONLY to calculate withholding rates for future RSU vests
+            // The web app follows the same logic - see src/calculators/utils/income.ts
             
             // Future RSU vests
             for vest in income.futureRSUVests {

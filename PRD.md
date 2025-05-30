@@ -95,11 +95,11 @@ The application will feature a clear, step-by-step flow to guide users through t
            * State Withhold (per paycheck) \- *This field will be hidden if California State Tax is not selected.*  
            * Frequency of Payment (dropdown: Bi-weekly \- default, Monthly).  
            * Next Payment Date (date picker).  
-         * **Most Recent RSU Vest Data:**  
-           * Taxable Wage (per vest).  
-           * Federal Withhold (per vest).  
-           * State Withhold (per vest) \- *This field will be hidden if California State Tax is not selected.*  
-           * Vest Price (per share, if applicable, for calculation context).  
+         * **Most Recent RSU Vest Data:** *(Reference only - not added to total income)*  
+           * Taxable Wage (per vest) - *Used to calculate withholding rate for future RSU vests*  
+           * Federal Withhold (per vest) - *Used to calculate federal withholding rate*  
+           * State Withhold (per vest) - *Used to calculate state withholding rate. This field will be hidden if California State Tax is not selected.*  
+           * Vest Price (per share) - *Used as default price for future RSU vest calculations*  
          * **Future RSU Vests:**  
            * Dynamic list of RSU vests with the following fields for each vest:  
              * Vest Date (date picker)  
