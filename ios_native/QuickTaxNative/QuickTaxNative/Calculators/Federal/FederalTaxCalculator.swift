@@ -34,7 +34,7 @@ class FederalTaxCalculator {
             income: incomeComponents.ordinaryTaxableIncome,
             brackets: FederalTaxConstants.TaxBrackets.brackets(for: filingStatus)
         )
-        let ordinaryIncomeTax = ordinaryTaxBrackets.reduce(0) { $0 + $1.taxForBracket }
+        var ordinaryIncomeTax = ordinaryTaxBrackets.reduce(0) { $0 + $1.taxForBracket }
         
         // Step 5: Calculate capital gains tax
         let capitalGainsIncome = incomeComponents.qualifiedDividends + incomeComponents.longTermGains
@@ -43,26 +43,35 @@ class FederalTaxCalculator {
             ordinaryTaxableIncome: incomeComponents.ordinaryTaxableIncome,
             filingStatus: filingStatus
         )
-        let capitalGainsTax = capitalGainsBrackets.reduce(0) { $0 + $1.taxForBracket }
+        var capitalGainsTax = capitalGainsBrackets.reduce(0) { $0 + $1.taxForBracket }
         
         // Step 6: Calculate total tax and amounts owed/refunded
-        let totalTax = ordinaryIncomeTax + capitalGainsTax
+        var totalTax = ordinaryIncomeTax + capitalGainsTax
+        var roundedTotalTax = Decimal()
+        NSDecimalRound(&roundedTotalTax, &totalTax, 0, .plain)
+        
         let totalWithholding = calculateTotalWithholding(
             userIncome: income,
             spouseIncome: spouseIncome
         )
         let totalEstimatedPayments = calculateTotalEstimatedPayments(estimatedPayments)
-        let owedOrRefund = totalTax - totalWithholding - totalEstimatedPayments
+        let owedOrRefund = roundedTotalTax - totalWithholding - totalEstimatedPayments
         
         // Step 7: Calculate effective rate
         let taxableIncome = max(totalIncome.total - deductionInfo.amount, 0)
-        let effectiveRate = totalIncome.total > 0 ? totalTax / totalIncome.total : 0
+        let effectiveRate = totalIncome.total > 0 ? roundedTotalTax / totalIncome.total : 0
+        
+        // Round individual tax components for display
+        var roundedOrdinaryTax = Decimal()
+        NSDecimalRound(&roundedOrdinaryTax, &ordinaryIncomeTax, 0, .plain)
+        var roundedCapitalGainsTax = Decimal()
+        NSDecimalRound(&roundedCapitalGainsTax, &capitalGainsTax, 0, .plain)
         
         return FederalTaxResult(
             taxableIncome: taxableIncome,
-            ordinaryIncomeTax: ordinaryIncomeTax,
-            capitalGainsTax: capitalGainsTax,
-            totalTax: totalTax,
+            ordinaryIncomeTax: roundedOrdinaryTax,
+            capitalGainsTax: roundedCapitalGainsTax,
+            totalTax: roundedTotalTax,
             deduction: deductionInfo,
             owedOrRefund: owedOrRefund,
             effectiveRate: effectiveRate,

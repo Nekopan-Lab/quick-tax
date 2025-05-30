@@ -115,7 +115,7 @@ class FederalTaxCalculatorTests: XCTestCase {
         XCTAssertEqual(result.taxableIncome, 65000) // 80000 - 15000
         XCTAssertEqual(result.ordinaryIncomeTax, 5162) // Tax on $45000 ordinary income
         XCTAssertEqual(result.capitalGainsTax, 2498) // ~15% on $16,650 (portion above $48,350)
-        XCTAssertEqual(result.totalTax, 7660) // Allow for rounding
+        XCTAssertEqual(result.totalTax, 7659)
     }
     
     func testSingleFilerQualifiedDividends() {
@@ -140,7 +140,7 @@ class FederalTaxCalculatorTests: XCTestCase {
         )
         
         XCTAssertEqual(result.taxableIncome, 65000) // 80000 - 15000
-        XCTAssertEqual(result.totalTax, 7660) // Same as previous test
+        XCTAssertEqual(result.totalTax, 7659)
     }
     
     // MARK: - Married Filing Jointly Tests
