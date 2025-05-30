@@ -148,8 +148,9 @@ class FederalTaxCalculator {
             )
             let paycheckTotal = paycheckWage * Decimal(paycheckCount)
             
-            // Calculate RSU income
-            let rsuVestWage = income.rsuVestData.taxableWage.toDecimal() ?? 0
+            // NOTE: We do NOT include past RSU vest wage here
+            // The web app only counts future income
+            // let rsuVestWage = income.rsuVestData.taxableWage.toDecimal() ?? 0
             var futureRSUTotal: Decimal = 0
             
             for vest in income.futureRSUVests {
@@ -160,7 +161,7 @@ class FederalTaxCalculator {
                 }
             }
             
-            return paycheckTotal + rsuVestWage + futureRSUTotal
+            return paycheckTotal + futureRSUTotal
         }
     }
     
@@ -173,14 +174,22 @@ class FederalTaxCalculator {
             return 0
         }
         
-        let daysUntilEnd = calendar.dateComponents([.day], from: nextDate, to: endOfYear).day ?? 0
+        // Use proper date iteration logic like the web app
+        var paychecksRemaining = 0
+        var payDate = nextDate
         
-        switch frequency {
-        case .biweekly:
-            return max(0, (daysUntilEnd / 14) + 1)
-        case .monthly:
-            return max(0, (daysUntilEnd / 30) + 1)
+        while payDate <= endOfYear {
+            paychecksRemaining += 1
+            
+            switch frequency {
+            case .biweekly:
+                payDate = calendar.date(byAdding: .day, value: 14, to: payDate) ?? payDate
+            case .monthly:
+                payDate = calendar.date(byAdding: .month, value: 1, to: payDate) ?? payDate
+            }
         }
+        
+        return paychecksRemaining
     }
     
     // MARK: - Deduction Calculation
@@ -349,31 +358,59 @@ class FederalTaxCalculator {
         var total: Decimal = 0
         
         // User withholding
-        total += userIncome.ytdW2Income.federalWithhold.toDecimal() ?? 0
-        
-        if userIncome.incomeMode == .simple {
-            total += userIncome.futureIncome.federalWithhold.toDecimal() ?? 0
-        } else {
-            // Paycheck withholding
-            let paycheckWithhold = userIncome.paycheckData.federalWithhold.toDecimal() ?? 0
-            let paycheckCount = calculateRemainingPaychecks(
-                frequency: userIncome.paycheckData.frequency,
-                nextDate: userIncome.paycheckData.nextPaymentDate
-            )
-            total += paycheckWithhold * Decimal(paycheckCount)
-            
-            // RSU withholding
-            total += userIncome.rsuVestData.federalWithhold.toDecimal() ?? 0
-            
-            // Note: Future RSU vests would need tax withholding calculation
-            // This is simplified - actual implementation would calculate withholding
-        }
+        total += calculateIndividualWithholding(userIncome)
         
         // Spouse withholding
         if let spouseIncome = spouseIncome {
-            // Same calculation for spouse
-            total += spouseIncome.ytdW2Income.federalWithhold.toDecimal() ?? 0
-            // ... (repeat future income calculation for spouse)
+            total += calculateIndividualWithholding(spouseIncome)
+        }
+        
+        return total
+    }
+    
+    private static func calculateIndividualWithholding(_ income: IncomeData) -> Decimal {
+        var total: Decimal = 0
+        
+        // YTD withholding
+        total += income.ytdW2Income.federalWithhold.toDecimal() ?? 0
+        
+        if income.incomeMode == .simple {
+            total += income.futureIncome.federalWithhold.toDecimal() ?? 0
+        } else {
+            // Paycheck withholding
+            let paycheckWithhold = income.paycheckData.federalWithhold.toDecimal() ?? 0
+            let paycheckCount = calculateRemainingPaychecks(
+                frequency: income.paycheckData.frequency,
+                nextDate: income.paycheckData.nextPaymentDate
+            )
+            total += paycheckWithhold * Decimal(paycheckCount)
+            
+            // NOTE: We do NOT include past RSU vest withholding here
+            // The web app only counts future income withholdings
+            // total += income.rsuVestData.federalWithhold.toDecimal() ?? 0
+            
+            // Future RSU vest withholdings
+            for vest in income.futureRSUVests {
+                if vest.date >= Date() {
+                    let shares = Decimal(string: vest.shares) ?? 0
+                    let price = Decimal(string: vest.expectedPrice) ?? 0
+                    let vestValue = shares * price
+                    
+                    if vestValue > 0 {
+                        // Calculate withholding rate from most recent RSU vest data
+                        let rsuVestWage = income.rsuVestData.taxableWage.toDecimal() ?? 0
+                        let rsuVestFederal = income.rsuVestData.federalWithhold.toDecimal() ?? 0
+                        
+                        if rsuVestWage > 0 {
+                            let federalRate = rsuVestFederal / rsuVestWage
+                            total += vestValue * federalRate
+                        } else {
+                            // Default to 24% federal withholding if no historical data
+                            total += vestValue * Decimal(0.24)
+                        }
+                    }
+                }
+            }
         }
         
         return total

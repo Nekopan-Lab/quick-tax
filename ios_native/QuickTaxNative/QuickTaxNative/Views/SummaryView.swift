@@ -658,10 +658,16 @@ struct SummaryView: View {
         
         if taxStore.userIncome.incomeMode == .simple {
             userFutureFederal = taxStore.userIncome.futureIncome.federalWithhold.toDecimal() ?? 0
+        } else {
+            // Calculate detailed mode withholdings for user
+            userFutureFederal = calculateDetailedFederalWithholdings(for: taxStore.userIncome)
         }
         
         if taxStore.spouseIncome.incomeMode == .simple {
             spouseFutureFederal = taxStore.spouseIncome.futureIncome.federalWithhold.toDecimal() ?? 0
+        } else {
+            // Calculate detailed mode withholdings for spouse
+            spouseFutureFederal = calculateDetailedFederalWithholdings(for: taxStore.spouseIncome)
         }
         
         return userYtdFederal + spouseYtdFederal + userFutureFederal + spouseFutureFederal
@@ -677,13 +683,130 @@ struct SummaryView: View {
         
         if taxStore.userIncome.incomeMode == .simple {
             userFutureState = taxStore.userIncome.futureIncome.stateWithhold.toDecimal() ?? 0
+        } else {
+            // Calculate detailed mode withholdings for user
+            userFutureState = calculateDetailedStateWithholdings(for: taxStore.userIncome)
         }
         
         if taxStore.spouseIncome.incomeMode == .simple {
             spouseFutureState = taxStore.spouseIncome.futureIncome.stateWithhold.toDecimal() ?? 0
+        } else {
+            // Calculate detailed mode withholdings for spouse
+            spouseFutureState = calculateDetailedStateWithholdings(for: taxStore.spouseIncome)
         }
         
         return userYtdState + spouseYtdState + userFutureState + spouseFutureState
+    }
+    
+    // MARK: - Detailed Withholding Calculations
+    
+    func calculateDetailedFederalWithholdings(for income: IncomeData) -> Decimal {
+        var total: Decimal = 0
+        
+        // Calculate paycheck withholdings
+        let paycheckFederal = income.paycheckData.federalWithhold.toDecimal() ?? 0
+        let paycheckCount = calculateRemainingPaychecks(
+            frequency: income.paycheckData.frequency,
+            nextDate: income.paycheckData.nextPaymentDate
+        )
+        total += paycheckFederal * Decimal(paycheckCount)
+        
+        // NOTE: We do NOT include past RSU vest withholding here
+        // The web app only counts future income withholdings
+        // total += income.rsuVestData.federalWithhold.toDecimal() ?? 0
+        
+        // Calculate future RSU vest withholdings
+        for vest in income.futureRSUVests {
+            if vest.date >= Date() {
+                let shares = Decimal(string: vest.shares) ?? 0
+                let price = Decimal(string: vest.expectedPrice) ?? 0
+                let vestValue = shares * price
+                
+                if vestValue > 0 {
+                    // Calculate withholding rate from most recent RSU vest data
+                    let rsuVestWage = income.rsuVestData.taxableWage.toDecimal() ?? 0
+                    let rsuVestFederal = income.rsuVestData.federalWithhold.toDecimal() ?? 0
+                    
+                    if rsuVestWage > 0 {
+                        let federalRate = rsuVestFederal / rsuVestWage
+                        total += vestValue * federalRate
+                    } else {
+                        // Default to 24% federal withholding if no historical data
+                        total += vestValue * Decimal(0.24)
+                    }
+                }
+            }
+        }
+        
+        return total
+    }
+    
+    func calculateDetailedStateWithholdings(for income: IncomeData) -> Decimal {
+        var total: Decimal = 0
+        
+        // Calculate paycheck withholdings
+        let paycheckState = income.paycheckData.stateWithhold.toDecimal() ?? 0
+        let paycheckCount = calculateRemainingPaychecks(
+            frequency: income.paycheckData.frequency,
+            nextDate: income.paycheckData.nextPaymentDate
+        )
+        total += paycheckState * Decimal(paycheckCount)
+        
+        // NOTE: We do NOT include past RSU vest withholding here
+        // The web app only counts future income withholdings
+        // total += income.rsuVestData.stateWithhold.toDecimal() ?? 0
+        
+        // Calculate future RSU vest withholdings
+        for vest in income.futureRSUVests {
+            if vest.date >= Date() {
+                let shares = Decimal(string: vest.shares) ?? 0
+                let price = Decimal(string: vest.expectedPrice) ?? 0
+                let vestValue = shares * price
+                
+                if vestValue > 0 {
+                    // Calculate withholding rate from most recent RSU vest data
+                    let rsuVestWage = income.rsuVestData.taxableWage.toDecimal() ?? 0
+                    let rsuVestState = income.rsuVestData.stateWithhold.toDecimal() ?? 0
+                    
+                    if rsuVestWage > 0 {
+                        let stateRate = rsuVestState / rsuVestWage
+                        total += vestValue * stateRate
+                    } else {
+                        // Default to 10% state withholding if no historical data
+                        total += vestValue * Decimal(0.10)
+                    }
+                }
+            }
+        }
+        
+        return total
+    }
+    
+    private func calculateRemainingPaychecks(frequency: PayFrequency, nextDate: Date) -> Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let endOfYear = calendar.date(from: DateComponents(year: calendar.component(.year, from: now), month: 12, day: 31))!
+        
+        if nextDate > endOfYear {
+            return 0
+        }
+        
+        // Use proper date iteration logic like the web app and TaxOrchestrator
+        var paychecksRemaining = 0
+        var payDate = nextDate
+        
+        while payDate <= endOfYear {
+            paychecksRemaining += 1
+            
+            switch frequency {
+            case .biweekly:
+                payDate = calendar.date(byAdding: .day, value: 14, to: payDate) ?? payDate
+            case .monthly:
+                payDate = calendar.date(byAdding: .month, value: 1, to: payDate) ?? payDate
+            }
+        }
+        
+        return paychecksRemaining
     }
 }
 

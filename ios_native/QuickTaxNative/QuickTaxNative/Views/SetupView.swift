@@ -186,6 +186,7 @@ struct SetupView: View {
                         .cornerRadius(10)
                 }
                 
+                
                 Button(action: { showDeleteAlert = true }) {
                     Label("Delete All Data", systemImage: "trash")
                         .foregroundColor(.white)

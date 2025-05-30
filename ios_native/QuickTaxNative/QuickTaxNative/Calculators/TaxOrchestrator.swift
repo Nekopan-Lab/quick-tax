@@ -92,7 +92,7 @@ class TaxOrchestrator {
         return total
     }
     
-    private static func processIncomeTotal(_ income: IncomeData) -> Decimal {
+    static func processIncomeTotal(_ income: IncomeData) -> Decimal {
         var total: Decimal = 0
         
         // Investment income
@@ -116,8 +116,9 @@ class TaxOrchestrator {
             )
             total += paycheckWage * Decimal(paycheckCount)
             
-            // RSU income
-            total += income.rsuVestData.taxableWage.toDecimal() ?? 0
+            // NOTE: We do NOT include past RSU vest wage here
+            // The web app only counts future income
+            // total += income.rsuVestData.taxableWage.toDecimal() ?? 0
             
             // Future RSU vests
             for vest in income.futureRSUVests {
@@ -132,7 +133,7 @@ class TaxOrchestrator {
         return total
     }
     
-    private static func calculateRemainingPaychecks(frequency: PayFrequency, nextDate: Date) -> Int {
+    static func calculateRemainingPaychecks(frequency: PayFrequency, nextDate: Date) -> Int {
         let calendar = Calendar.current
         let now = Date()
         let endOfYear = calendar.date(from: DateComponents(year: calendar.component(.year, from: now), month: 12, day: 31))!
@@ -141,14 +142,22 @@ class TaxOrchestrator {
             return 0
         }
         
-        let daysUntilEnd = calendar.dateComponents([.day], from: nextDate, to: endOfYear).day ?? 0
+        // Use proper date iteration logic like the web app
+        var paychecksRemaining = 0
+        var payDate = nextDate
         
-        switch frequency {
-        case .biweekly:
-            return max(0, (daysUntilEnd / 14) + 1)
-        case .monthly:
-            return max(0, (daysUntilEnd / 30) + 1)
+        while payDate <= endOfYear {
+            paychecksRemaining += 1
+            
+            switch frequency {
+            case .biweekly:
+                payDate = calendar.date(byAdding: .day, value: 14, to: payDate) ?? payDate
+            case .monthly:
+                payDate = calendar.date(byAdding: .month, value: 1, to: payDate) ?? payDate
+            }
         }
+        
+        return paychecksRemaining
     }
     
     private static func calculateFederalSuggestions(

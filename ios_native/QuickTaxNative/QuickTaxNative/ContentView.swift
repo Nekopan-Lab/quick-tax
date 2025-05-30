@@ -1,13 +1,14 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var taxStore: TaxStore
+    @StateObject private var taxStore = TaxStore()
+    @State private var selectedTab = 0
     
     var body: some View {
-        TabView(selection: $taxStore.currentStep) {
+        TabView(selection: $selectedTab) {
             SetupView()
                 .tabItem {
-                    Label("Setup", systemImage: "gear")
+                    Label("Tax Info", systemImage: "info.circle.fill")
                 }
                 .tag(0)
             
@@ -19,34 +20,27 @@ struct ContentView: View {
             
             DeductionsView()
                 .tabItem {
-                    Label("Deductions", systemImage: "minus.circle")
+                    Label("Deductions", systemImage: "doc.text")
                 }
                 .tag(2)
             
             EstimatedPaymentsView()
                 .tabItem {
-                    Label("Payments", systemImage: "calendar.badge.plus")
+                    Label("Payments", systemImage: "calendar")
                 }
                 .tag(3)
             
             SummaryView()
                 .tabItem {
-                    Label("Summary", systemImage: "doc.text")
+                    Label("Summary", systemImage: "chart.pie")
                 }
                 .tag(4)
         }
-        .onAppear {
-            // Save data when view appears
-            taxStore.saveData()
-        }
-        .onChange(of: taxStore.currentStep) { _ in
-            // Save data when step changes
-            taxStore.saveData()
-        }
+        .environmentObject(taxStore)
+        .accentColor(.blue)
     }
 }
 
 #Preview {
     ContentView()
-        .environmentObject(TaxStore())
 }
