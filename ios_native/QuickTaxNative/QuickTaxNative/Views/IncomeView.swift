@@ -133,13 +133,17 @@ struct ModernIncomeFormView: View {
                 }
                 
                 // Capital loss carryover note
-                Text("Note: If your total capital losses exceed your capital gains, you can deduct up to $3,000 against ordinary income. Any remaining losses carry forward to future years.")
-                    .font(.caption2)
-                    .foregroundColor(Color(red: 0.7, green: 0.5, blue: 0.0))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .background(Color(red: 1.0, green: 0.95, blue: 0.8))
-                    .cornerRadius(6)
+                HStack {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue)
+                        .font(.caption)
+                    Text("If your total capital losses exceed your capital gains, you can deduct up to $3,000 against ordinary income. Any remaining losses carry forward to future years.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(10)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
             }
             
             // YTD W2 Income Section
