@@ -144,7 +144,7 @@ struct DetailedIncomeView: View {
                 Text("Future RSU Vests")
                 Spacer()
                 Button(action: {
-                    let newVest = FutureRSUVest()
+                    var newVest = FutureRSUVest()
                     if let lastVestPrice = income.rsuVestData.vestPrice.toDecimal() {
                         newVest.expectedPrice = String(describing: lastVestPrice)
                     }

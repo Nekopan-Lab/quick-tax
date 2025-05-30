@@ -106,7 +106,7 @@ struct TaxOverviewCard: View {
             
             Text(NumberFormatter.currencyWholeNumber.string(from: abs(amount) as NSNumber) ?? "$0")
                 .font(.title2)
-                .fontWeight(.bold)
+                .bold()
             
             Text("Effective Rate: \(NumberFormatter.percentage.string(from: (effectiveRate * 100) as NSNumber) ?? "0%")")
                 .font(.caption2)
@@ -156,7 +156,7 @@ struct SummaryRow: View {
                 .foregroundColor(.secondary)
             Spacer()
             Text(value)
-                .fontWeight(.medium)
+                
         }
     }
 }
@@ -190,7 +190,7 @@ struct FederalTaxDetailsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Ordinary Income Brackets")
                         .font(.caption)
-                        .fontWeight(.semibold)
+                        
                     
                     ForEach(federalTax.ordinaryTaxBrackets, id: \.bracket.min) { detail in
                         HStack {
@@ -199,14 +199,14 @@ struct FederalTaxDetailsView: View {
                             Spacer()
                             Text(detail.displayTax)
                                 .font(.caption)
-                                .fontWeight(.medium)
+                                
                         }
                     }
                     
                     if !federalTax.capitalGainsBrackets.isEmpty {
                         Text("Capital Gains Brackets")
                             .font(.caption)
-                            .fontWeight(.semibold)
+                            
                             .padding(.top, 8)
                         
                         ForEach(federalTax.capitalGainsBrackets, id: \.bracket.min) { detail in
@@ -216,7 +216,7 @@ struct FederalTaxDetailsView: View {
                                 Spacer()
                                 Text(detail.displayTax)
                                     .font(.caption)
-                                    .fontWeight(.medium)
+                                    
                             }
                         }
                     }
@@ -263,7 +263,7 @@ struct CaliforniaTaxDetailsView: View {
                             Spacer()
                             Text(detail.displayTax)
                                 .font(.caption)
-                                .fontWeight(.medium)
+                                
                         }
                     }
                 }
@@ -337,7 +337,7 @@ struct EstimatedPaymentRow: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(suggestion.quarter)
-                    .fontWeight(.medium)
+                    
                 Text(suggestion.displayDueDate)
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -355,7 +355,7 @@ struct EstimatedPaymentRow: View {
                     .foregroundColor(.gray)
             } else {
                 Text(suggestion.displayAmount)
-                    .fontWeight(.medium)
+                    
                     .foregroundColor(.blue)
             }
         }

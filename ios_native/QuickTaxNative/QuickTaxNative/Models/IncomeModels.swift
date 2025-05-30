@@ -1,6 +1,6 @@
 import Foundation
 
-struct InvestmentIncome: Codable {
+struct InvestmentIncome: Codable, Equatable {
     var ordinaryDividends: String = ""
     var qualifiedDividends: String = ""
     var interestIncome: String = ""
@@ -8,13 +8,13 @@ struct InvestmentIncome: Codable {
     var longTermGains: String = ""
 }
 
-struct W2Income: Codable {
+struct W2Income: Codable, Equatable {
     var taxableWage: String = ""
     var federalWithhold: String = ""
     var stateWithhold: String = ""
 }
 
-struct FutureRSUVest: Identifiable, Codable {
+struct FutureRSUVest: Identifiable, Codable, Equatable {
     let id: UUID
     var date: Date
     var shares: String = ""
@@ -28,7 +28,7 @@ struct FutureRSUVest: Identifiable, Codable {
     }
 }
 
-struct PaycheckData: Codable {
+struct PaycheckData: Codable, Equatable {
     var taxableWage: String = ""
     var federalWithhold: String = ""
     var stateWithhold: String = ""
@@ -36,14 +36,14 @@ struct PaycheckData: Codable {
     var nextPaymentDate: Date = Date()
 }
 
-struct RSUVestData: Codable {
+struct RSUVestData: Codable, Equatable {
     var taxableWage: String = ""
     var federalWithhold: String = ""
     var stateWithhold: String = ""
     var vestPrice: String = ""
 }
 
-struct IncomeData: Codable {
+struct IncomeData: Codable, Equatable {
     // Investment Income (Full Year Estimations)
     var investmentIncome: InvestmentIncome = InvestmentIncome()
     

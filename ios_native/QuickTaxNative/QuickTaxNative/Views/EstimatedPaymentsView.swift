@@ -26,7 +26,7 @@ struct EstimatedPaymentsView: View {
                         Text("Federal Total")
                         Spacer()
                         Text(formatTotal(federalTotal))
-                            .fontWeight(.semibold)
+                            
                             .foregroundColor(.primary)
                     }
                     
@@ -35,7 +35,7 @@ struct EstimatedPaymentsView: View {
                             Text("California Total")
                             Spacer()
                             Text(formatTotal(californiaTotal))
-                                .fontWeight(.semibold)
+                                
                                 .foregroundColor(.primary)
                         }
                     }

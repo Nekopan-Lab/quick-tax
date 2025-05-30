@@ -1,6 +1,6 @@
 import Foundation
 
-struct DeductionsData: Codable {
+struct DeductionsData: Codable, Equatable {
     var propertyTax: String = ""
     var mortgageInterest: String = ""
     var donations: String = ""

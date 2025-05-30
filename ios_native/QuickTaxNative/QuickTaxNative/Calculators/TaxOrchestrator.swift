@@ -2,6 +2,7 @@ import Foundation
 
 class TaxOrchestrator {
     
+    @MainActor
     static func calculateTaxes(store: TaxStore) -> TaxCalculationResult {
         
         // First calculate California tax if needed (for federal SALT deduction)
@@ -43,6 +44,7 @@ class TaxOrchestrator {
         )
     }
     
+    @MainActor
     static func calculateEstimatedPaymentSuggestions(
         taxResult: TaxCalculationResult,
         estimatedPayments: EstimatedPaymentsData,
@@ -154,7 +156,7 @@ class TaxOrchestrator {
         payments: EstimatedPaymentsData
     ) -> [EstimatedPaymentSuggestion] {
         
-        let paidAmounts = [
+        let paidAmounts: [Decimal] = [
             payments.federalQ1.toDecimal() ?? 0,
             payments.federalQ2.toDecimal() ?? 0,
             payments.federalQ3.toDecimal() ?? 0,
@@ -197,7 +199,7 @@ class TaxOrchestrator {
         payments: EstimatedPaymentsData
     ) -> [EstimatedPaymentSuggestion] {
         
-        let paidAmounts = [
+        let paidAmounts: [Decimal] = [
             payments.californiaQ1.toDecimal() ?? 0,
             payments.californiaQ2.toDecimal() ?? 0,
             payments.californiaQ4.toDecimal() ?? 0

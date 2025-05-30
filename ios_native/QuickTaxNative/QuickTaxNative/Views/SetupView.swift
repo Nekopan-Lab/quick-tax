@@ -81,9 +81,11 @@ struct SetupView: View {
     
     var privacyFooter: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Privacy Notice", systemImage: "lock.fill")
-                .font(.footnote)
-                .fontWeight(.semibold)
+            HStack {
+                Image(systemName: "lock.fill")
+                Text("Privacy Notice")
+            }
+            .font(.footnote.weight(.semibold))
             
             Text("Your privacy is paramount. All data entered into Quick Tax is stored only on your local device and is never sent to our servers. This allows you to pick up where you left off or update your estimates throughout the year.")
                 .font(.caption2)

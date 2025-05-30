@@ -1,6 +1,6 @@
 import Foundation
 
-struct EstimatedPaymentsData: Codable {
+struct EstimatedPaymentsData: Codable, Equatable {
     // Federal quarterly payments
     var federalQ1: String = ""
     var federalQ2: String = ""
