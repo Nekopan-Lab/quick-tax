@@ -40,7 +40,7 @@ struct SummaryView: View {
                     VStack(spacing: 20) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 40))
-                            .foregroundColor(.orange)
+                            .foregroundColor(.warning)
                         
                         Text("Complete Setup Required")
                             .font(.headline)
@@ -86,7 +86,7 @@ struct SummaryView: View {
         return VStack(spacing: 12) {
             HStack {
                 Image(systemName: "flag.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.emeraldGreen)
                 Text("Federal Tax (IRS)")
                     .font(.headline)
                     .fontWeight(.semibold)
@@ -98,17 +98,17 @@ struct SummaryView: View {
                     if federalOwed > 0 {
                         Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: federalOwed)) ?? "$0")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.red)
+                            .foregroundColor(.error)
                         Text("Owed")
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .foregroundColor(.error)
                     } else {
                         Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(federalOwed))) ?? "$0")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.green)
+                            .foregroundColor(.success)
                         Text("Overpaid")
                             .font(.caption)
-                            .foregroundColor(.green)
+                            .foregroundColor(.success)
                     }
                 }
                 Spacer()
@@ -123,7 +123,7 @@ struct SummaryView: View {
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(federalOwed > 0 ? Color.red.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 2)
+                .stroke(federalOwed > 0 ? Color.error.opacity(0.3) : Color.success.opacity(0.3), lineWidth: 2)
         )
         .cornerRadius(12)
     }
@@ -134,7 +134,7 @@ struct SummaryView: View {
         return VStack(spacing: 12) {
             HStack {
                 Image(systemName: "star.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.goldAccent)
                 Text("California Tax (FTB)")
                     .font(.headline)
                     .fontWeight(.semibold)
@@ -146,17 +146,17 @@ struct SummaryView: View {
                     if caOwed > 0 {
                         Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: caOwed)) ?? "$0")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.red)
+                            .foregroundColor(.error)
                         Text("Owed")
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .foregroundColor(.error)
                     } else {
                         Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(caOwed))) ?? "$0")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.green)
+                            .foregroundColor(.success)
                         Text("Overpaid")
                             .font(.caption)
-                            .foregroundColor(.green)
+                            .foregroundColor(.success)
                     }
                 }
                 Spacer()
@@ -171,7 +171,7 @@ struct SummaryView: View {
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(caOwed > 0 ? Color.red.opacity(0.3) : Color.green.opacity(0.3), lineWidth: 2)
+                .stroke(caOwed > 0 ? Color.error.opacity(0.3) : Color.success.opacity(0.3), lineWidth: 2)
         )
         .cornerRadius(12)
     }
@@ -206,7 +206,7 @@ struct SummaryView: View {
                     Text("\(String(format: "%.2f", NSDecimalNumber(decimal: combinedRate).doubleValue))%")
                         .font(.subheadline)
                         .fontWeight(.bold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.emeraldGreen)
                 }
             }
             .padding()
@@ -240,10 +240,10 @@ struct SummaryView: View {
             federalBreakdownDetails(result: result, withholdings: federalWithholdings, paid: federalPaid, owed: owed)
         }
         .padding()
-        .background(Color.blue.opacity(0.05))
+        .background(Color.emeraldGreen.opacity(0.05))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                .stroke(Color.emeraldGreen.opacity(0.2), lineWidth: 1)
         )
         .cornerRadius(8)
     }
@@ -251,7 +251,7 @@ struct SummaryView: View {
     var federalBreakdownHeader: some View {
         HStack {
             Image(systemName: "flag.fill")
-                .foregroundColor(.blue)
+                .foregroundColor(.emeraldGreen)
             Text("Federal Tax Details (IRS)")
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -297,10 +297,10 @@ struct SummaryView: View {
                         HStack {
                             Text("  View calculation details")
                                 .font(.caption)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                             Image(systemName: expandOrdinaryIncomeTax ? "chevron.up" : "chevron.down")
                                 .font(.caption2)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -329,10 +329,10 @@ struct SummaryView: View {
                         HStack {
                             Text("  View calculation details")
                                 .font(.caption)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                             Image(systemName: expandCapitalGainsTax ? "chevron.up" : "chevron.down")
                                 .font(.caption2)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -387,10 +387,10 @@ struct SummaryView: View {
             californiaBreakdownDetails(caTax: caTax, withholdings: californiaWithholdings, paid: californiaPaid, owed: owed)
         }
         .padding()
-        .background(Color.orange.opacity(0.05))
+        .background(Color.goldAccent.opacity(0.05))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                .stroke(Color.goldAccent.opacity(0.2), lineWidth: 1)
         )
         .cornerRadius(8)
     }
@@ -398,7 +398,7 @@ struct SummaryView: View {
     var californiaBreakdownHeader: some View {
         HStack {
             Image(systemName: "star.fill")
-                .foregroundColor(.orange)
+                .foregroundColor(.goldAccent)
             Text("California Tax Details (FTB)")
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -444,10 +444,10 @@ struct SummaryView: View {
                         HStack {
                             Text("  View calculation details")
                                 .font(.caption)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                             Image(systemName: expandCABaseTax ? "chevron.up" : "chevron.down")
                                 .font(.caption2)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -476,10 +476,10 @@ struct SummaryView: View {
                         HStack {
                             Text("  View calculation details")
                                 .font(.caption)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                             Image(systemName: expandMentalHealthTax ? "chevron.up" : "chevron.down")
                                 .font(.caption2)
-                                .foregroundColor(.blue)
+                                .foregroundColor(.emeraldGreen)
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -550,7 +550,7 @@ struct SummaryView: View {
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "flag.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.emeraldGreen)
                 Text("Federal Estimated Payments (IRS)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
@@ -564,10 +564,10 @@ struct SummaryView: View {
             }
         }
         .padding()
-        .background(Color.blue.opacity(0.05))
+        .background(Color.emeraldGreen.opacity(0.05))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                .stroke(Color.emeraldGreen.opacity(0.2), lineWidth: 1)
         )
         .cornerRadius(8)
     }
@@ -612,7 +612,7 @@ struct SummaryView: View {
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "star.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.goldAccent)
                 Text("California Estimated Payments (FTB)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
@@ -627,16 +627,16 @@ struct SummaryView: View {
                     
                     Text("California requires 3 payments (no Q3 payment)")
                         .font(.caption)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.goldAccent)
                         .padding(.top, 8)
                 }
             }
         }
         .padding()
-        .background(Color.orange.opacity(0.05))
+        .background(Color.goldAccent.opacity(0.05))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                .stroke(Color.goldAccent.opacity(0.2), lineWidth: 1)
         )
         .cornerRadius(8)
     }
@@ -1370,7 +1370,7 @@ struct PaymentRowView: View {
                         .fontWeight(.medium)
                     if payment.isPaid {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(.success)
                             .font(.caption)
                     }
                 }
@@ -1389,7 +1389,7 @@ struct PaymentRowView: View {
                 if payment.isPaid {
                     Text("(Paid)")
                         .font(.caption)
-                        .foregroundColor(.green)
+                        .foregroundColor(.success)
                 } else if payment.isPastDue {
                     Text("(Past Due)")
                         .font(.caption)

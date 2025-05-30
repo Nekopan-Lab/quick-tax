@@ -103,7 +103,7 @@ struct TaxInfoView: View {
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.title3)
-                .foregroundColor(.orange)
+                .foregroundColor(.warning)
             
             Text("This tool provides tax estimates only. Not for professional tax advice or preparation.")
                 .font(.caption)
@@ -113,7 +113,7 @@ struct TaxInfoView: View {
             Spacer(minLength: 0)
         }
         .padding()
-        .background(Color.orange.opacity(0.1))
+        .background(Color.warningBackground)
         .cornerRadius(10)
     }
     
@@ -122,7 +122,7 @@ struct TaxInfoView: View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 40))
-                .foregroundColor(.orange)
+                .foregroundColor(.warning)
             
             Text("Important Notice")
                 .font(.headline)
@@ -134,7 +134,7 @@ struct TaxInfoView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(24)
-        .background(Color.orange.opacity(0.1))
+        .background(Color.warningBackground)
         .cornerRadius(16)
     }
     
@@ -191,20 +191,20 @@ struct TaxInfoView: View {
                             
                             if taxStore.filingStatus == status {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.accentColor)
+                                    .foregroundColor(.emeraldGreen)
                             }
                         }
                         .padding()
                         .background(
                             taxStore.filingStatus == status ?
-                            Color.accentColor.opacity(0.1) :
+                            Color.selectedBackground :
                             Color(UIColor.tertiarySystemFill)
                         )
                         .cornerRadius(10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(
-                                    taxStore.filingStatus == status ? Color.accentColor : Color.clear,
+                                    taxStore.filingStatus == status ? Color.selectedBorder : Color.clear,
                                     lineWidth: 2
                                 )
                         )
@@ -224,6 +224,7 @@ struct TaxInfoView: View {
                 Spacer()
                 Toggle("", isOn: $taxStore.includeCaliforniaTax)
                     .labelsHidden()
+                    .tint(.toggleOn)
             }
             
             Text("Include California state tax calculations")
@@ -249,7 +250,7 @@ struct TaxInfoView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.purple)
+                        .background(Color.buttonAccent)
                         .cornerRadius(8)
                 }
                 
@@ -259,7 +260,7 @@ struct TaxInfoView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.red)
+                        .background(Color.buttonDanger)
                         .cornerRadius(8)
                 }
             }
@@ -322,7 +323,7 @@ struct PrivacySheetView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Image(systemName: "lock.shield.fill")
                         .font(.system(size: 60))
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(.emeraldGreen)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical)
                     
@@ -383,7 +384,7 @@ struct PrivacyFeature: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundColor(.accentColor)
+                .foregroundColor(.emeraldGreen)
                 .frame(width: 40)
             
             VStack(alignment: .leading, spacing: 4) {
@@ -416,7 +417,7 @@ struct DemoSheetView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Image(systemName: "play.circle.fill")
                         .font(.system(size: 60))
-                        .foregroundColor(.purple)
+                        .foregroundColor(.goldAccent)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical)
                     
@@ -444,7 +445,7 @@ struct DemoSheetView: View {
                         dismiss()
                     }
                     .font(.headline)
-                    .foregroundColor(.purple)
+                    .foregroundColor(.goldAccent)
                 }
             }
         }

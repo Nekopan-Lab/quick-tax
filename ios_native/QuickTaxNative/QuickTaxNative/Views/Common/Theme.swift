@@ -1,49 +1,74 @@
 import SwiftUI
 
-// MARK: - Color Theme
+// MARK: - Theme Colors
 extension Color {
-    // Primary Colors
-    static let primaryBlue = Color(red: 0.0, green: 0.478, blue: 1.0) // System blue
-    static let primaryGreen = Color(red: 0.20, green: 0.78, blue: 0.35) // Success green
-    static let primaryRed = Color(red: 1.0, green: 0.27, blue: 0.23) // Warning red
+    // MARK: Brand Colors
+    static let emeraldGreen = Color(red: 16/255, green: 185/255, blue: 129/255)        // #10B981
+    static let emeraldGreenDark = Color(red: 4/255, green: 120/255, blue: 87/255)      // #047857
+    static let goldAccent = Color(red: 245/255, green: 158/255, blue: 11/255)          // #F59E0B
+    static let goldAccentDark = Color(red: 217/255, green: 119/255, blue: 6/255)       // #D97706
     
-    // Background Colors
-    static let backgroundPrimary = Color(UIColor.systemBackground)
-    static let backgroundSecondary = Color(UIColor.secondarySystemBackground)
+    // MARK: Semantic Colors
+    static let primaryBrand = emeraldGreen
+    static let accentBrand = goldAccent
+    
+    // Navigation & Selection
+    static let navSelected = emeraldGreen
+    static let navSelectedBackground = emeraldGreen.opacity(0.1)
+    static let toggleOn = emeraldGreen
+    
+    // Buttons
+    static let buttonPrimary = emeraldGreen
+    static let buttonAccent = goldAccent
+    static let buttonDanger = Color.red
+    
+    // Status Colors
+    static let success = Color(red: 34/255, green: 197/255, blue: 94/255)              // #22C55E
+    static let warning = goldAccent
+    static let error = Color(red: 239/255, green: 68/255, blue: 68/255)                // #EF4444
+    
+    // Backgrounds
+    static let cardBackground = Color(UIColor.secondarySystemGroupedBackground)
+    static let subtleBackground = Color(UIColor.tertiarySystemFill)
+    static let selectedBackground = emeraldGreen.opacity(0.1)
+    static let warningBackground = goldAccent.opacity(0.1)
+    static let selectedBorder = emeraldGreen
+    
+    // Text
+    static let primaryText = Color(UIColor.label)
+    static let secondaryText = Color(UIColor.secondaryLabel)
+    static let tertiaryText = Color(UIColor.tertiaryLabel)
+}
+
+// MARK: - Legacy Color Support
+extension Color {
+    // Keep these for backward compatibility
+    static let customBlue = emeraldGreen
+    static let customOrange = goldAccent
+    static let customGreen = success
+    static let customRed = error
+    static let primaryBlue = emeraldGreen
     static let backgroundTertiary = Color(UIColor.tertiarySystemBackground)
-    
-    // Text Colors
+}
+
+// MARK: - Additional Color Extensions
+extension Color {
+    static let backgroundSecondary = Color(UIColor.secondarySystemBackground)
     static let textPrimary = Color(UIColor.label)
     static let textSecondary = Color(UIColor.secondaryLabel)
     static let textTertiary = Color(UIColor.tertiaryLabel)
-    
-    // Accent Colors
-    static let accentPurple = Color(red: 0.69, green: 0.32, blue: 0.87)
-    static let accentOrange = Color(red: 1.0, green: 0.62, blue: 0.04)
-    
-    // Status Colors
-    static let successBackground = Color.primaryGreen.opacity(0.15)
-    static let warningBackground = Color.primaryRed.opacity(0.15)
-    static let infoBackground = Color.primaryBlue.opacity(0.15)
+    static let accentPurple = Color.purple
 }
 
-// MARK: - Typography
-struct Typography {
-    static let largeTitle = Font.system(size: 34, weight: .bold, design: .rounded)
-    static let title1 = Font.system(size: 28, weight: .bold, design: .rounded)
-    static let title2 = Font.system(size: 22, weight: .semibold, design: .rounded)
-    static let title3 = Font.system(size: 20, weight: .semibold, design: .rounded)
-    static let headline = Font.system(size: 17, weight: .semibold, design: .default)
-    static let body = Font.system(size: 17, weight: .regular, design: .default)
-    static let callout = Font.system(size: 16, weight: .regular, design: .default)
-    static let subheadline = Font.system(size: 15, weight: .regular, design: .default)
-    static let footnote = Font.system(size: 13, weight: .regular, design: .default)
-    static let caption1 = Font.system(size: 12, weight: .regular, design: .default)
-    static let caption2 = Font.system(size: 11, weight: .regular, design: .default)
+// MARK: - Corner Radius Constants
+enum CornerRadius {
+    static let small: CGFloat = 8
+    static let medium: CGFloat = 12
+    static let large: CGFloat = 16
 }
 
-// MARK: - Spacing
-struct Spacing {
+// MARK: - Spacing Constants
+enum Spacing {
     static let xxxSmall: CGFloat = 2
     static let xxSmall: CGFloat = 4
     static let xSmall: CGFloat = 8
@@ -52,21 +77,48 @@ struct Spacing {
     static let large: CGFloat = 20
     static let xLarge: CGFloat = 24
     static let xxLarge: CGFloat = 32
-    static let xxxLarge: CGFloat = 40
 }
 
-// MARK: - Corner Radius
-struct CornerRadius {
-    static let small: CGFloat = 8
-    static let medium: CGFloat = 12
-    static let large: CGFloat = 16
-    static let xLarge: CGFloat = 20
-    static let pill: CGFloat = 1000
+// MARK: - Typography
+enum Typography {
+    static let largeTitle = Font.largeTitle
+    static let title = Font.title
+    static let title2 = Font.title2
+    static let title3 = Font.title3
+    static let headline = Font.headline
+    static let body = Font.body
+    static let callout = Font.callout
+    static let subheadline = Font.subheadline
+    static let footnote = Font.footnote
+    static let caption1 = Font.caption
+    static let caption2 = Font.caption2
 }
 
-// MARK: - Shadow
+// MARK: - Shadow Styles
 struct ShadowStyle {
-    static let small = (color: Color.black.opacity(0.1), radius: CGFloat(4), x: CGFloat(0), y: CGFloat(2))
-    static let medium = (color: Color.black.opacity(0.15), radius: CGFloat(8), x: CGFloat(0), y: CGFloat(4))
-    static let large = (color: Color.black.opacity(0.2), radius: CGFloat(16), x: CGFloat(0), y: CGFloat(8))
+    let color: Color
+    let radius: CGFloat
+    let x: CGFloat
+    let y: CGFloat
+    
+    static let small = ShadowStyle(
+        color: Color.black.opacity(0.05),
+        radius: 2,
+        x: 0,
+        y: 1
+    )
+    
+    static let medium = ShadowStyle(
+        color: Color.black.opacity(0.1),
+        radius: 4,
+        x: 0,
+        y: 2
+    )
+    
+    static let large = ShadowStyle(
+        color: Color.black.opacity(0.15),
+        radius: 8,
+        x: 0,
+        y: 4
+    )
 }

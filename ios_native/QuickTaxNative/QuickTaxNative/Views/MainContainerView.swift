@@ -43,7 +43,7 @@ struct MainContainerView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "flag.fill")
                             .font(.caption)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.emeraldGreen)
                         Text("Federal")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -53,10 +53,10 @@ struct MainContainerView: View {
                         let federalOwed = result.federalTax.owedOrRefund
                         Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(federalOwed))) ?? "$0")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(federalOwed > 0 ? .red : .green)
+                            .foregroundColor(federalOwed > 0 ? .error : .success)
                         Text(federalOwed > 0 ? "Owed" : "Overpaid")
                             .font(.caption2)
-                            .foregroundColor(federalOwed > 0 ? .red : .green)
+                            .foregroundColor(federalOwed > 0 ? .error : .success)
                     } else {
                         Text("$0")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
@@ -78,7 +78,7 @@ struct MainContainerView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "star.fill")
                             .font(.caption)
-                            .foregroundColor(.orange)
+                            .foregroundColor(.goldAccent)
                         Text("California")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -88,10 +88,10 @@ struct MainContainerView: View {
                         let caOwed = caTax.owedOrRefund
                         Text(NumberFormatter.currencyWholeNumber.string(from: NSDecimalNumber(decimal: abs(caOwed))) ?? "$0")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(caOwed > 0 ? .red : .green)
+                            .foregroundColor(caOwed > 0 ? .error : .success)
                         Text(caOwed > 0 ? "Owed" : "Overpaid")
                             .font(.caption2)
-                            .foregroundColor(caOwed > 0 ? .red : .green)
+                            .foregroundColor(caOwed > 0 ? .error : .success)
                     } else if taxStore.includeCaliforniaTax {
                         Text("$0")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
@@ -131,7 +131,7 @@ struct MainContainerView: View {
                             .padding(.vertical, 10)
                             .background(
                                 Capsule()
-                                    .fill(selectedTab == index ? Color.blue : Color(UIColor.secondarySystemFill))
+                                    .fill(selectedTab == index ? Color.emeraldGreen : Color(UIColor.secondarySystemFill))
                             )
                     }
                     .buttonStyle(PlainButtonStyle())

@@ -16,11 +16,12 @@ This demo shows a moderate income household:
 You can modify any of these values to match your situation, or clear all data to start fresh.
 """
     
+    @MainActor
     static func loadDemoData(into store: TaxStore) {
         // Set filing status and tax preferences
         store.filingStatus = .marriedFilingJointly
         store.includeCaliforniaTax = true
-        store.showSpouseIncome = true
+        // showSpouseIncome is automatically true when marriedFilingJointly
         
         // Calculate next biweekly paydate (assuming Friday paydays)
         let nextBiweeklyPaydate = getNextBiweeklyPaydate()
@@ -28,7 +29,7 @@ You can modify any of these values to match your situation, or clear all data to
         // User Income
         store.userIncome = IncomeData(
             // Investment Income
-            investmentIncome: InvestmentIncomeData(
+            investmentIncome: InvestmentIncome(
                 ordinaryDividends: "1500",
                 qualifiedDividends: "1200",
                 interestIncome: "800",
@@ -36,7 +37,7 @@ You can modify any of these values to match your situation, or clear all data to
                 longTermGains: "3000"
             ),
             // YTD W2 Income
-            ytdW2Income: YTDIncomeData(
+            ytdW2Income: W2Income(
                 taxableWage: "50000",
                 federalWithhold: "7500",
                 stateWithhold: "2500"
@@ -44,7 +45,7 @@ You can modify any of these values to match your situation, or clear all data to
             // Future Income Mode
             incomeMode: .detailed,
             // Future Income (Simple mode - not used)
-            futureIncome: FutureIncomeData(
+            futureIncome: W2Income(
                 taxableWage: "",
                 federalWithhold: "",
                 stateWithhold: ""
@@ -67,13 +68,13 @@ You can modify any of these values to match your situation, or clear all data to
             // Future RSU Vests
             futureRSUVests: [
                 FutureRSUVest(
-                    id: UUID().uuidString,
+                    id: UUID(),
                     date: Calendar.current.date(from: DateComponents(year: 2025, month: 8, day: 15)) ?? Date(),
                     shares: "200",
                     expectedPrice: "150"
                 ),
                 FutureRSUVest(
-                    id: UUID().uuidString,
+                    id: UUID(),
                     date: Calendar.current.date(from: DateComponents(year: 2025, month: 11, day: 15)) ?? Date(),
                     shares: "200",
                     expectedPrice: "150"
@@ -84,7 +85,7 @@ You can modify any of these values to match your situation, or clear all data to
         // Spouse Income
         store.spouseIncome = IncomeData(
             // Investment Income
-            investmentIncome: InvestmentIncomeData(
+            investmentIncome: InvestmentIncome(
                 ordinaryDividends: "1000",
                 qualifiedDividends: "800",
                 interestIncome: "600",
@@ -92,7 +93,7 @@ You can modify any of these values to match your situation, or clear all data to
                 longTermGains: "2000"
             ),
             // YTD W2 Income
-            ytdW2Income: YTDIncomeData(
+            ytdW2Income: W2Income(
                 taxableWage: "40000",
                 federalWithhold: "6000",
                 stateWithhold: "2000"
@@ -100,7 +101,7 @@ You can modify any of these values to match your situation, or clear all data to
             // Future Income Mode
             incomeMode: .detailed,
             // Future Income (Simple mode - not used)
-            futureIncome: FutureIncomeData(
+            futureIncome: W2Income(
                 taxableWage: "",
                 federalWithhold: "",
                 stateWithhold: ""
@@ -128,9 +129,9 @@ You can modify any of these values to match your situation, or clear all data to
         store.deductions = DeductionsData(
             propertyTax: "8000",
             mortgageInterest: "12000",
+            donations: "2000",
             mortgageLoanDate: .afterDec152017,
             mortgageBalance: "400000",
-            donations: "2000",
             otherStateIncomeTax: "0"
         )
         

@@ -18,16 +18,16 @@ struct NavigationButtons: View {
                     Text("Previous")
                         .font(.system(size: 16, weight: .medium))
                 }
-                .foregroundColor(currentTab > 0 ? .blue : .secondary)
+                .foregroundColor(currentTab > 0 ? .emeraldGreen : .secondary)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(currentTab > 0 ? Color.blue.opacity(0.1) : Color(UIColor.tertiarySystemFill))
+                        .fill(currentTab > 0 ? Color.emeraldGreen.opacity(0.1) : Color(UIColor.tertiarySystemFill))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(currentTab > 0 ? Color.blue.opacity(0.3) : Color.clear, lineWidth: 1)
+                        .stroke(currentTab > 0 ? Color.emeraldGreen.opacity(0.3) : Color.clear, lineWidth: 1)
                 )
             }
             .disabled(currentTab <= 0)
@@ -51,7 +51,7 @@ struct NavigationButtons: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(currentTab < 4 ? Color.blue : Color(UIColor.tertiarySystemFill))
+                        .fill(currentTab < 4 ? Color.buttonPrimary : Color(UIColor.tertiarySystemFill))
                 )
             }
             .disabled(currentTab >= 4)

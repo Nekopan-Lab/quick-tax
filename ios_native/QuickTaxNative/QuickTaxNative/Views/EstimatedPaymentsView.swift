@@ -45,7 +45,7 @@ struct EstimatedPaymentsView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "flag.fill")
                             .font(.caption)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.emeraldGreen)
                         Text("Federal")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -60,7 +60,7 @@ struct EstimatedPaymentsView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "star.fill")
                                 .font(.caption)
-                                .foregroundColor(.orange)
+                                .foregroundColor(.goldAccent)
                             Text("California")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -91,28 +91,28 @@ struct EstimatedPaymentsView: View {
                     quarter: "Q1",
                     dueDate: "Apr 15, 2025",
                     amount: $taxStore.estimatedPayments.federalQ1,
-                    color: .blue
+                    color: .emeraldGreen
                 )
                 
                 PaymentRow(
                     quarter: "Q2",
                     dueDate: "Jun 16, 2025",
                     amount: $taxStore.estimatedPayments.federalQ2,
-                    color: .blue
+                    color: .emeraldGreen
                 )
                 
                 PaymentRow(
                     quarter: "Q3",
                     dueDate: "Sep 15, 2025",
                     amount: $taxStore.estimatedPayments.federalQ3,
-                    color: .blue
+                    color: .emeraldGreen
                 )
                 
                 PaymentRow(
                     quarter: "Q4",
                     dueDate: "Jan 15, 2026",
                     amount: $taxStore.estimatedPayments.federalQ4,
-                    color: .blue
+                    color: .emeraldGreen
                 )
             }
         }
@@ -135,7 +135,7 @@ struct EstimatedPaymentsView: View {
                     dueDate: "Apr 15, 2025",
                     percentage: "30%",
                     amount: $taxStore.estimatedPayments.californiaQ1,
-                    color: .orange
+                    color: .goldAccent
                 )
                 
                 PaymentRow(
@@ -143,7 +143,7 @@ struct EstimatedPaymentsView: View {
                     dueDate: "Jun 16, 2025",
                     percentage: "40%",
                     amount: $taxStore.estimatedPayments.californiaQ2,
-                    color: .orange
+                    color: .goldAccent
                 )
                 
                 PaymentRow(
@@ -151,19 +151,19 @@ struct EstimatedPaymentsView: View {
                     dueDate: "Jan 15, 2026",
                     percentage: "30%",
                     amount: $taxStore.estimatedPayments.californiaQ4,
-                    color: .orange
+                    color: .goldAccent
                 )
             }
             
             HStack {
                 Image(systemName: "info.circle")
-                    .foregroundColor(.orange)
+                    .foregroundColor(.goldAccent)
                 Text("California requires 3 payments (no Q3 payment)")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             .padding(10)
-            .background(Color.orange.opacity(0.1))
+            .background(Color.goldAccent.opacity(0.1))
             .cornerRadius(8)
         }
         .padding()
