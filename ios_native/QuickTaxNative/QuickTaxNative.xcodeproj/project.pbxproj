@@ -17,7 +17,7 @@
 		B5A8C7C72C5F4A2300123456 /* EstimatedPaymentsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7C62C5F4A2300123456 /* EstimatedPaymentsModels.swift */; };
 		B5A8C7C92C5F4A2400123456 /* TaxCalculationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7C82C5F4A2400123456 /* TaxCalculationModels.swift */; };
 		B5A8C7CB2C5F4A2500123456 /* TaxStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7CA2C5F4A2500123456 /* TaxStore.swift */; };
-		B5A8C7CD2C5F4A2600123456 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7CC2C5F4A2600123456 /* SetupView.swift */; };
+		B5A8C7CD2C5F4A2600123456 /* TaxInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7CC2C5F4A2600123456 /* TaxInfoView.swift */; };
 		B5A8C7CF2C5F4A2700123456 /* IncomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7CE2C5F4A2700123456 /* IncomeView.swift */; };
 		B5A8C7D12C5F4A2800123456 /* DeductionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7D02C5F4A2800123456 /* DeductionsView.swift */; };
 		B5A8C7D32C5F4A2900123456 /* EstimatedPaymentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A8C7D22C5F4A2900123456 /* EstimatedPaymentsView.swift */; };
@@ -60,7 +60,7 @@
 		B5A8C7C62C5F4A2300123456 /* EstimatedPaymentsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EstimatedPaymentsModels.swift; sourceTree = "<group>"; };
 		B5A8C7C82C5F4A2400123456 /* TaxCalculationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxCalculationModels.swift; sourceTree = "<group>"; };
 		B5A8C7CA2C5F4A2500123456 /* TaxStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxStore.swift; sourceTree = "<group>"; };
-		B5A8C7CC2C5F4A2600123456 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
+		B5A8C7CC2C5F4A2600123456 /* TaxInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxInfoView.swift; sourceTree = "<group>"; };
 		B5A8C7CE2C5F4A2700123456 /* IncomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomeView.swift; sourceTree = "<group>"; };
 		B5A8C7D02C5F4A2800123456 /* DeductionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeductionsView.swift; sourceTree = "<group>"; };
 		B5A8C7D22C5F4A2900123456 /* EstimatedPaymentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EstimatedPaymentsView.swift; sourceTree = "<group>"; };
@@ -167,7 +167,7 @@
 		B5A8C7ED2C5F4A3500123456 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B5A8C7CC2C5F4A2600123456 /* SetupView.swift */,
+				B5A8C7CC2C5F4A2600123456 /* TaxInfoView.swift */,
 				B5A8C7CE2C5F4A2700123456 /* IncomeView.swift */,
 				B5A8C7D02C5F4A2800123456 /* DeductionsView.swift */,
 				B5A8C7D22C5F4A2900123456 /* EstimatedPaymentsView.swift */,
@@ -340,7 +340,7 @@
 				B5A8C7C72C5F4A2300123456 /* EstimatedPaymentsModels.swift in Sources */,
 				B5A8C7C92C5F4A2400123456 /* TaxCalculationModels.swift in Sources */,
 				B5A8C7CB2C5F4A2500123456 /* TaxStore.swift in Sources */,
-				B5A8C7CD2C5F4A2600123456 /* SetupView.swift in Sources */,
+				B5A8C7CD2C5F4A2600123456 /* TaxInfoView.swift in Sources */,
 				B5A8C7CF2C5F4A2700123456 /* IncomeView.swift in Sources */,
 				B5A8C7D12C5F4A2800123456 /* DeductionsView.swift in Sources */,
 				B5A8C7D32C5F4A2900123456 /* EstimatedPaymentsView.swift in Sources */,

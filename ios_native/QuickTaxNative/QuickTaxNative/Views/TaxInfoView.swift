@@ -1,11 +1,12 @@
 import SwiftUI
 
-struct SetupView: View {
+struct TaxInfoView: View {
     @EnvironmentObject var taxStore: TaxStore
     @Environment(\.selectedTab) var selectedTab
     @State private var showDeleteAlert = false
     @State private var showPrivacySheet = false
     @State private var showDemoSheet = false
+    @State private var isAppSettingsExpanded = false
     
     var body: some View {
         NavigationView {
@@ -18,17 +19,11 @@ struct SetupView: View {
                         californiaTaxCard
                     }
                     
-                    // Data Management
-                    dataManagementCard
-                    
-                    // Privacy Notice
-                    privacyCard
-                    
-                    // Important Notice (moved to bottom)
-                    headerCard
-                    
                     // Navigation buttons
                     NavigationButtons(currentTab: 0)
+                    
+                    // App Settings & Info - Collapsible Section
+                    appSettingsSection
                 }
                 .padding()
             }
@@ -52,6 +47,74 @@ struct SetupView: View {
         .onChange(of: taxStore.filingStatus) { _ in taxStore.saveData() }
         .onChange(of: taxStore.taxYear) { _ in taxStore.saveData() }
         .onChange(of: taxStore.includeCaliforniaTax) { _ in taxStore.saveData() }
+    }
+    
+    // MARK: - App Settings Section
+    var appSettingsSection: some View {
+        VStack(spacing: 0) {
+            // Collapsible Header
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    isAppSettingsExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    Text("App Settings & Info")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: isAppSettingsExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            
+            // Expandable Content
+            if isAppSettingsExpanded {
+                VStack(spacing: 16) {
+                    // Important Notice Banner
+                    importantNoticeBanner
+                    
+                    // Data Management
+                    dataManagementCard
+                    
+                    // Privacy Notice
+                    privacyCard
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 16)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .top).combined(with: .opacity)
+                ))
+            }
+        }
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(12)
+        .padding(.top, 20)
+    }
+    
+    // MARK: - Important Notice Banner
+    var importantNoticeBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.title3)
+                .foregroundColor(.orange)
+            
+            Text("This tool provides tax estimates only. Not for professional tax advice or preparation.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            Spacer(minLength: 0)
+        }
+        .padding()
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(10)
     }
     
     // MARK: - Header Card
@@ -175,41 +238,44 @@ struct SetupView: View {
         VStack(spacing: 12) {
             HStack {
                 Label("Data Management", systemImage: "folder")
-                    .font(.headline)
+                    .font(.system(size: 15, weight: .semibold))
                 Spacer()
             }
             
-            VStack(spacing: 12) {
+            HStack(spacing: 12) {
                 Button(action: { showDemoSheet = true }) {
                     Label("Load Demo", systemImage: "play.circle")
+                        .font(.footnote)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 12)
                         .background(Color.purple)
-                        .cornerRadius(10)
+                        .cornerRadius(8)
                 }
-                
                 
                 Button(action: { showDeleteAlert = true }) {
                     Label("Delete All Data", systemImage: "trash")
+                        .font(.footnote)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 12)
                         .background(Color.red)
-                        .cornerRadius(10)
+                        .cornerRadius(8)
                 }
             }
         }
-        .cardStyle()
+        .padding()
+        .background(Color(UIColor.tertiarySystemGroupedBackground))
+        .cornerRadius(10)
     }
     
     // MARK: - Privacy Card
     var privacyCard: some View {
         Button(action: { showPrivacySheet = true }) {
             HStack {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
                     Label("Your Data is Private", systemImage: "lock.shield.fill")
-                        .font(.headline)
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
                     
                     Text("All data stored locally on your device")
@@ -223,7 +289,9 @@ struct SetupView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            .cardStyle()
+            .padding()
+            .background(Color(UIColor.tertiarySystemGroupedBackground))
+            .cornerRadius(10)
         }
     }
 }
@@ -339,19 +407,7 @@ struct DemoSheetView: View {
     let taxStore: TaxStore
     
     var demoDescription: String {
-        """
-This demo shows a moderate income household:
-
-• Combined household income: ~$300,000
-• User has $130k base salary + RSUs, Spouse has $100k base salary
-• Modest home with $22,000 total itemized deductions
-• Uses federal standard deduction ($30,000) but CA itemized ($22,000)
-• Low withholding rates (15% federal, 5% state) result in taxes owed
-• Made minimal Q1 federal payment ($500), no CA payments yet
-• Demonstrates need for estimated tax payments
-
-You can modify any of these values to match your situation, or clear all data to start fresh.
-"""
+        DemoData.description
     }
     
     var body: some View {
@@ -395,154 +451,11 @@ You can modify any of these values to match your situation, or clear all data to
     }
     
     func loadDemoData() {
-        // Set filing status and tax preferences
-        taxStore.filingStatus = .marriedFilingJointly
-        taxStore.includeCaliforniaTax = true
-        
-        // Calculate next biweekly paydate (assuming Friday paydays)
-        let nextBiweeklyPaydate = getNextBiweeklyPaydate()
-        
-        // User Income
-        taxStore.userIncome = IncomeData(
-            // Investment Income
-            investmentIncome: InvestmentIncome(
-                ordinaryDividends: "1500",
-                qualifiedDividends: "1200",
-                interestIncome: "800",
-                shortTermGains: "500",
-                longTermGains: "3000"
-            ),
-            // YTD W2 Income
-            ytdW2Income: W2Income(
-                taxableWage: "50000",
-                federalWithhold: "7500",
-                stateWithhold: "2500"
-            ),
-            // Future Income Mode
-            incomeMode: .detailed,
-            // Future Income (Simple mode - not used)
-            futureIncome: W2Income(
-                taxableWage: "",
-                federalWithhold: "",
-                stateWithhold: ""
-            ),
-            // Paycheck Data
-            paycheckData: PaycheckData(
-                taxableWage: "5000",
-                federalWithhold: "750",
-                stateWithhold: "250",
-                frequency: .biweekly,
-                nextPaymentDate: nextBiweeklyPaydate
-            ),
-            // RSU Vest Data
-            rsuVestData: RSUVestData(
-                taxableWage: "15000",
-                federalWithhold: "2250",
-                stateWithhold: "750",
-                vestPrice: "150"
-            ),
-            // Future RSU Vests
-            futureRSUVests: [
-                FutureRSUVest(
-                    date: Calendar.current.date(from: DateComponents(year: 2025, month: 8, day: 15)) ?? Date(),
-                    shares: "200",
-                    expectedPrice: "150"
-                ),
-                FutureRSUVest(
-                    date: Calendar.current.date(from: DateComponents(year: 2025, month: 11, day: 15)) ?? Date(),
-                    shares: "200",
-                    expectedPrice: "150"
-                )
-            ]
-        )
-        
-        // Spouse Income
-        taxStore.spouseIncome = IncomeData(
-            // Investment Income
-            investmentIncome: InvestmentIncome(
-                ordinaryDividends: "1000",
-                qualifiedDividends: "800",
-                interestIncome: "600",
-                shortTermGains: "0",
-                longTermGains: "2000"
-            ),
-            // YTD W2 Income
-            ytdW2Income: W2Income(
-                taxableWage: "40000",
-                federalWithhold: "6000",
-                stateWithhold: "2000"
-            ),
-            // Future Income Mode
-            incomeMode: .detailed,
-            // Future Income (Simple mode - not used)
-            futureIncome: W2Income(
-                taxableWage: "",
-                federalWithhold: "",
-                stateWithhold: ""
-            ),
-            // Paycheck Data
-            paycheckData: PaycheckData(
-                taxableWage: "3846",
-                federalWithhold: "577",
-                stateWithhold: "192",
-                frequency: .biweekly,
-                nextPaymentDate: nextBiweeklyPaydate
-            ),
-            // RSU Vest Data
-            rsuVestData: RSUVestData(
-                taxableWage: "0",
-                federalWithhold: "0",
-                stateWithhold: "0",
-                vestPrice: ""
-            ),
-            // Future RSU Vests
-            futureRSUVests: []
-        )
-        
-        // Deductions
-        taxStore.deductions = DeductionsData(
-            propertyTax: "8000",
-            mortgageInterest: "12000",
-            donations: "2000",
-            mortgageLoanDate: .afterDec152017,
-            mortgageBalance: "400000",
-            otherStateIncomeTax: "0"
-        )
-        
-        // Estimated Payments
-        taxStore.estimatedPayments = EstimatedPaymentsData(
-            federalQ1: "500",
-            federalQ2: "0",
-            federalQ3: "0",
-            federalQ4: "0",
-            californiaQ1: "0",
-            californiaQ2: "0",
-            californiaQ4: "0"
-        )
-        
-        // Save the demo data
-        taxStore.saveData()
-    }
-    
-    private func getNextBiweeklyPaydate() -> Date {
-        let calendar = Calendar.current
-        var date = Date()
-        
-        // Find next Friday
-        while calendar.component(.weekday, from: date) != 6 { // Friday = 6
-            date = calendar.date(byAdding: .day, value: 1, to: date) ?? date
-        }
-        
-        // If we're past this Friday, go to next Friday
-        if date <= Date() {
-            date = calendar.date(byAdding: .day, value: 7, to: date) ?? date
-        }
-        
-        return date
+        DemoData.loadDemoData(into: taxStore)
     }
 }
 
 #Preview {
-    SetupView()
+    TaxInfoView()
         .environmentObject(TaxStore())
 }

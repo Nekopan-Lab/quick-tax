@@ -147,7 +147,7 @@ struct MainContainerView: View {
     var contentView: some View {
         switch selectedTab {
         case 0:
-            SetupView()
+            TaxInfoView()
                 .navigationBarHidden(true)
         case 1:
             IncomeView()
@@ -162,7 +162,7 @@ struct MainContainerView: View {
             SummaryView()
                 .navigationBarHidden(true)
         default:
-            SetupView()
+            TaxInfoView()
                 .navigationBarHidden(true)
         }
     }
