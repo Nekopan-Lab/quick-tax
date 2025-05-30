@@ -26,6 +26,8 @@ class FederalTaxCalculator {
         // Step 3: Calculate income components
         let incomeComponents = calculateIncomeComponents(
             totalIncome: totalIncome,
+            shortTermGains: totalIncome.shortTermGains,
+            longTermGains: totalIncome.longTermGains,
             deductionAmount: deductionInfo.amount
         )
         
@@ -58,7 +60,9 @@ class FederalTaxCalculator {
         let owedOrRefund = roundedTotalTax - totalWithholding - totalEstimatedPayments
         
         // Step 7: Calculate effective rate
-        let taxableIncome = max(totalIncome.total - deductionInfo.amount, 0)
+        // Taxable income should reflect the income after capital loss adjustment
+        let adjustedTotalIncome = incomeComponents.totalOrdinaryIncome + incomeComponents.qualifiedDividends + incomeComponents.longTermGains
+        let taxableIncome = max(adjustedTotalIncome - deductionInfo.amount, 0)
         let effectiveRate = totalIncome.total > 0 ? roundedTotalTax / totalIncome.total : 0
         
         // Round individual tax components for display
@@ -86,32 +90,43 @@ class FederalTaxCalculator {
     private static func calculateTotalIncome(
         userIncome: IncomeData,
         spouseIncome: IncomeData?
-    ) -> (ordinary: Decimal, capitalGains: Decimal, qualifiedDividends: Decimal, total: Decimal) {
+    ) -> (ordinary: Decimal, capitalGains: Decimal, qualifiedDividends: Decimal, total: Decimal, shortTermGains: Decimal, longTermGains: Decimal) {
         
         var ordinaryIncome: Decimal = 0
         var capitalGains: Decimal = 0
         var qualifiedDividends: Decimal = 0
+        var shortTermGains: Decimal = 0
+        var longTermGains: Decimal = 0
         
         // Process user income
-        let userAmounts = processIncome(userIncome)
+        let userAmounts = processIncomeWithDetails(userIncome)
         ordinaryIncome += userAmounts.ordinary
         capitalGains += userAmounts.capitalGains
         qualifiedDividends += userAmounts.qualifiedDividends
+        shortTermGains += userAmounts.shortTermGains
+        longTermGains += userAmounts.longTermGains
         
         // Process spouse income if applicable
         if let spouseIncome = spouseIncome {
-            let spouseAmounts = processIncome(spouseIncome)
+            let spouseAmounts = processIncomeWithDetails(spouseIncome)
             ordinaryIncome += spouseAmounts.ordinary
             capitalGains += spouseAmounts.capitalGains
             qualifiedDividends += spouseAmounts.qualifiedDividends
+            shortTermGains += spouseAmounts.shortTermGains
+            longTermGains += spouseAmounts.longTermGains
         }
         
         let total = ordinaryIncome + capitalGains + qualifiedDividends
         
-        return (ordinaryIncome, capitalGains, qualifiedDividends, total)
+        return (ordinaryIncome, capitalGains, qualifiedDividends, total, shortTermGains, longTermGains)
     }
     
     private static func processIncome(_ income: IncomeData) -> (ordinary: Decimal, capitalGains: Decimal, qualifiedDividends: Decimal) {
+        let detailed = processIncomeWithDetails(income)
+        return (detailed.ordinary, detailed.capitalGains, detailed.qualifiedDividends)
+    }
+    
+    private static func processIncomeWithDetails(_ income: IncomeData) -> (ordinary: Decimal, capitalGains: Decimal, qualifiedDividends: Decimal, shortTermGains: Decimal, longTermGains: Decimal) {
         var ordinary: Decimal = 0
         var capitalGains: Decimal = 0
         var qualifiedDividends: Decimal = 0
@@ -123,9 +138,12 @@ class FederalTaxCalculator {
         
         ordinary += nonQualifiedDividends
         ordinary += income.investmentIncome.interestIncome.toDecimal() ?? 0
-        ordinary += income.investmentIncome.shortTermGains.toDecimal() ?? 0
         
-        capitalGains += income.investmentIncome.longTermGains.toDecimal() ?? 0
+        let shortTermGains = income.investmentIncome.shortTermGains.toDecimal() ?? 0
+        let longTermGains = income.investmentIncome.longTermGains.toDecimal() ?? 0
+        
+        ordinary += shortTermGains
+        capitalGains += longTermGains
         
         // W2 income
         ordinary += income.ytdW2Income.taxableWage.toDecimal() ?? 0
@@ -133,7 +151,7 @@ class FederalTaxCalculator {
         // Future income
         ordinary += calculateFutureWages(income)
         
-        return (ordinary, capitalGains, qualifiedDividends)
+        return (ordinary, capitalGains, qualifiedDividends, shortTermGains, longTermGains)
     }
     
     private static func calculateFutureWages(_ income: IncomeData) -> Decimal {
@@ -245,27 +263,41 @@ class FederalTaxCalculator {
     // MARK: - Income Components
     
     private static func calculateIncomeComponents(
-        totalIncome: (ordinary: Decimal, capitalGains: Decimal, qualifiedDividends: Decimal, total: Decimal),
+        totalIncome: (ordinary: Decimal, capitalGains: Decimal, qualifiedDividends: Decimal, total: Decimal, shortTermGains: Decimal, longTermGains: Decimal),
+        shortTermGains: Decimal,
+        longTermGains: Decimal,
         deductionAmount: Decimal
     ) -> FederalIncomeComponents {
         
         // Apply capital loss limit
-        let netCapitalGains = totalIncome.capitalGains
+        // Net capital gains includes both short-term and long-term gains/losses
+        let netCapitalGains = shortTermGains + longTermGains
+        
+        // Capital losses can offset ordinary income up to $3,000
         let capitalLossDeduction = min(max(-netCapitalGains, 0), FederalTaxConstants.Limits.capitalLossDeductionLimit)
         
         // Calculate ordinary income components
+        // Ordinary income is reduced by capital loss deduction (up to $3,000)
+        // Note: Short-term gains are already included in ordinary income
         let totalOrdinaryIncome = totalIncome.ordinary - capitalLossDeduction
         let ordinaryTaxableIncome = max(totalOrdinaryIncome - deductionAmount, 0)
+        
+        // For capital gains tax calculation, only positive long-term gains are taxed
+        // This matches the web app behavior: Math.max(0, longTermGains)
+        // Important: Capital losses are NOT double-deducted here. They are already applied
+        // to ordinary income above (up to $3,000 limit). This ensures we don't incorrectly
+        // reduce the capital gains tax rate by applying losses twice.
+        let taxableLongTermGains = max(longTermGains, 0)
         
         // Note: In this simplified version, we're not breaking down all components
         // For full parity with web app, we'd need to track each income type separately
         
         return FederalIncomeComponents(
-            wages: totalIncome.ordinary, // Simplified - includes all ordinary income
+            wages: totalIncome.ordinary - shortTermGains, // Wages excluding short-term gains
             nonQualifiedDividends: 0, // Would need to track separately
             interestIncome: 0, // Would need to track separately
-            shortTermGains: 0, // Would need to track separately
-            longTermGains: totalIncome.capitalGains,
+            shortTermGains: shortTermGains,
+            longTermGains: taxableLongTermGains, // Only positive long-term gains are subject to capital gains tax
             qualifiedDividends: totalIncome.qualifiedDividends,
             capitalLossDeduction: capitalLossDeduction,
             totalOrdinaryIncome: totalOrdinaryIncome,

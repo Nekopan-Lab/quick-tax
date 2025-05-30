@@ -251,6 +251,89 @@ class FederalTaxCalculatorTests: XCTestCase {
         XCTAssertEqual(result.owedOrRefund, -6038) // Negative means refund
     }
     
+    // MARK: - Capital Loss Tests
+    
+    func testCapitalLossDeductionAgainstOrdinaryIncome() {
+        // Test that capital losses are limited to $3,000 deduction against ordinary income
+        let income = createIncomeData(
+            ordinaryIncome: "50000",
+            longTermGains: "-10000" // $10,000 capital loss
+        )
+        let deductions = DeductionsData()
+        let payments = EstimatedPaymentsData()
+        
+        let result = FederalTaxCalculator.calculate(
+            income: income,
+            spouseIncome: nil,
+            deductions: deductions,
+            estimatedPayments: payments,
+            filingStatus: .single,
+            includeCaliforniaTax: false,
+            estimatedCaliforniaTax: 0
+        )
+        
+        // Ordinary income: $50,000 - $3,000 (capital loss limit) = $47,000
+        // Taxable income: $47,000 - $15,000 (standard deduction) = $32,000
+        XCTAssertEqual(result.taxableIncome, 32000)
+        XCTAssertEqual(result.incomeComponents.capitalLossDeduction, 3000)
+        XCTAssertEqual(result.incomeComponents.longTermGains, 0) // No positive gains for capital gains tax
+        XCTAssertEqual(result.capitalGainsTax, 0) // No capital gains tax on losses
+    }
+    
+    func testSmallCapitalLoss() {
+        // Test capital loss less than $3,000 limit
+        let income = createIncomeData(
+            ordinaryIncome: "50000",
+            longTermGains: "-1000" // $1,000 capital loss
+        )
+        let deductions = DeductionsData()
+        let payments = EstimatedPaymentsData()
+        
+        let result = FederalTaxCalculator.calculate(
+            income: income,
+            spouseIncome: nil,
+            deductions: deductions,
+            estimatedPayments: payments,
+            filingStatus: .single,
+            includeCaliforniaTax: false,
+            estimatedCaliforniaTax: 0
+        )
+        
+        // Ordinary income: $50,000 - $1,000 (full capital loss) = $49,000
+        // Taxable income: $49,000 - $15,000 (standard deduction) = $34,000
+        XCTAssertEqual(result.taxableIncome, 34000)
+        XCTAssertEqual(result.incomeComponents.capitalLossDeduction, 1000)
+        XCTAssertEqual(result.incomeComponents.longTermGains, 0)
+        XCTAssertEqual(result.capitalGainsTax, 0)
+    }
+    
+    func testNetCapitalGains() {
+        // Test mixing gains and losses
+        let income = createIncomeData(
+            ordinaryIncome: "50000",
+            shortTermGains: "-5000", // $5,000 short-term loss
+            longTermGains: "8000"    // $8,000 long-term gain
+        )
+        let deductions = DeductionsData()
+        let payments = EstimatedPaymentsData()
+        
+        let result = FederalTaxCalculator.calculate(
+            income: income,
+            spouseIncome: nil,
+            deductions: deductions,
+            estimatedPayments: payments,
+            filingStatus: .single,
+            includeCaliforniaTax: false,
+            estimatedCaliforniaTax: 0
+        )
+        
+        // Net capital gains: -$5,000 + $8,000 = $3,000
+        // No capital loss deduction needed since net is positive
+        XCTAssertEqual(result.incomeComponents.capitalLossDeduction, 0)
+        XCTAssertEqual(result.incomeComponents.longTermGains, 8000) // Only positive long-term gains for capital gains tax
+        XCTAssertGreaterThan(result.capitalGainsTax, 0) // Should have capital gains tax on the $8,000 LTCG
+    }
+    
     // MARK: - Helper Methods
     
     private func createIncomeData(
