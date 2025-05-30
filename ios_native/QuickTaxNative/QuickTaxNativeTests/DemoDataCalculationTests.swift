@@ -1,6 +1,7 @@
 import XCTest
 @testable import QuickTaxNative
 
+@MainActor
 final class DemoDataCalculationTests: XCTestCase {
     
     var taxStore: TaxStore!
@@ -8,7 +9,7 @@ final class DemoDataCalculationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         taxStore = TaxStore()
-        loadDemoData()
+        loadDemoDataWithFixedDates()
     }
     
     func testDemoDataCalculations() {
@@ -42,26 +43,27 @@ final class DemoDataCalculationTests: XCTestCase {
             print("  Deduction Amount: \(caTax.deduction.amount)")
         }
         
-        // Expected values from web app
-        XCTAssertEqual(result.totalIncome, 300936, "Total income should match web app")
+        // Expected values from web app with fixed dates (June 1, 2025)
+        // This ensures consistent test results regardless of when the test runs
+        XCTAssertEqual(result.totalIncome, 292090, "Total income should match web app with fixed dates")
         
-        // Federal Tax
-        XCTAssertEqual(result.federalTax.taxableIncome, 270936, "Federal taxable income should match")
-        XCTAssertEqual(result.federalTax.ordinaryIncomeTax, 49039, "Federal ordinary income tax should match")
+        // Federal Tax (updated for fixed dates)
+        XCTAssertEqual(result.federalTax.taxableIncome, 262090, "Federal taxable income should match")
+        XCTAssertEqual(result.federalTax.ordinaryIncomeTax, 46916, "Federal ordinary income tax should match")
         XCTAssertEqual(result.federalTax.capitalGainsTax, 1050, "Federal capital gains tax should match")
-        XCTAssertEqual(result.federalTax.totalTax, 50089, "Federal total tax should match")
-        XCTAssertEqual(result.federalTax.owedOrRefund, 5857, "Federal owed should match web app")
+        XCTAssertEqual(result.federalTax.totalTax, 47966, "Federal total tax should match")
+        XCTAssertEqual(result.federalTax.owedOrRefund, 5061, "Federal owed should match web app")
         XCTAssertEqual(result.federalTax.deduction.type, .standard, "Should use standard deduction")
         XCTAssertEqual(result.federalTax.deduction.amount, 30000, "Federal deduction amount should match")
         
-        // California Tax
+        // California Tax (updated for fixed dates)
         XCTAssertNotNil(result.californiaTax, "California tax should be calculated")
         if let caTax = result.californiaTax {
-            XCTAssertEqual(caTax.taxableIncome, 278936, "CA taxable income should match")
-            XCTAssertEqual(caTax.baseTax, 19026, "CA base tax should match")
+            XCTAssertEqual(caTax.taxableIncome, 270090, "CA taxable income should match")
+            XCTAssertEqual(caTax.baseTax, 18203, "CA base tax should match")
             XCTAssertEqual(caTax.mentalHealthTax, 0, "CA mental health tax should be 0")
-            XCTAssertEqual(caTax.totalTax, 19026, "CA total tax should match")
-            XCTAssertEqual(caTax.owedOrRefund, 4454, "CA owed should match web app")
+            XCTAssertEqual(caTax.totalTax, 18203, "CA total tax should match")
+            XCTAssertEqual(caTax.owedOrRefund, 4073, "CA owed should match web app")
             XCTAssertEqual(caTax.deduction.type, .itemized, "CA should use itemized deduction")
             XCTAssertEqual(caTax.deduction.amount, 22000, "CA deduction amount should match")
         }
@@ -77,11 +79,11 @@ final class DemoDataCalculationTests: XCTestCase {
         print("Total Federal Withholdings: \(federalWithholdings)")
         print("Total State Withholdings: \(stateWithholdings)")
         
-        // Expected values from web app calculation
-        // Federal: Total tax (50089) - Owed (5857) - Q1 payment (500) = 43732
-        // State: Total tax (19026) - Owed (4454) - No CA payments = 14572
-        XCTAssertEqual(federalWithholdings, 43732, accuracy: 1, "Federal withholdings should match web app")
-        XCTAssertEqual(stateWithholdings, 14572, accuracy: 1, "State withholdings should match web app")
+        // Expected values from web app calculation with fixed dates
+        // Federal: Total tax (47966) - Owed (5061) - Q1 payment (500) = 42405
+        // State: Total tax (18203) - Owed (4073) - No CA payments = 14130
+        XCTAssertEqual(federalWithholdings, 42405, accuracy: 1, "Federal withholdings should match web app")
+        XCTAssertEqual(stateWithholdings, 14130, accuracy: 1, "State withholdings should match web app")
     }
     
     func testDetailedIncomeBreakdown() {
@@ -114,11 +116,124 @@ final class DemoDataCalculationTests: XCTestCase {
     
     // MARK: - Helper Methods
     
+    private func loadDemoDataWithFixedDates() {
+        // Set filing status and tax preferences
+        taxStore.filingStatus = .marriedFilingJointly
+        taxStore.includeCaliforniaTax = true
+        
+        // Use fixed date for consistent test results (June 1, 2025)
+        let fixedDate = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 6)) ?? Date() // June 6, 2025 (Friday)
+        
+        // User Income - exact same as web app demo but with fixed dates
+        taxStore.userIncome = IncomeData(
+            investmentIncome: InvestmentIncome(
+                ordinaryDividends: "1500",
+                qualifiedDividends: "1200",
+                interestIncome: "800",
+                shortTermGains: "500",
+                longTermGains: "3000"
+            ),
+            ytdW2Income: W2Income(
+                taxableWage: "50000",
+                federalWithhold: "7500",
+                stateWithhold: "2500"
+            ),
+            incomeMode: .detailed,
+            futureIncome: W2Income(
+                taxableWage: "",
+                federalWithhold: "",
+                stateWithhold: ""
+            ),
+            paycheckData: PaycheckData(
+                taxableWage: "5000",
+                federalWithhold: "750",
+                stateWithhold: "250",
+                frequency: .biweekly,
+                nextPaymentDate: fixedDate
+            ),
+            rsuVestData: RSUVestData(
+                taxableWage: "15000",
+                federalWithhold: "2250",
+                stateWithhold: "750",
+                vestPrice: "150"
+            ),
+            futureRSUVests: [
+                FutureRSUVest(
+                    date: Calendar.current.date(from: DateComponents(year: 2025, month: 8, day: 15)) ?? Date(),
+                    shares: "200",
+                    expectedPrice: "150"
+                ),
+                FutureRSUVest(
+                    date: Calendar.current.date(from: DateComponents(year: 2025, month: 11, day: 15)) ?? Date(),
+                    shares: "200",
+                    expectedPrice: "150"
+                )
+            ]
+        )
+        
+        // Spouse Income - exact same as web app demo but with fixed dates
+        taxStore.spouseIncome = IncomeData(
+            investmentIncome: InvestmentIncome(
+                ordinaryDividends: "1000",
+                qualifiedDividends: "800",
+                interestIncome: "600",
+                shortTermGains: "0",
+                longTermGains: "2000"
+            ),
+            ytdW2Income: W2Income(
+                taxableWage: "40000",
+                federalWithhold: "6000",
+                stateWithhold: "2000"
+            ),
+            incomeMode: .detailed,
+            futureIncome: W2Income(
+                taxableWage: "",
+                federalWithhold: "",
+                stateWithhold: ""
+            ),
+            paycheckData: PaycheckData(
+                taxableWage: "3846",
+                federalWithhold: "577",
+                stateWithhold: "192",
+                frequency: .biweekly,
+                nextPaymentDate: fixedDate
+            ),
+            rsuVestData: RSUVestData(
+                taxableWage: "0",
+                federalWithhold: "0",
+                stateWithhold: "0",
+                vestPrice: ""
+            ),
+            futureRSUVests: []
+        )
+        
+        // Deductions - exact same as web app demo
+        taxStore.deductions = DeductionsData(
+            propertyTax: "8000",
+            mortgageInterest: "12000",
+            donations: "2000",
+            mortgageLoanDate: .afterDec152017,
+            mortgageBalance: "400000",
+            otherStateIncomeTax: "0"
+        )
+        
+        // Estimated Payments - exact same as web app demo
+        taxStore.estimatedPayments = EstimatedPaymentsData(
+            federalQ1: "500",
+            federalQ2: "0",
+            federalQ3: "0",
+            federalQ4: "0",
+            californiaQ1: "0",
+            californiaQ2: "0",
+            californiaQ4: "0"
+        )
+    }
+    
     private func loadDemoData() {
         // Set filing status and tax preferences
         taxStore.filingStatus = .marriedFilingJointly
         taxStore.includeCaliforniaTax = true
-        taxStore.showSpouseIncome = true
+        // showSpouseIncome is automatically true when marriedFilingJointly
         
         // Calculate next biweekly paydate (assuming Friday paydays)
         let nextBiweeklyPaydate = getNextBiweeklyPaydate()
@@ -299,7 +414,8 @@ final class DemoDataCalculationTests: XCTestCase {
         )
         total += paycheckFederal * Decimal(paycheckCount)
         
-        total += income.rsuVestData.federalWithhold.toDecimal() ?? 0
+        // RSU vest data is reference only - not added to total withholdings
+        // It's used to calculate withholding rate for future RSU vests
         
         for vest in income.futureRSUVests {
             if vest.date >= Date() {
@@ -334,7 +450,8 @@ final class DemoDataCalculationTests: XCTestCase {
         )
         total += paycheckState * Decimal(paycheckCount)
         
-        total += income.rsuVestData.stateWithhold.toDecimal() ?? 0
+        // RSU vest data is reference only - not added to total withholdings
+        // It's used to calculate withholding rate for future RSU vests
         
         for vest in income.futureRSUVests {
             if vest.date >= Date() {
