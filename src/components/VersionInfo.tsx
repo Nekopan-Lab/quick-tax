@@ -11,10 +11,36 @@ export function VersionInfo() {
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    fetch('/version.json')
-      .then(res => res.json())
-      .then(data => setVersionData(data))
-      .catch(err => console.error('[Version] Failed to fetch version info:', err));
+    // Add cache busting to ensure we get the latest version
+    const fetchVersion = () => {
+      fetch(`/version.json?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
+        .then(res => res.json())
+        .then(data => setVersionData(data))
+        .catch(err => console.error('[Version] Failed to fetch version info:', err));
+    };
+
+    fetchVersion();
+
+    // Re-fetch when the page becomes visible (e.g., after PWA update)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchVersion();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', fetchVersion);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', fetchVersion);
+    };
   }, []);
 
   if (!versionData) return null;

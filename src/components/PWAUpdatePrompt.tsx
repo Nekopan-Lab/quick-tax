@@ -81,7 +81,12 @@ export function PWAUpdatePrompt() {
   }, []);
 
   const handleUpdate = () => {
+    console.log('[PWA] User clicked update, reloading...');
     updateServiceWorker(true);
+    // Force a hard reload after a short delay to ensure service worker is updated
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const handleDismiss = () => {
