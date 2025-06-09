@@ -23,7 +23,7 @@ export function VersionInfo() {
   const formattedDate = buildDate.toLocaleString();
 
   return (
-    <div className="fixed bottom-20 right-4 text-xs text-gray-400">
+    <div className="relative inline-block text-xs text-gray-400">
       <button
         onClick={() => setShowDetails(!showDetails)}
         className="hover:text-gray-600 transition-colors"
@@ -31,10 +31,9 @@ export function VersionInfo() {
         v{versionData.version}
       </button>
       {showDetails && (
-        <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 whitespace-nowrap">
+        <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 whitespace-nowrap">
           <div className="text-gray-600">
             <div>Version: {versionData.version}</div>
-            <div>Build: #{versionData.buildNumber}</div>
             <div>Built: {formattedDate}</div>
           </div>
         </div>

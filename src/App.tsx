@@ -214,7 +214,7 @@ function App() {
           </div>
           
           <div className="mt-6 text-center text-xs text-gray-500">
-            © 2025 QuickTax. For estimation purposes only.
+            © 2025 QuickTax. For estimation purposes only. <VersionInfo />
           </div>
         </div>
       </footer>
@@ -277,9 +277,6 @@ function App() {
 
       {/* PWA Update Prompt */}
       <PWAUpdatePrompt />
-      
-      {/* Version Info */}
-      <VersionInfo />
     </div>
   )
 }

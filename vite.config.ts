@@ -8,15 +8,13 @@ import path from 'path'
 // Get or increment version number
 function getVersionInfo() {
   const versionPath = path.resolve('public/version.json')
-  let currentVersion = '1.0.0'
   let buildNumber = 1
   
   // Read existing version if it exists
   try {
     if (fs.existsSync(versionPath)) {
       const existing = JSON.parse(fs.readFileSync(versionPath, 'utf-8'))
-      if (existing.version && existing.buildNumber) {
-        currentVersion = existing.version
+      if (existing.buildNumber) {
         buildNumber = existing.buildNumber + 1
       }
     }
@@ -24,8 +22,11 @@ function getVersionInfo() {
     console.log('Creating new version.json')
   }
   
+  // Use build number as patch version
+  const version = `1.0.${buildNumber}`
+  
   return {
-    version: currentVersion,
+    version,
     buildNumber,
     buildTime: new Date().toISOString()
   }
