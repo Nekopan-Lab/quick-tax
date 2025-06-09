@@ -9,6 +9,7 @@ import { Income } from './components/steps/Income'
 import { EstimatedPayments } from './components/steps/EstimatedPayments'
 import { Summary } from './components/steps/Summary'
 import { PWAUpdatePrompt } from './components/PWAUpdatePrompt'
+import { VersionInfo } from './components/VersionInfo'
 import { DEMO_USER_INCOME, DEMO_SPOUSE_INCOME, DEMO_DEDUCTIONS, DEMO_ESTIMATED_PAYMENTS, DEMO_DATA_DESCRIPTION } from './utils/demoData'
 
 function App() {
@@ -276,6 +277,9 @@ function App() {
 
       {/* PWA Update Prompt */}
       <PWAUpdatePrompt />
+      
+      {/* Version Info */}
+      <VersionInfo />
     </div>
   )
 }

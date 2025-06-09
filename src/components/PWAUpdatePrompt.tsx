@@ -8,23 +8,40 @@ export function PWAUpdatePrompt() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegisteredSW(swUrl, r) {
-      console.log('Service Worker registered:', swUrl);
+    onRegistered(r) {
+      console.log('[PWA] Service Worker registered');
       if (r) {
-        // Store the registration for use in visibility change handler
         swRegistrationRef.current = r;
         
-        // Check for updates immediately on app launch
-        r.update();
+        // Log initial state
+        console.log('[PWA] Initial registration state:', {
+          installing: r.installing,
+          waiting: r.waiting,
+          active: r.active
+        });
         
-        // Then check for updates every hour
+        // Check for updates immediately
+        r.update().then(() => {
+          console.log('[PWA] Update check completed');
+        }).catch((error) => {
+          console.error('[PWA] Update check failed:', error);
+        });
+        
+        // Check for updates every 30 minutes
         setInterval(() => {
+          console.log('[PWA] Periodic update check');
           r.update();
-        }, 60 * 60 * 1000);
+        }, 30 * 60 * 1000);
       }
     },
     onRegisterError(error) {
-      console.error('Service Worker registration error:', error);
+      console.error('[PWA] Service Worker registration error:', error);
+    },
+    onNeedRefresh() {
+      console.log('[PWA] New version available!');
+    },
+    onOfflineReady() {
+      console.log('[PWA] App ready to work offline');
     },
   });
 
@@ -32,8 +49,12 @@ export function PWAUpdatePrompt() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && swRegistrationRef.current) {
-        console.log('App became visible, checking for updates...');
-        swRegistrationRef.current.update();
+        console.log('[PWA] App became visible, checking for updates...');
+        swRegistrationRef.current.update().then(() => {
+          console.log('[PWA] Visibility update check completed');
+        }).catch((error) => {
+          console.error('[PWA] Visibility update check failed:', error);
+        });
       }
     };
 
@@ -42,8 +63,12 @@ export function PWAUpdatePrompt() {
     // Also check when the app gains focus
     const handleFocus = () => {
       if (swRegistrationRef.current) {
-        console.log('App gained focus, checking for updates...');
-        swRegistrationRef.current.update();
+        console.log('[PWA] App gained focus, checking for updates...');
+        swRegistrationRef.current.update().then(() => {
+          console.log('[PWA] Focus update check completed');
+        }).catch((error) => {
+          console.error('[PWA] Focus update check failed:', error);
+        });
       }
     };
     
