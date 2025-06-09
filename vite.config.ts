@@ -23,13 +23,19 @@ export default defineConfig({
         categories: ['finance', 'productivity', 'utilities'],
         icons: [
           {
-            src: '/favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml'
-          },
-          {
             src: '/apple-touch-icon.png',
             sizes: '180x180',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icon-152.png',
+            sizes: '152x152',
+            type: 'image/png'
+          },
+          {
+            src: '/icon-167.png',
+            sizes: '167x167',
             type: 'image/png'
           },
           {

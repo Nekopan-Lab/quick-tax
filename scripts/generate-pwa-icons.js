@@ -27,14 +27,18 @@ const splashScreens = [
 
 const publicDir = join(__dirname, '..', 'public');
 const svgPath = join(publicDir, 'favicon.svg');
+const appleTouchIconPath = join(publicDir, 'apple-touch-icon.png');
 
 // Ensure public directory exists
 if (!existsSync(publicDir)) {
   mkdirSync(publicDir, { recursive: true });
 }
 
-// Read the SVG file
+// Read the SVG file for general icons
 const svgBuffer = readFileSync(svgPath);
+
+// Read the apple-touch-icon for iOS-specific icons
+const appleIconBuffer = readFileSync(appleTouchIconPath);
 
 // Generate icons
 async function generateIcons() {
@@ -48,12 +52,16 @@ async function generateIcons() {
     
     const outputPath = join(publicDir, name);
     
+    // Use apple-touch-icon for iOS-specific icons (152, 167)
+    const isIOSIcon = name.includes('icon-152') || name.includes('icon-167');
+    const sourceBuffer = isIOSIcon ? appleIconBuffer : svgBuffer;
+    
     if (maskable) {
       // For maskable icons, add padding (safe area)
       const padding = Math.floor(size * 0.1);
       const innerSize = size - (padding * 2);
       
-      await sharp(svgBuffer)
+      await sharp(sourceBuffer)
         .resize(innerSize, innerSize)
         .extend({
           top: padding,
@@ -66,7 +74,7 @@ async function generateIcons() {
         .toFile(outputPath);
     } else {
       // Regular icons
-      await sharp(svgBuffer)
+      await sharp(sourceBuffer)
         .resize(size, size)
         .png()
         .toFile(outputPath);
@@ -82,8 +90,8 @@ async function generateIcons() {
     const outputPath = join(publicDir, name);
     const iconSize = Math.min(width, height) * 0.25;
     
-    // Create a white background with centered icon
-    const icon = await sharp(svgBuffer)
+    // Create a white background with centered apple-touch-icon
+    const icon = await sharp(appleIconBuffer)
       .resize(Math.floor(iconSize), Math.floor(iconSize))
       .png()
       .toBuffer();
