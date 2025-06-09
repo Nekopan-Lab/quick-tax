@@ -214,7 +214,8 @@ function App() {
           </div>
           
           <div className="mt-6 text-center text-xs text-gray-500">
-            © 2025 QuickTax. For estimation purposes only. <VersionInfo />
+            <div>© 2025 QuickTax. For estimation purposes only.</div>
+            <div className="mt-1"><VersionInfo /></div>
           </div>
         </div>
       </footer>
