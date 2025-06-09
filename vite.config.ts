@@ -55,7 +55,7 @@ export default defineConfig({
     injectVersionInfo(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'version.json'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'QuickTax - Estimated Tax Calculator',
         short_name: 'QuickTax',
@@ -112,11 +112,12 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globIgnores: ['**/version.json'],
         // Force service worker update on every build
         additionalManifestEntries: [
           {
-            url: '/version.json',
+            url: '/index.html',
             revision: Date.now().toString()
           }
         ],
@@ -150,16 +151,9 @@ export default defineConfig({
             }
           },
           {
-            // Don't cache version.json to ensure we can detect updates
+            // Always fetch version.json from network
             urlPattern: /\/version\.json$/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'version-cache',
-              expiration: {
-                maxEntries: 1,
-                maxAgeSeconds: 60 // 1 minute
-              }
-            }
+            handler: 'NetworkOnly'
           }
         ],
         cleanupOutdatedCaches: true
