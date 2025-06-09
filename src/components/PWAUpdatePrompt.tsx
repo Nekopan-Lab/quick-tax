@@ -1,14 +1,23 @@
+import { useEffect, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 export function PWAUpdatePrompt() {
+  const swRegistrationRef = useRef<ServiceWorkerRegistration | null>(null);
+  
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(swUrl, r) {
       console.log('Service Worker registered:', swUrl);
-      // Check for updates every hour
       if (r) {
+        // Store the registration for use in visibility change handler
+        swRegistrationRef.current = r;
+        
+        // Check for updates immediately on app launch
+        r.update();
+        
+        // Then check for updates every hour
         setInterval(() => {
           r.update();
         }, 60 * 60 * 1000);
@@ -18,6 +27,33 @@ export function PWAUpdatePrompt() {
       console.error('Service Worker registration error:', error);
     },
   });
+
+  // Check for updates when app becomes visible (e.g., when reopened from home screen)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && swRegistrationRef.current) {
+        console.log('App became visible, checking for updates...');
+        swRegistrationRef.current.update();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Also check when the app gains focus
+    const handleFocus = () => {
+      if (swRegistrationRef.current) {
+        console.log('App gained focus, checking for updates...');
+        swRegistrationRef.current.update();
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
 
   const handleUpdate = () => {
     updateServiceWorker(true);
