@@ -8,18 +8,24 @@ import path from 'path'
 // Get or increment version number
 function getVersionInfo() {
   const versionPath = path.resolve('public/version.json')
-  let buildNumber = 1
   
-  // Read existing version if it exists
-  try {
-    if (fs.existsSync(versionPath)) {
-      const existing = JSON.parse(fs.readFileSync(versionPath, 'utf-8'))
-      if (existing.buildNumber) {
-        buildNumber = existing.buildNumber + 1
+  // Use GitHub run number if available, otherwise increment locally
+  let buildNumber = parseInt(process.env.GITHUB_RUN_NUMBER || '0')
+  
+  if (!buildNumber) {
+    // For local builds, read and increment
+    try {
+      if (fs.existsSync(versionPath)) {
+        const existing = JSON.parse(fs.readFileSync(versionPath, 'utf-8'))
+        if (existing.buildNumber) {
+          buildNumber = existing.buildNumber + 1
+        }
       }
+    } catch (e) {
+      console.log('Creating new version.json')
     }
-  } catch (e) {
-    console.log('Creating new version.json')
+    
+    if (!buildNumber) buildNumber = 1
   }
   
   // Use build number as patch version
@@ -28,7 +34,8 @@ function getVersionInfo() {
   return {
     version,
     buildNumber,
-    buildTime: new Date().toISOString()
+    buildTime: new Date().toISOString(),
+    gitCommit: process.env.GITHUB_SHA ? process.env.GITHUB_SHA.substring(0, 7) : 'local'
   }
 }
 

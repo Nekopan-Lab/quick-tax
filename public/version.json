@@ -1,5 +1,6 @@
 {
-  "version": "1.0.8",
-  "buildNumber": 8,
-  "buildTime": "2025-06-09T20:12:34.196Z"
+  "version": "1.0.10",
+  "buildNumber": 10,
+  "buildTime": "2025-06-09T20:30:02.015Z",
+  "gitCommit": "local"
 }
