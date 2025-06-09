@@ -10,9 +10,14 @@ function getVersionInfo() {
   const versionPath = path.resolve('public/version.json')
   
   // Use GitHub run number if available, otherwise increment locally
-  let buildNumber = parseInt(process.env.GITHUB_RUN_NUMBER || '0')
+  let buildNumber = 0
   
-  if (!buildNumber) {
+  if (process.env.GITHUB_RUN_NUMBER) {
+    // For GitHub Actions, offset the run number to get reasonable version numbers
+    // Subtract 100 to reset numbering (assuming we're at run 110)
+    const runNumber = parseInt(process.env.GITHUB_RUN_NUMBER)
+    buildNumber = runNumber - 100
+  } else {
     // For local builds, read and increment
     try {
       if (fs.existsSync(versionPath)) {
