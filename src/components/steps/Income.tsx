@@ -95,7 +95,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
               onClick={() => setActiveTab('user')}
               className={`px-6 py-3 font-medium border-b-2 transition-colors ${
                 activeTab === 'user' 
-                  ? 'text-blue-600 border-blue-600' 
+                  ? 'text-emerald-600 border-emerald-600' 
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
@@ -106,7 +106,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 onClick={() => setActiveTab('spouse')}
                 className={`px-6 py-3 font-medium border-b-2 transition-colors ${
                   activeTab === 'spouse' 
-                    ? 'text-blue-600 border-blue-600' 
+                    ? 'text-emerald-600 border-emerald-600' 
                     : 'text-gray-500 border-transparent hover:text-gray-700'
                 }`}
               >
@@ -476,9 +476,9 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                   
                   {/* Paycheck Projection Display */}
                   {currentIncome.nextPayDate && currentIncome.paycheckWage && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                      <h5 className="text-sm font-medium text-blue-900 mb-2">Paycheck Projection</h5>
-                      <div className="space-y-1 text-sm text-blue-800">
+                    <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
+                      <h5 className="text-sm font-medium text-emerald-900 mb-2">Paycheck Projection</h5>
+                      <div className="space-y-1 text-sm text-emerald-800">
                         <p>
                           <span className="font-medium">{remainingPaychecks}</span> {currentIncome.payFrequency === 'biweekly' ? 'bi-weekly' : 'monthly'} paychecks remaining in {new Date().getFullYear()}
                         </p>
@@ -510,8 +510,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       </span>
                     </div>
                     
-                    <div className="bg-blue-50 p-3 rounded-md mb-4">
-                      <p className="text-xs text-blue-800">
+                    <div className="bg-emerald-50 p-3 rounded-md mb-4">
+                      <p className="text-xs text-emerald-800">
                         If you have RSU vest data, enter it below to calculate accurate withholding rates. 
                         Otherwise, we'll use default rates (22% federal, 10% state).
                       </p>
@@ -570,7 +570,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       <button
                         type="button"
                         onClick={addFutureRSUVest}
-                        className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
+                        className="text-sm bg-emerald-600 text-white px-3 py-1 rounded-md hover:bg-emerald-700"
                       >
                         + Add Vest
                       </button>
@@ -665,8 +665,8 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     )}
                     
                     {currentIncome.futureRSUVests.length > 0 && currentIncome.rsuVestWage && (
-                      <div className="mt-3 p-3 bg-blue-50 rounded-md">
-                        <p className="text-xs text-blue-800">
+                      <div className="mt-3 p-3 bg-emerald-50 rounded-md">
+                        <p className="text-xs text-emerald-800">
                           Tax withholding estimates are based on your last vest rates: 
                           Federal {(federalWithholdingRate * 100).toFixed(1)}%{includeCaliforniaTax && `, State ${(stateWithholdingRate * 100).toFixed(1)}%`}
                         </p>
@@ -681,7 +681,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
           {/* Total Income Display */}
           <div className="border-t pt-4">
             <div className="space-y-2">
-              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
+              <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-md">
                 <span className="font-medium">
                   {activeTab === 'user' ? 'Your' : 'Spouse'} Calculated Total Income:
                 </span>
@@ -727,7 +727,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
         </button>
         <button
           onClick={onNext}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
         >
           Next
         </button>

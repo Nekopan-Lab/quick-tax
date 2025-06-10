@@ -73,8 +73,8 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
       
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-8">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
-            <p className="text-sm text-blue-800">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mb-8">
+            <p className="text-sm text-emerald-800">
               Enter your estimated <strong>full-year</strong> amounts below. We'll automatically determine whether standard or itemized deductions are better for you.
             </p>
           </div>
@@ -91,7 +91,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                   value={deductions.propertyTax}
                   onChange={(e) => setDeductions({ propertyTax: e.target.value })}
                   placeholder="0"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-lg"
                 />
               </div>
             </div>
@@ -107,7 +107,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                   value={deductions.mortgageInterest}
                   onChange={(e) => setDeductions({ mortgageInterest: e.target.value })}
                   placeholder="0"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-lg"
                 />
               </div>
               
@@ -175,7 +175,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                   value={deductions.donations}
                   onChange={(e) => setDeductions({ donations: e.target.value })}
                   placeholder="0"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-lg"
                 />
               </div>
             </div>
@@ -193,7 +193,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                     value={deductions.otherStateIncomeTax}
                     onChange={(e) => setDeductions({ otherStateIncomeTax: e.target.value })}
                     placeholder="0"
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-lg"
                   />
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
@@ -231,7 +231,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                   </div>
                   <button
                     onClick={() => setExpandedFederal(!expandedFederal)}
-                    className="mt-2 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                    className="mt-2 text-xs text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
                   >
                     <span>{expandedFederal ? 'Hide' : 'Show'} itemized breakdown</span>
                     <svg className={`w-3 h-3 transition-transform ${expandedFederal ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,7 +314,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                     </div>
                     <button
                       onClick={() => setExpandedCalifornia(!expandedCalifornia)}
-                      className="mt-2 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      className="mt-2 text-xs text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
                     >
                       <span>{expandedCalifornia ? 'Hide' : 'Show'} itemized breakdown</span>
                       <svg className={`w-3 h-3 transition-transform ${expandedCalifornia ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,7 +372,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
         </button>
         <button
           onClick={onNext}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
         >
           Next
         </button>

@@ -25,7 +25,7 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
                 <label key={year} className={`
                   relative flex items-center px-6 py-3 border-2 rounded-xl cursor-pointer transition-all
                   ${taxYear === year 
-                    ? 'border-blue-500 bg-blue-50 shadow-md' 
+                    ? 'border-emerald-500 bg-emerald-50 shadow-md' 
                     : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                   }
                 `}>
@@ -51,7 +51,7 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
               <label className={`
                 relative flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all
                 ${filingStatus === 'single'
-                  ? 'border-blue-500 bg-blue-50 shadow-md' 
+                  ? 'border-emerald-500 bg-emerald-50 shadow-md' 
                   : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }
               `}>
@@ -66,10 +66,10 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
                 <div className="flex items-center">
                   <div className={`
                     w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center
-                    ${filingStatus === 'single' ? 'border-blue-500' : 'border-gray-300'}
+                    ${filingStatus === 'single' ? 'border-emerald-500' : 'border-gray-300'}
                   `}>
                     {filingStatus === 'single' && (
-                      <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full" />
                     )}
                   </div>
                   <div>
@@ -82,7 +82,7 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
               <label className={`
                 relative flex items-center p-6 border-2 rounded-xl cursor-pointer transition-all
                 ${filingStatus === 'marriedFilingJointly' 
-                  ? 'border-blue-500 bg-blue-50 shadow-md' 
+                  ? 'border-emerald-500 bg-emerald-50 shadow-md' 
                   : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }
               `}>
@@ -97,10 +97,10 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
                 <div className="flex items-center">
                   <div className={`
                     w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center
-                    ${filingStatus === 'marriedFilingJointly' ? 'border-blue-500' : 'border-gray-300'}
+                    ${filingStatus === 'marriedFilingJointly' ? 'border-emerald-500' : 'border-gray-300'}
                   `}>
                     {filingStatus === 'marriedFilingJointly' && (
-                      <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full" />
                     )}
                   </div>
                   <div>
@@ -125,7 +125,7 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
               <div className="border-t pt-4">
                 <label className="flex items-center justify-between cursor-pointer group">
                   <div>
-                    <h4 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h4 className="font-medium text-gray-900 group-hover:text-emerald-600 transition-colors">
                       California State Tax (FTB)
                     </h4>
                     <p className="text-sm text-gray-600">Include California state tax calculations</p>
@@ -139,7 +139,7 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
                     />
                     <div className={`
                       w-14 h-8 rounded-full transition-colors duration-200 relative
-                      ${includeCaliforniaTax ? 'bg-blue-600' : 'bg-gray-300'}
+                      ${includeCaliforniaTax ? 'bg-emerald-600' : 'bg-gray-300'}
                     `}>
                       <div className={`
                         absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200
@@ -158,7 +158,7 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
       <div className="flex justify-end mt-8">
         <button
           onClick={onNext}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
         >
           Next
         </button>

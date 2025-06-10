@@ -21,8 +21,8 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
       <h2 className="text-2xl font-semibold mb-6">Estimated Tax Payments YTD</h2>
       
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-8">
-        <div className="bg-blue-50 p-4 rounded-md">
-          <p className="text-sm text-blue-800">
+        <div className="bg-emerald-50 p-4 rounded-md">
+          <p className="text-sm text-emerald-800">
             Enter any estimated tax payments you've already made for the 2025 tax year.
             Leave blank if you haven't made any payments.
           </p>
@@ -175,7 +175,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
         </button>
         <button
           onClick={onNext}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
         >
           Next
         </button>

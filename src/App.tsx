@@ -241,7 +241,7 @@ function App() {
               </p>
             </div>
             <button 
-              className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+              className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 font-medium"
               onClick={() => setShowPrivacyModal(false)}
             >
               Close

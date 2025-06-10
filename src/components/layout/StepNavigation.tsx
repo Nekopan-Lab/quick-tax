@@ -24,9 +24,9 @@ export function StepNavigation({ currentStep, onStepClick }: StepNavigationProps
                   className={`
                     flex items-center px-4 sm:px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap
                     ${currentStep === step.id 
-                      ? 'bg-blue-600 text-white shadow-md transform scale-105' 
+                      ? 'bg-emerald-600 text-white shadow-md transform scale-105' 
                       : currentStep > step.id
-                      ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                      ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                       : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                     }
                   `}
@@ -34,9 +34,9 @@ export function StepNavigation({ currentStep, onStepClick }: StepNavigationProps
                   <span className={`
                     flex items-center justify-center w-8 h-8 rounded-full mr-2 sm:mr-3 flex-shrink-0
                     ${currentStep === step.id 
-                      ? 'bg-white text-blue-600' 
+                      ? 'bg-white text-emerald-600' 
                       : currentStep > step.id
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-emerald-600 text-white'
                       : 'bg-gray-300 text-gray-600'
                     }
                   `}>
@@ -47,7 +47,7 @@ export function StepNavigation({ currentStep, onStepClick }: StepNavigationProps
                 {index < steps.length - 1 && (
                   <div className={`
                     w-8 sm:w-12 h-1 mx-2 rounded flex-shrink-0
-                    ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-300'}
+                    ${currentStep > step.id ? 'bg-emerald-500' : 'bg-gray-300'}
                   `} />
                 )}
               </div>
