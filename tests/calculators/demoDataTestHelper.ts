@@ -41,13 +41,11 @@ export const FIXED_DEMO_USER_INCOME: IncomeData = {
   futureRSUVests: [
     {
       id: 'demo-vest-1',
-      date: '2025-08-15', // August vest
       shares: '200',
       expectedPrice: '150'
     },
     {
       id: 'demo-vest-2', 
-      date: '2025-11-15', // November vest
       shares: '200',
       expectedPrice: '150'
     }

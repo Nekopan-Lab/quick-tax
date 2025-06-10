@@ -1,4 +1,5 @@
 import { FilingStatus, DeductionInfo } from '@/types'
+import { DeductionsData, EstimatedPaymentsData } from '@/store/useStore'
 import { TaxYear } from '../federal/constants'
 import { 
   getCaliforniaTaxBrackets,
@@ -79,39 +80,9 @@ export function calculateCaliforniaTax(
 // Re-export the helper function for backwards compatibility
 export { getCaliforniaStandardDeduction }
 
-// Import types from federal calculator for shared interfaces
-import type { DeductionsData, EstimatedPaymentsData, EstimatedPaymentSuggestion } from '../federal/calculator'
+// Import EstimatedPaymentSuggestion from federal calculator  
+import type { EstimatedPaymentSuggestion } from '../federal/calculator'
 
-// Income data interface for California calculations
-export interface IncomeData {
-  ordinaryDividends: string
-  qualifiedDividends: string
-  interestIncome: string
-  shortTermGains: string
-  longTermGains: string
-  ytdWage: string
-  ytdFederalWithhold: string
-  ytdStateWithhold: string
-  futureWage: string
-  futureFederalWithhold: string
-  futureStateWithhold: string
-  incomeMode: 'simple' | 'detailed'
-  paycheckWage: string
-  paycheckFederal: string
-  paycheckState: string
-  payFrequency: 'biweekly' | 'monthly'
-  nextPayDate: string
-  rsuVestWage: string
-  rsuVestFederal: string
-  rsuVestState: string
-  vestPrice: string
-  futureRSUVests: Array<{
-    id: string
-    date: string
-    shares: string
-    expectedPrice: string
-  }>
-}
 
 export interface CaliforniaItemizedDeductionDetails {
   propertyTax: number

@@ -62,7 +62,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
       id: Date.now().toString(),
       date: '',
       shares: '',
-      expectedPrice: currentIncome.vestPrice || ''
+      expectedPrice: ''
     }
     setCurrentIncome({ 
       futureRSUVests: [...currentIncome.futureRSUVests, newVest] 
@@ -561,20 +561,6 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                           />
                         </div>
                       )}
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Stock Price at Last Vest
-                          <span className="text-xs text-gray-500 block">Optional - price per share</span>
-                        </label>
-                        <input
-                          type="number" {...numberInputProps}
-                          value={currentIncome.vestPrice}
-                          onChange={(e) => setCurrentIncome({ vestPrice: e.target.value })}
-                          placeholder="Optional"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        />
-                      </div>
                     </div>
                   </div>
 
@@ -618,19 +604,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                 </button>
                               </div>
                               
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Vest Date
-                                  </label>
-                                  <input
-                                    type="date"
-                                    value={vest.date}
-                                    onChange={(e) => updateFutureRSUVest(vest.id, 'date', e.target.value)}
-                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md"
-                                  />
-                                </div>
-                                
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 mb-1">
                                     Number of Shares
@@ -652,7 +626,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                                     type="number" {...numberInputProps}
                                     value={vest.expectedPrice}
                                     onChange={(e) => updateFutureRSUVest(vest.id, 'expectedPrice', e.target.value)}
-                                    placeholder={currentIncome.vestPrice || "0"}
+                                    placeholder="0"
                                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md"
                                   />
                                 </div>

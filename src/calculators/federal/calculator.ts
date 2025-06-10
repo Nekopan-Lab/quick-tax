@@ -1,4 +1,5 @@
 import { FilingStatus, DeductionInfo } from '@/types'
+import { DeductionsData, EstimatedPaymentsData } from '@/store/useStore'
 import { 
   TaxYear,
   getFederalTaxBrackets,
@@ -164,26 +165,6 @@ export function calculateFederalTax(
 
 // Re-export the helper function for backwards compatibility
 export { getFederalStandardDeduction }
-
-// Interfaces for deductions and payments
-export interface DeductionsData {
-  propertyTax: string
-  mortgageInterest: string
-  donations: string
-  mortgageLoanDate: 'before-dec-16-2017' | 'after-dec-15-2017' | ''
-  mortgageBalance: string
-  otherStateIncomeTax: string
-}
-
-export interface EstimatedPaymentsData {
-  federalQ1: string
-  federalQ2: string
-  federalQ3: string
-  federalQ4: string
-  californiaQ1: string
-  californiaQ2: string
-  californiaQ4: string
-}
 
 export interface EstimatedPaymentSuggestion {
   quarter: string

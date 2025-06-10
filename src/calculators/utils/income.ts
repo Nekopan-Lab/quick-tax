@@ -1,4 +1,7 @@
-import type { IncomeData } from '../california/calculator'
+import type { IncomeData } from '@/store/useStore'
+
+// Re-export for backward compatibility
+export type { IncomeData }
 
 /**
  * Calculate future income from paychecks and RSU vests
@@ -271,6 +274,3 @@ export function calculateRSUVestValue(shares: string, price: string, income: Inc
     stateRate
   }
 }
-
-// Re-export types
-export type { IncomeData }

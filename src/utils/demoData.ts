@@ -13,7 +13,6 @@ import type { IncomeData, DeductionsData, EstimatedPaymentsData } from '../store
 
 // Current date for calculating future dates
 const today = new Date()
-const currentYear = today.getFullYear()
 
 // Calculate next bi-weekly pay date (assuming Friday paydays)
 const getNextBiweeklyPaydate = (): string => {
@@ -59,13 +58,13 @@ export const DEMO_USER_INCOME: IncomeData = {
   futureRSUVests: [
     {
       id: 'demo-vest-1',
-      date: new Date(currentYear, 7, 15).toISOString().split('T')[0], // August vest
+      date: '2025-06-15',
       shares: '200',
       expectedPrice: '150'
     },
     {
       id: 'demo-vest-2',
-      date: new Date(currentYear, 10, 15).toISOString().split('T')[0], // November vest
+      date: '2025-09-15',
       shares: '200',
       expectedPrice: '150'
     }

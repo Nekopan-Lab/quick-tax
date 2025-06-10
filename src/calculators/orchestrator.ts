@@ -1,13 +1,16 @@
 import { TaxYear, FilingStatus, DeductionInfo } from '../types'
 import { 
+  IncomeData,
+  DeductionsData,
+  EstimatedPaymentsData
+} from '../store/useStore'
+import { 
   calculateFederalTax, 
   getFederalStandardDeduction,
   calculateFederalItemizedDeductions,
   calculateFederalEstimatedPayments,
   type FederalIncomeBreakdown,
   type FederalTaxResult,
-  type DeductionsData,
-  type EstimatedPaymentsData,
   type EstimatedPaymentSuggestion
 } from './federal/calculator'
 import { 
@@ -16,7 +19,6 @@ import {
   calculateCaliforniaItemizedDeductions,
   calculateCaliforniaEstimatedPayments,
   calculateEstimatedCAStateTax,
-  type IncomeData,
   type CaliforniaTaxResult
 } from './california/calculator'
 import { aggregateHouseholdIncome } from './utils/householdIncome'
