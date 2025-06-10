@@ -83,6 +83,33 @@ export function PWAUpdatePrompt() {
   const handleUpdate = async () => {
     console.log('[PWA] User clicked update, reloading...');
     
+    // Force manifest refresh before updating service worker
+    try {
+      // Re-fetch the manifest to get latest theme color
+      const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
+      if (manifestLink) {
+        // Add timestamp to force refresh
+        const newHref = `/manifest.json?v=${Date.now()}`;
+        manifestLink.href = newHref;
+        console.log('[PWA] Manifest refreshed');
+      }
+      
+      // Also update the theme-color meta tag dynamically
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      if (themeColorMeta) {
+        // Force remove and re-add to ensure browser picks it up
+        const newThemeColor = '#10b981'; // Emerald color
+        themeColorMeta.remove();
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'theme-color';
+        newMeta.content = newThemeColor;
+        document.head.appendChild(newMeta);
+        console.log('[PWA] Theme color meta tag updated');
+      }
+    } catch (error) {
+      console.error('[PWA] Error refreshing manifest:', error);
+    }
+    
     // Update the service worker
     await updateServiceWorker(true);
     

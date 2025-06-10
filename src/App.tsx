@@ -86,6 +86,33 @@ function App() {
     }
   }, [])
 
+  // Ensure theme color is always up to date
+  useEffect(() => {
+    const updateThemeColor = () => {
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      if (themeColorMeta && themeColorMeta.content !== '#10b981') {
+        themeColorMeta.content = '#10b981';
+        console.log('[PWA] Theme color updated to emerald');
+      }
+    };
+    
+    // Update on load
+    updateThemeColor();
+    
+    // Also update when app becomes visible (useful for installed PWAs)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateThemeColor();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [])
+
   const handleNext = () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1)
