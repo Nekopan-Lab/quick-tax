@@ -83,7 +83,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
   if (!taxResults) {
     return (
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-6">Summary & Actionable Insights</h2>
+        <h2 className="text-2xl font-semibold mb-6">Summary</h2>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <p className="text-yellow-800">
             Please complete the previous steps (Filing Status) to see your tax calculation summary.
@@ -153,7 +153,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6 print:text-center screen-only">Summary & Actionable Insights</h2>
+      <h2 className="text-2xl font-semibold mb-6 print:text-center screen-only">Summary</h2>
       
       {/* Print-only header focused on estimated payments */}
       <div className="print-only print-header">

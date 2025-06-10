@@ -52,6 +52,40 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [currentStep])
 
+  // Fix for mobile rendering issue after PWA update
+  useEffect(() => {
+    // Force a reflow/repaint on mobile devices after page load
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      const forceReflow = () => {
+        // Force the browser to recalculate layout
+        document.body.style.display = 'none';
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        document.body.offsetHeight; // Trigger reflow
+        document.body.style.display = '';
+        
+        // Also ensure we're at the top of the page
+        window.scrollTo(0, 0);
+      };
+      
+      // Run after a short delay to ensure DOM is fully loaded
+      const timer = setTimeout(forceReflow, 100);
+      
+      // Also run on visibility change (for when app comes back from background)
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          forceReflow();
+        }
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+    }
+  }, [])
+
   const handleNext = () => {
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1)

@@ -80,13 +80,36 @@ export function PWAUpdatePrompt() {
     };
   }, []);
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     console.log('[PWA] User clicked update, reloading...');
-    updateServiceWorker(true);
-    // Force a hard reload after a short delay to ensure service worker is updated
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    
+    // Update the service worker
+    await updateServiceWorker(true);
+    
+    // For mobile devices, we need to handle the reload more carefully
+    // to avoid the blank screen issue
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      // Mobile device detected
+      console.log('[PWA] Mobile device detected, using enhanced reload');
+      
+      // Clear any cached render state
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      
+      // Force the browser to go to top before reload
+      window.scrollTo(0, 0);
+      
+      // Use location.href for a cleaner reload on mobile
+      setTimeout(() => {
+        window.location.href = window.location.href;
+      }, 200);
+    } else {
+      // Desktop browser - use standard reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
   };
 
   const handleDismiss = () => {
