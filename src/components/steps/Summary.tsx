@@ -680,26 +680,24 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
           ) : (
             <div className="space-y-2">
               {federalSuggestions.map((payment) => (
-                <div key={payment.quarter} className={`flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 rounded-md ${
+                <div key={payment.quarter} className={`flex justify-between items-center p-3 rounded-md ${
                   payment.isPaid ? 'bg-green-50 border border-green-200' : 
                   payment.isPastDue ? 'bg-gray-50 border border-gray-200' :
                   'bg-blue-50 border border-blue-200'
                 }`}>
-                  <div className="flex items-center gap-2 mb-1 sm:mb-0">
+                  <div className="flex items-center gap-1 sm:gap-2 flex-1">
                     {payment.isPaid && (
-                      <svg className="w-5 h-5 text-green-600 print:hidden flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 sm:w-5 h-4 sm:h-5 text-green-600 print:hidden flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                      <span className={`whitespace-nowrap ${payment.isPaid ? 'font-medium' : payment.isPastDue ? 'text-gray-500' : ''}`}>
-                        {payment.quarter} - {payment.dueDate}
-                      </span>
-                      {payment.isPaid && <span className="text-sm text-green-600 whitespace-nowrap">(Paid)</span>}
-                      {payment.isPastDue && <span className="text-sm text-gray-500 whitespace-nowrap">(Past Due)</span>}
-                    </div>
+                    <span className={`text-xs sm:text-sm ${payment.isPaid ? 'font-medium' : payment.isPastDue ? 'text-gray-500' : ''}`}>
+                      {payment.quarter} - {payment.dueDate}
+                      {payment.isPaid && <span className="text-green-600 ml-1">(Paid)</span>}
+                      {payment.isPastDue && <span className="text-gray-500 ml-1">(Past Due)</span>}
+                    </span>
                   </div>
-                  <span className={`font-medium text-lg sm:text-base ${
+                  <span className={`font-medium text-sm sm:text-base flex-shrink-0 ${
                     payment.isPaid ? 'text-green-700' : 
                     payment.isPastDue ? 'text-gray-500' :
                     'text-blue-700'
@@ -747,26 +745,24 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
               <div>
                 <div className="space-y-2">
                   {californiaSuggestions.map((payment) => (
-                    <div key={payment.quarter} className={`flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 rounded-md ${
+                    <div key={payment.quarter} className={`flex justify-between items-center p-3 rounded-md ${
                       payment.isPaid ? 'bg-green-50 border border-green-200' : 
                       payment.isPastDue ? 'bg-gray-50 border border-gray-200' :
                       'bg-emerald-50 border border-emerald-200'
                     }`}>
-                      <div className="flex items-center gap-2 mb-1 sm:mb-0">
+                      <div className="flex items-center gap-1 sm:gap-2 flex-1">
                         {payment.isPaid && (
-                          <svg className="w-5 h-5 text-green-600 print:hidden flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 sm:w-5 h-4 sm:h-5 text-green-600 print:hidden flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                          <span className={`whitespace-nowrap ${payment.isPaid ? 'font-medium' : payment.isPastDue ? 'text-gray-500' : ''}`}>
-                            {payment.quarter} - {payment.dueDate}
-                          </span>
-                          {payment.isPaid && <span className="text-sm text-green-600 whitespace-nowrap">(Paid)</span>}
-                          {payment.isPastDue && <span className="text-sm text-gray-500 whitespace-nowrap">(Past Due)</span>}
-                        </div>
+                        <span className={`text-xs sm:text-sm ${payment.isPaid ? 'font-medium' : payment.isPastDue ? 'text-gray-500' : ''}`}>
+                          {payment.quarter} - {payment.dueDate}
+                          {payment.isPaid && <span className="text-green-600 ml-1">(Paid)</span>}
+                          {payment.isPastDue && <span className="text-gray-500 ml-1">(Past Due)</span>}
+                        </span>
                       </div>
-                      <span className={`font-medium text-lg sm:text-base ${
+                      <span className={`font-medium text-sm sm:text-base flex-shrink-0 ${
                         payment.isPaid ? 'text-green-700' : 
                         payment.isPastDue ? 'text-gray-500' :
                         'text-emerald-700'
