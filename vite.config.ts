@@ -67,7 +67,7 @@ export default defineConfig({
         name: 'QuickTax - Estimated Tax Calculator',
         short_name: 'QuickTax',
         description: 'Calculate your estimated federal and California state tax payments throughout the tax year',
-        theme_color: '#3b82f6',
+        theme_color: '#10b981',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
