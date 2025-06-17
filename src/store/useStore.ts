@@ -53,6 +53,9 @@ export interface DeductionsData {
   
   // State tax field (for users not using CA tax)
   otherStateIncomeTax: string
+  
+  // Business expense fields (Schedule C)
+  businessExpenses: string
 }
 
 export interface EstimatedPaymentsData {
@@ -143,6 +146,7 @@ const initialDeductionsData: DeductionsData = {
   mortgageLoanDate: '',
   mortgageBalance: '',
   otherStateIncomeTax: '',
+  businessExpenses: '',
 }
 
 const initialEstimatedPaymentsData: EstimatedPaymentsData = {

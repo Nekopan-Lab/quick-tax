@@ -116,7 +116,8 @@ export const DEMO_DEDUCTIONS: DeductionsData = {
   mortgageLoanDate: 'after-dec-15-2017', // Recent purchase
   mortgageBalance: '400000',
   donations: '2000', // ~0.7% of gross income
-  otherStateIncomeTax: '0' // Not applicable for CA residents
+  otherStateIncomeTax: '0', // Not applicable for CA residents
+  businessExpenses: '0' // No business expenses for regular employee
 }
 
 export const DEMO_ESTIMATED_PAYMENTS: EstimatedPaymentsData = {

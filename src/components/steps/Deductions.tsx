@@ -78,6 +78,35 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
               Enter your estimated <strong>full-year</strong> amounts below. We'll automatically determine whether standard or itemized deductions are better for you.
             </p>
           </div>
+          
+          {/* Business Expenses Section */}
+          <div className="mb-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <h3 className="font-semibold text-gray-900 mb-4">Business Expenses (Schedule C)</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              If you're self-employed or have business income, enter your total deductible business expenses here. 
+              These reduce your income before applying standard or itemized deductions.
+            </p>
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Total Business Expenses (Full Year)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number" {...numberInputProps}
+                  value={deductions.businessExpenses}
+                  onChange={(e) => setDeductions({ businessExpenses: e.target.value })}
+                  placeholder="0"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Common deductible expenses: office supplies, business travel, home office, professional services, etc.
+              </p>
+            </div>
+          </div>
+          
+          <h3 className="font-semibold text-gray-900 mb-4">Itemized Deductions</h3>
 
           <div className="space-y-6">
             <div className="group">

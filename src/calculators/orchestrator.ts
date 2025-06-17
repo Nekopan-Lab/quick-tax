@@ -26,6 +26,7 @@ import { aggregateHouseholdIncome } from './utils/householdIncome'
 export interface TaxCalculationResult {
   // Total amounts
   totalIncome: number
+  businessExpenses: number
   
   // Federal results
   federalTax: FederalTaxResult  // Contains total tax liability, breakdown, owed/refund, and effective rate
@@ -52,8 +53,12 @@ export function calculateComprehensiveTax(
   // Aggregate income for the entire household
   const household = aggregateHouseholdIncome(userIncome, spouseIncome, filingStatus)
   
+  // Apply business expenses to reduce gross income (Schedule C)
+  const businessExpenses = parseFloat(deductions.businessExpenses) || 0
+  const grossIncomeAfterBusinessExpenses = household.totalIncome - businessExpenses
+  
   // Calculate total income before capital loss limit
-  const totalIncomeBeforeLimit = household.totalIncome
+  const totalIncomeBeforeLimit = grossIncomeAfterBusinessExpenses
   
   // Use household aggregated investment income
   const totalInvestmentIncome = household.investmentIncome
@@ -67,8 +72,11 @@ export function calculateComprehensiveTax(
   const capitalLossAdjustment = netCapitalGains < 0 ? netCapitalGains - capitalLossDeduction : 0
   const totalIncome = totalIncomeBeforeLimit - capitalLossAdjustment
 
+  // Adjust wage income for business expenses
+  const adjustedWageIncome = Math.max(0, household.wageIncome - businessExpenses)
+  
   const federalIncomeBreakdown: FederalIncomeBreakdown = {
-    ordinaryIncome: household.wageIncome + 
+    ordinaryIncome: adjustedWageIncome + 
                     (totalInvestmentIncome.ordinaryDividends - totalInvestmentIncome.qualifiedDividends) + // Non-qualified dividends
                     totalInvestmentIncome.interestIncome +
                     capitalLossDeduction, // Apply capital loss limit
@@ -76,7 +84,7 @@ export function calculateComprehensiveTax(
     longTermCapitalGains: Math.max(0, totalInvestmentIncome.longTermGains), // Only positive LTCG
     shortTermCapitalGains: Math.max(0, totalInvestmentIncome.shortTermGains), // Only positive STCG
     // Additional detail fields
-    wages: household.wageIncome,
+    wages: adjustedWageIncome,
     interestIncome: totalInvestmentIncome.interestIncome,
     ordinaryDividends: totalInvestmentIncome.ordinaryDividends,
     capitalLossDeduction
@@ -154,6 +162,7 @@ export function calculateComprehensiveTax(
 
   return {
     totalIncome: Math.round(totalIncome),
+    businessExpenses: Math.round(businessExpenses),
     federalTax: federalResult,
     californiaTax: californiaResult
   }

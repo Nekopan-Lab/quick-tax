@@ -235,7 +235,17 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
         <div className="space-y-3">
           <div className="flex justify-between py-2 border-b">
             <span>Total Income</span>
-            <span className="font-medium">${taxResults.totalIncome.toLocaleString()}</span>
+            <span className="font-medium">${(taxResults.totalIncome + taxResults.businessExpenses).toLocaleString()}</span>
+          </div>
+          {taxResults.businessExpenses > 0 && (
+            <div className="flex justify-between text-sm text-gray-600 pb-2 border-b">
+              <span>Less: Business Expenses (Schedule C)</span>
+              <span className="text-red-600">-${taxResults.businessExpenses.toLocaleString()}</span>
+            </div>
+          )}
+          <div className="flex justify-between py-2 border-b font-medium">
+            <span>Adjusted Gross Income</span>
+            <span>${taxResults.totalIncome.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm text-gray-600 pb-2">
             <span>Combined Effective Tax Rate</span>
@@ -295,7 +305,7 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                               <div className="font-medium text-gray-700 mb-1">Ordinary Income Components:</div>
                               <div className="space-y-1 text-gray-600">
                                 <div className="flex justify-between">
-                                  <span>Wages (YTD + Future)</span>
+                                  <span>Wages (YTD + Future, after business expenses)</span>
                                   <span>${incomeComponents.wages.toLocaleString()}</span>
                                 </div>
                                 {(userYtdWage > 0 || spouseYtdWage > 0) && (
