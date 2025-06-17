@@ -72,20 +72,45 @@ export function calculateComprehensiveTax(
   const capitalLossAdjustment = netCapitalGains < 0 ? netCapitalGains - capitalLossDeduction : 0
   const totalIncome = totalIncomeBeforeLimit - capitalLossAdjustment
 
-  // Adjust wage income for business expenses
-  const adjustedWageIncome = Math.max(0, household.wageIncome - businessExpenses)
+  // Calculate total ordinary income components before applying business expenses
+  const nonQualifiedDividends = totalInvestmentIncome.ordinaryDividends - totalInvestmentIncome.qualifiedDividends
+  const ordinaryInvestmentIncome = nonQualifiedDividends + totalInvestmentIncome.interestIncome
+  
+  // Apply business expenses to reduce ordinary income
+  let remainingBusinessExpenses = businessExpenses
+  let adjustedWageIncome = household.wageIncome
+  let adjustedOrdinaryInvestmentIncome = ordinaryInvestmentIncome
+  
+  // First apply to wage income
+  if (remainingBusinessExpenses > 0 && adjustedWageIncome > 0) {
+    const wageReduction = Math.min(remainingBusinessExpenses, adjustedWageIncome)
+    adjustedWageIncome -= wageReduction
+    remainingBusinessExpenses -= wageReduction
+  }
+  
+  // Then apply remaining to ordinary investment income (non-qualified dividends + interest)
+  if (remainingBusinessExpenses > 0 && adjustedOrdinaryInvestmentIncome > 0) {
+    const investmentReduction = Math.min(remainingBusinessExpenses, adjustedOrdinaryInvestmentIncome)
+    adjustedOrdinaryInvestmentIncome -= investmentReduction
+    remainingBusinessExpenses -= investmentReduction
+  }
+  
+  // Calculate adjusted components
+  const adjustmentRatio = ordinaryInvestmentIncome > 0 ? adjustedOrdinaryInvestmentIncome / ordinaryInvestmentIncome : 1
+  const adjustedNonQualifiedDividends = nonQualifiedDividends * adjustmentRatio
+  const adjustedInterestIncome = totalInvestmentIncome.interestIncome * adjustmentRatio
   
   const federalIncomeBreakdown: FederalIncomeBreakdown = {
     ordinaryIncome: adjustedWageIncome + 
-                    (totalInvestmentIncome.ordinaryDividends - totalInvestmentIncome.qualifiedDividends) + // Non-qualified dividends
-                    totalInvestmentIncome.interestIncome +
+                    adjustedNonQualifiedDividends +
+                    adjustedInterestIncome +
                     capitalLossDeduction, // Apply capital loss limit
     qualifiedDividends: totalInvestmentIncome.qualifiedDividends,
     longTermCapitalGains: Math.max(0, totalInvestmentIncome.longTermGains), // Only positive LTCG
     shortTermCapitalGains: Math.max(0, totalInvestmentIncome.shortTermGains), // Only positive STCG
     // Additional detail fields
     wages: adjustedWageIncome,
-    interestIncome: totalInvestmentIncome.interestIncome,
+    interestIncome: adjustedInterestIncome,
     ordinaryDividends: totalInvestmentIncome.ordinaryDividends,
     capitalLossDeduction
   }
