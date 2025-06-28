@@ -1,6 +1,6 @@
 # QuickTax - AI-Generated Tax Calculator 🤖💰
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://quicktax.denehs.me)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://quicktax.nekopanlab.com)
 [![100% AI Generated](https://img.shields.io/badge/AI%20Generated-100%25-blue)](https://claude.ai/code)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-purple)](https://claude.ai/code)
 
@@ -37,7 +37,7 @@ All technology choices and implementations were made by Claude:
 - **State Management**: Zustand
 - **Build Tool**: Vite
 - **Testing**: Vitest
-- **Deployment**: GitHub Pages (web), Xcode (iOS)
+- **Deployment**: Cloudflare Workers (web), Xcode (iOS)
 
 ## 📊 AI Development Stats
 

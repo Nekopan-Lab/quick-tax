@@ -32,22 +32,22 @@ The following line imports all product specifications and requirements from the 
 
 ### Deployment Process & Testing
 
-#### Automated GitHub Actions Deployment
-The project uses GitHub Actions for automated deployment to GitHub Pages:
+#### Automated Cloudflare Workers Deployment
+The project uses Cloudflare Workers for automated deployment:
 1. Push changes to the `main` branch
-2. GitHub Actions automatically:
-   - Runs tests
-   - Builds the project
-   - Deploys to GitHub Pages at https://quicktax.denehs.me
-3. No manual file copying required - the workflow handles everything
+2. Cloudflare automatically:
+   - Pulls the latest code from GitHub
+   - Runs the build command (`npm run build`)
+   - Deploys to Cloudflare Workers at https://quicktax.nekopanlab.com
+3. No manual deployment steps required - Cloudflare's Git integration handles everything
 
 #### Custom Domain Configuration
-- Domain: https://quicktax.denehs.me
-- CNAME file in repository root contains the custom domain
-- Vite config uses `base: '/'` for custom domain compatibility
+- Domain: https://quicktax.nekopanlab.com
+- Configured via Cloudflare dashboard and wrangler.toml
+- Vite config uses `base: '/'` for proper asset paths
 
 #### CRITICAL: Deployment Build Verification
-**You MUST verify the build works after EVERY code change to ensure GitHub Pages compatibility:**
+**You MUST verify the build works after EVERY code change to ensure Cloudflare Workers compatibility:**
 
 1. **Test with dev server first:**
    - Use the dev server workflow above to test functionality

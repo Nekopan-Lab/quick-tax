@@ -354,14 +354,14 @@ California requires 3 payments for estimated tax, with specific percentages of t
 
 ### **8.1. Hosting Platform**
 
-* **Platform:** GitHub Pages
-* **Type:** Static website hosting
-* **Requirements:** The application must be built as a static single-page application (SPA) with all assets served directly from the repository
+* **Platform:** Cloudflare Workers
+* **Type:** Edge-based static website hosting
+* **Requirements:** The application must be built as a static single-page application (SPA) with all assets served from Cloudflare's global CDN
 
 ### **8.2. Build Process**
 
-* **Build Output:** The build process must generate static HTML, CSS, and JavaScript files
-* **Entry Point:** The root directory must contain `index.html` as the main entry point
+* **Build Output:** The build process must generate static HTML, CSS, and JavaScript files in the `dist/` directory
+* **Entry Point:** The `dist/` directory must contain `index.html` as the main entry point
 * **Asset Structure:** All static assets (JS, CSS, images) must be properly referenced with relative paths
 * **No Server Dependencies:** The application must not require any server-side processing or API endpoints
 
@@ -371,27 +371,27 @@ California requires 3 payments for estimated tax, with specific percentages of t
    * Run `npm run build` to generate production-ready assets in the `dist/` directory
    * Ensure all assets are optimized and minified for production
 
-2. **GitHub Pages Setup:**
-   * Copy `dist/index.html` to the root directory as `index.html`
-   * Copy the `dist/assets/` folder to the root directory as `assets/`
-   * Ensure all file paths in `index.html` correctly reference the `assets/` folder
+2. **Cloudflare Workers Setup:**
+   * Configure `wrangler.toml` with appropriate settings
+   * Set up Cloudflare Git integration to connect to the repository
+   * Configure build command as `npm run build` in Cloudflare dashboard
 
 3. **Version Control:**
-   * Commit both the source code and the built assets to the repository
-   * Push changes to the main branch to trigger GitHub Pages deployment
+   * Commit the source code and configuration files to the repository
+   * Push changes to the main branch to trigger Cloudflare Workers deployment
 
 ### **8.4. Local Testing**
 
-* **Testing Method:** Use a simple static web server to test the deployment locally
-* **Recommended:** Run `python3 -m http.server 8000` from the root directory
-* **Access:** Navigate to `http://localhost:8000` to verify the application works correctly
-* **Important:** Do not use development server (`npm run dev`) for deployment testing as it may behave differently
+* **Testing Method:** Use Wrangler CLI to test the deployment locally
+* **Recommended:** Run `npx wrangler dev` to test Workers configuration
+* **Access:** Navigate to the local URL provided by Wrangler
+* **Important:** Also test with `npm run build && npm run preview` for production build verification
 
 ### **8.5. Continuous Deployment**
 
-* **Automation:** Consider setting up GitHub Actions to automatically build and deploy on push to main
-* **Build Verification:** Ensure the build process completes successfully before deployment
-* **Asset Integrity:** Verify that all static assets are correctly referenced and accessible
+* **Automation:** Cloudflare's Git integration automatically builds and deploys on push to main
+* **Build Verification:** Cloudflare dashboard shows build status and logs
+* **Asset Integrity:** Cloudflare Workers automatically handles asset serving and caching
 
 ## **9\. Multi-Year Tax Support**
 
