@@ -15,7 +15,7 @@ bucket = "./dist"
 entry-point = "workers-site"
 
 [build]
-command = "npm run build"
+command = "npm run build && cd workers-site && npm install"
 
 [env.production]
 workers_dev = false
