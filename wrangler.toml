@@ -1,5 +1,9 @@
 name = "quicktax"
-main = "src/index.js"
+type = "webpack"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
 compatibility_date = "2025-01-01"
 
 # Observability configuration
@@ -8,19 +12,11 @@ enabled = true
 
 [site]
 bucket = "./dist"
+entry-point = "workers-site"
 
-[env.production]
-route = "quicktax.nekopanlab.com/*"
-
-# Build configuration
 [build]
 command = "npm run build"
 
-# Upload rules
-[[rules]]
-type = "Text"
-globs = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*.webmanifest"]
-
-[[rules]]
-type = "Data"
-globs = ["**/*.png", "**/*.svg", "**/*.ico", "**/*.jpg", "**/*.jpeg", "**/*.woff", "**/*.woff2"]
+[env.production]
+workers_dev = false
+route = "quicktax.nekopanlab.com/*"
