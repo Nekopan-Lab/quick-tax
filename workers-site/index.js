@@ -46,6 +46,11 @@ async function handleEvent(event) {
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('Referrer-Policy', 'unsafe-url')
     response.headers.set('Feature-Policy', 'none')
+    
+    // Ensure service worker and manifest are served correctly for PWA
+    if (url.pathname.endsWith('/sw.js') || url.pathname.endsWith('.webmanifest')) {
+      response.headers.set('Cache-Control', 'no-cache')
+    }
 
     return response
 
