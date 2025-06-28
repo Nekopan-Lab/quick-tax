@@ -2,6 +2,10 @@ name = "quicktax"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 
+# Observability configuration
+[observability]
+enabled = true
+
 [site]
 bucket = "./dist"
 
