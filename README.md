@@ -187,7 +187,7 @@ For detailed iOS instructions, see [ios/README.md](ios/README.md).
 #### Web Deployment (GitHub Pages)
 The web version is automatically deployed to GitHub Pages when pushing to the main branch:
 - GitHub Actions handles the build and deployment
-- Available at https://quicktax.denehs.me
+- Available at https://quicktax.nekopanlab.com
 - No manual intervention required
 
 #### iOS Deployment
