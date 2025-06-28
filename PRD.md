@@ -373,12 +373,12 @@ California requires 3 payments for estimated tax, with specific percentages of t
 
 2. **Cloudflare Workers Setup:**
    * Configure `wrangler.toml` with appropriate settings
-   * Set up Cloudflare Git integration to connect to the repository
-   * Configure build command as `npm run build` in Cloudflare dashboard
+   * Ensure Cloudflare account is authenticated: `npx wrangler login`
+   * Deploy using: `npx wrangler deploy`
 
 3. **Version Control:**
    * Commit the source code and configuration files to the repository
-   * Push changes to the main branch to trigger Cloudflare Workers deployment
+   * Deploy manually using `npx wrangler deploy` or set up CI/CD automation
 
 ### **8.4. Local Testing**
 
@@ -389,8 +389,9 @@ California requires 3 payments for estimated tax, with specific percentages of t
 
 ### **8.5. Continuous Deployment**
 
-* **Automation:** Cloudflare's Git integration automatically builds and deploys on push to main
-* **Build Verification:** Cloudflare dashboard shows build status and logs
+* **Manual Deployment:** Run `npm run build` followed by `npx wrangler deploy`
+* **Automation Options:** Set up GitHub Actions or other CI tools to run deployment commands
+* **Build Verification:** Wrangler CLI shows deployment status and logs
 * **Asset Integrity:** Cloudflare Workers automatically handles asset serving and caching
 
 ## **9\. Multi-Year Tax Support**

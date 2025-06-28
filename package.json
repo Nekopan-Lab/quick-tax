@@ -10,6 +10,8 @@
     "dev:ios": "npm run build:ios && echo '📱 iOS assets updated. Open Xcode to run.'",
     "clean:ios": "rm -rf ios/QuickTax/QuickTax/WebResources/*",
     "preview": "vite preview",
+    "deploy": "npm run build && npx wrangler deploy",
+    "deploy:dev": "npx wrangler dev",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",

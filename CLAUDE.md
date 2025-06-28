@@ -32,14 +32,13 @@ The following line imports all product specifications and requirements from the 
 
 ### Deployment Process & Testing
 
-#### Automated Cloudflare Workers Deployment
-The project uses Cloudflare Workers for automated deployment:
-1. Push changes to the `main` branch
-2. Cloudflare automatically:
-   - Pulls the latest code from GitHub
-   - Runs the build command (`npm run build`)
-   - Deploys to Cloudflare Workers at https://quicktax.nekopanlab.com
-3. No manual deployment steps required - Cloudflare's Git integration handles everything
+#### Cloudflare Workers Deployment
+The project uses Cloudflare Workers for deployment:
+1. Build the project: `npm run build`
+2. Deploy to Cloudflare Workers: `npx wrangler deploy`
+3. The app will be deployed to https://quicktax.nekopanlab.com
+
+For CI/CD automation, you can set up GitHub Actions or other CI tools to run these commands on push to main.
 
 #### Custom Domain Configuration
 - Domain: https://quicktax.nekopanlab.com
