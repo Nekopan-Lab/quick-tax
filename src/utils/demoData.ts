@@ -49,6 +49,7 @@ export const DEMO_USER_INCOME: IncomeData = {
   paycheckState: '250', // 5% state withholding
   payFrequency: 'biweekly',
   nextPayDate: getNextBiweeklyPaydate(),
+  lastPayDate: '', // Working through end of year
   
   // RSU Data (moderate tech compensation)
   rsuVestWage: '15000', // Recent vest
@@ -96,6 +97,7 @@ export const DEMO_SPOUSE_INCOME: IncomeData = {
   paycheckState: '192', // 5% state withholding
   payFrequency: 'biweekly',
   nextPayDate: getNextBiweeklyPaydate(),
+  lastPayDate: '', // Working through end of year
   
   // RSU Data
   rsuVestWage: '0', // No recent vest

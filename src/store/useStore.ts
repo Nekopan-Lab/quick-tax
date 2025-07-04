@@ -33,6 +33,7 @@ export interface IncomeData {
   paycheckState: string
   payFrequency: 'biweekly' | 'monthly'
   nextPayDate: string
+  lastPayDate: string  // Optional last payment date
   
   // RSU Data
   rsuVestWage: string
@@ -130,6 +131,7 @@ const initialIncomeData: IncomeData = {
   paycheckState: '',
   payFrequency: 'biweekly',
   nextPayDate: '',
+  lastPayDate: '',
   
   // RSU Data
   rsuVestWage: '',

@@ -32,10 +32,18 @@ export function calculateFutureIncome(income: IncomeData): {
     const currentDate = new Date()
     const yearEnd = new Date(currentDate.getFullYear(), 11, 31)
     
-    if (nextPayDate <= yearEnd) {
-      // Count paychecks from next pay date until year end
+    // Determine the end date for paycheck calculation
+    let endDate = yearEnd
+    if (income.lastPayDate) {
+      const lastPayDate = new Date(income.lastPayDate)
+      // Use the earlier of lastPayDate or yearEnd
+      endDate = lastPayDate < yearEnd ? lastPayDate : yearEnd
+    }
+    
+    if (nextPayDate <= endDate) {
+      // Count paychecks from next pay date until end date (inclusive of end date)
       let payDate = new Date(nextPayDate)
-      while (payDate <= yearEnd) {
+      while (payDate <= endDate) {
         paychecksRemaining++
         if (income.payFrequency === 'biweekly') {
           payDate.setDate(payDate.getDate() + 14)
@@ -48,7 +56,16 @@ export function calculateFutureIncome(income: IncomeData): {
     // Fallback if no next payment date specified
     const currentDate = new Date()
     const yearEnd = new Date(currentDate.getFullYear(), 11, 31)
-    const weeksRemaining = Math.max(0, Math.ceil((yearEnd.getTime() - currentDate.getTime()) / (7 * 24 * 60 * 60 * 1000)))
+    
+    // Determine the end date for paycheck calculation
+    let endDate = yearEnd
+    if (income.lastPayDate) {
+      const lastPayDate = new Date(income.lastPayDate)
+      // Use the earlier of lastPayDate or yearEnd
+      endDate = lastPayDate < yearEnd ? lastPayDate : yearEnd
+    }
+    
+    const weeksRemaining = Math.max(0, Math.ceil((endDate.getTime() - currentDate.getTime()) / (7 * 24 * 60 * 60 * 1000)))
     
     paychecksRemaining = income.payFrequency === 'biweekly' 
       ? Math.ceil(weeksRemaining / 2) 
@@ -203,25 +220,38 @@ export function calculateWithholdingRates(income: IncomeData): {
 /**
  * Calculate remaining paychecks for the year
  */
-export function calculateRemainingPaychecks(nextPayDate: string, payFrequency: 'biweekly' | 'monthly'): number {
+export function calculateRemainingPaychecks(nextPayDate: string, payFrequency: 'biweekly' | 'monthly', lastPayDate?: string): number {
   if (!nextPayDate) return 0
   
   const nextPay = new Date(nextPayDate)
   const yearEnd = new Date(nextPay.getFullYear(), 11, 31)
   
-  if (nextPay > yearEnd) return 0
+  // Determine the end date for paycheck calculation
+  let endDate = yearEnd
+  if (lastPayDate) {
+    const lastPay = new Date(lastPayDate)
+    // Use the earlier of lastPayDate or yearEnd
+    endDate = lastPay < yearEnd ? lastPay : yearEnd
+  }
+  
+  if (nextPay > endDate) return 0
   
   if (payFrequency === 'biweekly') {
-    const daysRemaining = Math.max(0, (yearEnd.getTime() - nextPay.getTime()) / (24 * 60 * 60 * 1000))
-    return Math.floor(daysRemaining / 14) + 1
+    // Count paychecks inclusive of the end date
+    let count = 0
+    let payDate = new Date(nextPay)
+    while (payDate <= endDate) {
+      count++
+      payDate.setDate(payDate.getDate() + 14)
+    }
+    return count
   } else {
     let count = 0
-    let currentMonth = nextPay.getMonth()
-    let currentYear = nextPay.getFullYear()
+    let payDate = new Date(nextPay)
     
-    while (currentYear === nextPay.getFullYear() && currentMonth <= 11) {
+    while (payDate <= endDate) {
       count++
-      currentMonth++
+      payDate.setMonth(payDate.getMonth() + 1)
     }
     return count
   }
@@ -240,7 +270,7 @@ export function calculateProjectedPaycheckIncome(income: IncomeData): {
   const paycheckFederal = parseFloat(income.paycheckFederal) || 0
   const paycheckState = parseFloat(income.paycheckState) || 0
   
-  const remainingPaychecks = calculateRemainingPaychecks(income.nextPayDate, income.payFrequency)
+  const remainingPaychecks = calculateRemainingPaychecks(income.nextPayDate, income.payFrequency, income.lastPayDate)
   
   return {
     remainingPaychecks,

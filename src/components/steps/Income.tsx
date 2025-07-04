@@ -329,6 +329,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                     paycheckFederal: '',
                     paycheckState: '',
                     nextPayDate: '',
+                    lastPayDate: '',
                     rsuVestWage: '',
                     rsuVestFederal: '',
                     rsuVestState: '',
@@ -405,72 +406,91 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                 {/* Paycheck Data */}
                 <div>
                   <h4 className="font-medium mb-3">Most Recent Paycheck Data</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Taxable Wage (per paycheck)
-                      </label>
-                      <input
-                        type="number" {...numberInputProps}
-                        value={currentIncome.paycheckWage}
-                        onChange={(e) => setCurrentIncome({ paycheckWage: e.target.value })}
-                        placeholder="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Federal Withhold (per paycheck)
-                      </label>
-                      <input
-                        type="number" {...numberInputProps}
-                        value={currentIncome.paycheckFederal}
-                        onChange={(e) => setCurrentIncome({ paycheckFederal: e.target.value })}
-                        placeholder="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-
-                    {includeCaliforniaTax && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          State Withhold (per paycheck)
+                          Taxable Wage (per paycheck)
                         </label>
                         <input
                           type="number" {...numberInputProps}
-                          value={currentIncome.paycheckState}
-                          onChange={(e) => setCurrentIncome({ paycheckState: e.target.value })}
+                          value={currentIncome.paycheckWage}
+                          onChange={(e) => setCurrentIncome({ paycheckWage: e.target.value })}
                           placeholder="0"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                       </div>
-                    )}
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Federal Withhold (per paycheck)
+                        </label>
+                        <input
+                          type="number" {...numberInputProps}
+                          value={currentIncome.paycheckFederal}
+                          onChange={(e) => setCurrentIncome({ paycheckFederal: e.target.value })}
+                          placeholder="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Payment Frequency
-                      </label>
-                      <select
-                        value={currentIncome.payFrequency}
-                        onChange={(e) => setCurrentIncome({ payFrequency: e.target.value as 'biweekly' | 'monthly' })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      >
-                        <option value="biweekly">Bi-weekly</option>
-                        <option value="monthly">Monthly</option>
-                      </select>
+                      {includeCaliforniaTax && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            State Withhold (per paycheck)
+                          </label>
+                          <input
+                            type="number" {...numberInputProps}
+                            value={currentIncome.paycheckState}
+                            onChange={(e) => setCurrentIncome({ paycheckState: e.target.value })}
+                            placeholder="0"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Payment Frequency
+                        </label>
+                        <select
+                          value={currentIncome.payFrequency}
+                          onChange={(e) => setCurrentIncome({ payFrequency: e.target.value as 'biweekly' | 'monthly' })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="biweekly">Bi-weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Next Payment Date
-                      </label>
-                      <input
-                        type="date"
-                        value={currentIncome.nextPayDate}
-                        onChange={(e) => setCurrentIncome({ nextPayDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Next Payment Date
+                          <span className="text-xs text-gray-500 block">&nbsp;</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={currentIncome.nextPayDate}
+                          onChange={(e) => setCurrentIncome({ nextPayDate: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Last Payment Date
+                          <span className="text-xs text-gray-500 block">Optional - if not working full year</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={currentIncome.lastPayDate}
+                          onChange={(e) => setCurrentIncome({ lastPayDate: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          placeholder="Leave empty if working through year end"
+                        />
+                      </div>
                     </div>
                   </div>
                   
@@ -480,7 +500,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
                       <h5 className="text-sm font-medium text-emerald-900 mb-2">Paycheck Projection</h5>
                       <div className="space-y-1 text-sm text-emerald-800">
                         <p>
-                          <span className="font-medium">{remainingPaychecks}</span> {currentIncome.payFrequency === 'biweekly' ? 'bi-weekly' : 'monthly'} paychecks remaining in {new Date().getFullYear()}
+                          <span className="font-medium">{remainingPaychecks}</span> {currentIncome.payFrequency === 'biweekly' ? 'bi-weekly' : 'monthly'} paychecks remaining{currentIncome.lastPayDate ? ` until ${new Date(currentIncome.lastPayDate).toLocaleDateString()}` : ` in ${new Date().getFullYear()}`}
                         </p>
                         <p>
                           Projected Income: <span className="font-medium">${projectedPaycheckIncome.toLocaleString()}</span>
