@@ -37,7 +37,7 @@ All technology choices and implementations were made by Claude:
 - **State Management**: Zustand
 - **Build Tool**: Vite
 - **Testing**: Vitest
-- **Deployment**: Cloudflare Workers (web), Xcode (iOS)
+- **Deployment**: Cloudflare Workers
 
 ## 📊 AI Development Stats
 
@@ -63,28 +63,6 @@ src/
 ├── components/          # React UI components
 ├── store/              # State management
 └── types/              # TypeScript definitions
-
-ios_native/
-├── QuickTaxNative/      # Native iOS SwiftUI app
-│   ├── QuickTaxNative.xcodeproj
-│   └── QuickTaxNative/
-│       ├── Views/               # SwiftUI view components
-│       ├── Models/              # Data models and state management
-│       ├── Calculators/         # Tax calculation engines (Swift)
-│       ├── Components/          # Reusable UI components
-│       └── Utils/               # Helper utilities
-└── build/               # Build artifacts
-
-ios/ (Legacy WebView App)
-├── QuickTax/            # iOS WebView wrapper (legacy)
-│   ├── QuickTax.xcodeproj
-│   └── QuickTax/
-│       ├── ViewController.swift    # WebView container
-│       ├── SceneDelegate.swift     # App lifecycle
-│       └── WebResources/          # Bundled web assets
-├── Scripts/             # Build automation
-│   └── sync-web-assets.sh
-└── README.md           # iOS-specific documentation
 ```
 
 ## 🧪 Testing
@@ -123,87 +101,13 @@ npm test
 npm run build
 ```
 
-### 📱 iOS Development
-
-The project includes **two iOS applications**:
-
-#### Native SwiftUI App (Recommended)
-A fully native iOS app built with SwiftUI that reimplements the entire tax calculator:
-
-```bash
-# Open native iOS app in Xcode
-open ios_native/QuickTaxNative/QuickTaxNative.xcodeproj
-
-# Build and run directly in Xcode (Cmd+R)
-```
-
-**Native App Features:**
-- **100% Native SwiftUI** interface with iOS design patterns
-- **Shared calculation logic** with web app (ported to Swift)
-- **Modern iOS UX** with custom navigation and real-time updates
-- **Optimized performance** and platform-specific features
-- **Persistent header** showing real-time tax calculations
-- **Navigation buttons** for smooth workflow progression
-- **Demo data support** for easy testing
-
-#### Legacy WebView App 
-A WebView wrapper that bundles the web application:
-
-```bash
-# Build and sync web assets to iOS
-npm run build:ios
-
-# Open in Xcode
-open ios/QuickTax/QuickTax.xcodeproj
-
-# Or use one-command development
-npm run dev:ios  # Builds and syncs, then prompts to open Xcode
-```
-
-**WebView App Features:**
-- **Universal app** supporting iPhone and iPad
-- **Full-screen WebView** without navigation chrome
-- **Offline support** with bundled web assets
-- **Automated build integration** for easy updates
-
-#### iOS Development Workflow
-
-**For Native App:**
-1. Open `ios_native/QuickTaxNative/QuickTaxNative.xcodeproj` in Xcode
-2. Make changes to SwiftUI code directly
-3. Build and run in Xcode (Cmd+R)
-4. Test on simulator or device
-
-**For WebView App:**
-1. Make changes to web code
-2. Run `npm run build:ios` to sync to iOS app
-3. Build and run in Xcode (Cmd+R)
-4. Test on simulator or device
-
-For detailed iOS instructions, see [ios/README.md](ios/README.md).
-
 ### 🚀 Deployment
 
-#### Web Deployment (GitHub Pages)
-The web version is automatically deployed to GitHub Pages when pushing to the main branch:
-- GitHub Actions handles the build and deployment
+The web application is deployed to Cloudflare Workers:
+- Build the project: `npm run build`
+- Deploy to Cloudflare Workers: `npx wrangler deploy`
 - Available at https://quicktax.nekopanlab.com
-- No manual intervention required
-
-#### iOS Deployment
-Both iOS apps are deployed separately through Xcode:
-
-**Native SwiftUI App:**
-- Direct Xcode builds for development/testing
-- Archive and upload for TestFlight beta testing
-- App Store distribution (fully native experience)
-
-**WebView App (Legacy):**
-- Requires web build sync before iOS deployment
-- TestFlight for beta testing
-- App Store for public distribution
-
-Both iOS deployments are independent of the web deployment.
+- GitHub Actions can automate deployment on push to main branch
 
 ## 📜 License
 

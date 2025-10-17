@@ -1,2 +1,0 @@
-# Apply filter to Xcode project files to strip development team
-*.pbxproj filter=pbxproj_native
