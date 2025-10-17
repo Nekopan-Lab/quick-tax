@@ -55,41 +55,41 @@ export const FEDERAL_TAX_DATA: Record<TaxYear, YearlyTaxData> = {
     }
   },
   2026: {
-    // Placeholder data for 2026 - to be updated when IRS releases official brackets
+    // Official 2026 IRS tax brackets (announced October 2025, IR-2025-103)
     taxBrackets: {
       single: [
-        { min: 0, max: 12200, rate: 0.10 },
-        { min: 12200, max: 49600, rate: 0.12 },
-        { min: 49600, max: 105750, rate: 0.22 },
-        { min: 105750, max: 202000, rate: 0.24 },
-        { min: 202000, max: 256250, rate: 0.32 },
-        { min: 256250, max: 640500, rate: 0.35 },
-        { min: 640500, max: Infinity, rate: 0.37 }
+        { min: 0, max: 12400, rate: 0.10 },
+        { min: 12400, max: 50400, rate: 0.12 },
+        { min: 50400, max: 105700, rate: 0.22 },
+        { min: 105700, max: 201775, rate: 0.24 },
+        { min: 201775, max: 256225, rate: 0.32 },
+        { min: 256225, max: 640600, rate: 0.35 },
+        { min: 640600, max: Infinity, rate: 0.37 }
       ],
       marriedFilingJointly: [
-        { min: 0, max: 24400, rate: 0.10 },
-        { min: 24400, max: 99200, rate: 0.12 },
-        { min: 99200, max: 211500, rate: 0.22 },
-        { min: 211500, max: 404000, rate: 0.24 },
-        { min: 404000, max: 512500, rate: 0.32 },
-        { min: 512500, max: 769000, rate: 0.35 },
-        { min: 769000, max: Infinity, rate: 0.37 }
+        { min: 0, max: 24800, rate: 0.10 },
+        { min: 24800, max: 100800, rate: 0.12 },
+        { min: 100800, max: 211400, rate: 0.22 },
+        { min: 211400, max: 403550, rate: 0.24 },
+        { min: 403550, max: 512450, rate: 0.32 },
+        { min: 512450, max: 768700, rate: 0.35 },
+        { min: 768700, max: Infinity, rate: 0.37 }
       ]
     },
     standardDeductions: {
-      single: 15350,
-      marriedFilingJointly: 30700
+      single: 16100,
+      marriedFilingJointly: 32200
     },
     capitalGainsBrackets: {
       single: [
-        { min: 0, max: 49500, rate: 0 },
-        { min: 49500, max: 546000, rate: 0.15 },
-        { min: 546000, max: Infinity, rate: 0.20 }
+        { min: 0, max: 49450, rate: 0 },
+        { min: 49450, max: 545500, rate: 0.15 },
+        { min: 545500, max: Infinity, rate: 0.20 }
       ],
       marriedFilingJointly: [
-        { min: 0, max: 99000, rate: 0 },
-        { min: 99000, max: 614000, rate: 0.15 },
-        { min: 614000, max: Infinity, rate: 0.20 }
+        { min: 0, max: 98900, rate: 0 },
+        { min: 98900, max: 613700, rate: 0.15 },
+        { min: 613700, max: Infinity, rate: 0.20 }
       ]
     }
   }

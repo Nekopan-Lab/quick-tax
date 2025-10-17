@@ -49,29 +49,29 @@ export const CALIFORNIA_TAX_DATA: Record<TaxYear, CaliforniaYearlyTaxData> = {
     mentalHealthTaxRate: 0.01
   },
   2026: {
-    // Placeholder data for 2026 - to be updated when CA FTB releases official brackets
+    // Official 2026 CA FTB tax brackets
     taxBrackets: {
       single: [
-        { min: 0, max: 11000, rate: 0.01 },
-        { min: 11000, max: 26100, rate: 0.02 },
-        { min: 26100, max: 41200, rate: 0.04 },
-        { min: 41200, max: 57200, rate: 0.06 },
-        { min: 57200, max: 72300, rate: 0.08 },
-        { min: 72300, max: 369300, rate: 0.093 },
-        { min: 369300, max: 442700, rate: 0.103 },
-        { min: 442700, max: 738500, rate: 0.113 },
-        { min: 738500, max: Infinity, rate: 0.123 }
+        { min: 0, max: 11079, rate: 0.01 },
+        { min: 11079, max: 26264, rate: 0.02 },
+        { min: 26264, max: 41452, rate: 0.04 },
+        { min: 41452, max: 57542, rate: 0.06 },
+        { min: 57542, max: 72724, rate: 0.08 },
+        { min: 72724, max: 371479, rate: 0.093 },
+        { min: 371479, max: 445771, rate: 0.103 },
+        { min: 445771, max: 742953, rate: 0.113 },
+        { min: 742953, max: Infinity, rate: 0.123 }
       ],
       marriedFilingJointly: [
-        { min: 0, max: 22000, rate: 0.01 },
-        { min: 22000, max: 52200, rate: 0.02 },
-        { min: 52200, max: 82400, rate: 0.04 },
-        { min: 82400, max: 114400, rate: 0.06 },
-        { min: 114400, max: 144600, rate: 0.08 },
-        { min: 144600, max: 738600, rate: 0.093 },
-        { min: 738600, max: 885400, rate: 0.103 },
-        { min: 885400, max: 1477000, rate: 0.113 },
-        { min: 1477000, max: Infinity, rate: 0.123 }
+        { min: 0, max: 22158, rate: 0.01 },
+        { min: 22158, max: 52528, rate: 0.02 },
+        { min: 52528, max: 82904, rate: 0.04 },
+        { min: 82904, max: 115084, rate: 0.06 },
+        { min: 115084, max: 145448, rate: 0.08 },
+        { min: 145448, max: 742958, rate: 0.093 },
+        { min: 742958, max: 891542, rate: 0.103 },
+        { min: 891542, max: 1485906, rate: 0.113 },
+        { min: 1485906, max: Infinity, rate: 0.123 }
       ]
     },
     standardDeductions: {

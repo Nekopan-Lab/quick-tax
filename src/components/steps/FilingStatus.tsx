@@ -5,7 +5,7 @@ interface FilingStatusProps {
 }
 
 // Available tax years - can easily add more years in the future
-const AVAILABLE_TAX_YEARS = [2025] as const
+const AVAILABLE_TAX_YEARS = [2025, 2026] as const
 
 export function FilingStatus({ onNext }: FilingStatusProps) {
   const { taxYear, setTaxYear, filingStatus, setFilingStatus, includeCaliforniaTax, setIncludeCaliforniaTax } = useStore()
