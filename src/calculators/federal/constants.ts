@@ -8,10 +8,18 @@ interface TaxBracket {
   rate: number
 }
 
+interface SaltCapData {
+  baseCap: number              // Base SALT cap amount
+  phaseoutThreshold: number    // MAGI threshold where phaseout begins (Infinity = no phaseout)
+  phaseoutRate: number         // Rate at which cap decreases (per dollar over threshold)
+  minimumCap: number           // Minimum cap after phaseout
+}
+
 interface YearlyTaxData {
   taxBrackets: Record<FilingStatus, TaxBracket[]>
   standardDeductions: Record<FilingStatus, number>
   capitalGainsBrackets: Record<FilingStatus, TaxBracket[]>
+  saltCap: SaltCapData
 }
 
 // Federal tax data by year
@@ -52,6 +60,13 @@ export const FEDERAL_TAX_DATA: Record<TaxYear, YearlyTaxData> = {
         { min: 96700, max: 600050, rate: 0.15 },
         { min: 600050, max: Infinity, rate: 0.20 }
       ]
+    },
+    // 2025: SALT cap remains at $10,000 (pre-OBBBA law)
+    saltCap: {
+      baseCap: 10000,
+      phaseoutThreshold: Infinity,  // No phaseout for 2025
+      phaseoutRate: 0,
+      minimumCap: 10000
     }
   },
   2026: {
@@ -91,6 +106,14 @@ export const FEDERAL_TAX_DATA: Record<TaxYear, YearlyTaxData> = {
         { min: 98900, max: 613700, rate: 0.15 },
         { min: 613700, max: Infinity, rate: 0.20 }
       ]
+    },
+    // 2026: SALT cap increased to $40,000 under One Big Beautiful Bill Act (OBBBA)
+    // Phaseout begins at $500,000 MAGI, reduces by $0.30 per $1 over threshold, minimum $10,000
+    saltCap: {
+      baseCap: 40000,
+      phaseoutThreshold: 500000,
+      phaseoutRate: 0.30,
+      minimumCap: 10000
     }
   }
 }
@@ -98,6 +121,29 @@ export const FEDERAL_TAX_DATA: Record<TaxYear, YearlyTaxData> = {
 // Helper functions to get data for specific year
 export function getFederalTaxBrackets(year: TaxYear, filingStatus: FilingStatus): TaxBracket[] {
   return FEDERAL_TAX_DATA[year].taxBrackets[filingStatus]
+}
+
+/**
+ * Calculate the effective SALT cap for a given tax year and MAGI
+ * For 2025: Fixed at $10,000 (no phaseout)
+ * For 2026+: Base cap of $40,000 with phaseout starting at $500,000 MAGI
+ *            Reduces by $0.30 per $1 over threshold, minimum $10,000
+ */
+export function getFederalSaltCap(year: TaxYear, magi: number): number {
+  const saltCapData = FEDERAL_TAX_DATA[year].saltCap
+
+  // If MAGI is at or below the phaseout threshold, return the full base cap
+  if (magi <= saltCapData.phaseoutThreshold) {
+    return saltCapData.baseCap
+  }
+
+  // Calculate phaseout reduction
+  const excessIncome = magi - saltCapData.phaseoutThreshold
+  const reduction = excessIncome * saltCapData.phaseoutRate
+  const adjustedCap = saltCapData.baseCap - reduction
+
+  // Return the adjusted cap, but not less than the minimum
+  return Math.max(adjustedCap, saltCapData.minimumCap)
 }
 
 export function getFederalStandardDeduction(year: TaxYear, filingStatus: FilingStatus): number {

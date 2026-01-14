@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest'
-import { 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
   calculateComprehensiveTax,
   calculateFederalEstimatedPayments,
   calculateCaliforniaEstimatedPayments
 } from '../../src/calculators/orchestrator'
-import { 
-  FIXED_DEMO_USER_INCOME, 
-  FIXED_DEMO_SPOUSE_INCOME, 
-  FIXED_DEMO_DEDUCTIONS, 
+import {
+  FIXED_DEMO_USER_INCOME,
+  FIXED_DEMO_SPOUSE_INCOME,
+  FIXED_DEMO_DEDUCTIONS,
   FIXED_DEMO_ESTIMATED_PAYMENTS,
   EXPECTED_TOTAL_INCOME,
   EXPECTED_FEDERAL_WITHHOLDINGS,
@@ -15,6 +15,16 @@ import {
 } from './demoDataTestHelper'
 
 describe('Demo Data Expected Values - Web App Baseline', () => {
+  // Mock the date to June 15, 2025 for consistent test results
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2025-06-15'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('should match expected calculation values for demo data with fixed dates', () => {
     const result = calculateComprehensiveTax(
       '2025',

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
-import { 
-  getFederalStandardDeduction, 
+import {
+  getFederalStandardDeduction,
   calculateFederalItemizedDeductions,
-  calculateFederalItemizedDeductionDetails 
+  calculateFederalItemizedDeductionDetails
 } from '../../calculators/federal/calculator'
+import { getFederalSaltCap } from '../../calculators/federal/constants'
 import { 
   getCaliforniaStandardDeduction,
   calculateCaliforniaItemizedDeductions,
@@ -53,19 +54,26 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
   const federalItemized = calculateFederalItemizedDeductions(
     deductions,
     estimatedCAStateTax,
-    includeCaliforniaTax
+    includeCaliforniaTax,
+    taxYear as TaxYear,
+    totalIncome
   )
-  
+
   const californiaItemized = calculateCaliforniaItemizedDeductions(deductions)
-  
+
   // Get detailed breakdown for display
   const federalDetails = calculateFederalItemizedDeductionDetails(
     deductions,
     estimatedCAStateTax,
-    includeCaliforniaTax
+    includeCaliforniaTax,
+    taxYear as TaxYear,
+    totalIncome
   )
   
   const californiaDetails = calculateCaliforniaItemizedDeductionDetails(deductions)
+
+  // Get effective SALT cap for display
+  const effectiveSaltCap = getFederalSaltCap(taxYear as TaxYear, totalIncome)
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -289,7 +297,7 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                       {federalDetails.saltCapped && (
                         <div className="flex justify-between text-orange-600 font-medium">
                           <span>SALT Cap Applied:</span>
-                          <span>${federalDetails.saltDeduction.toLocaleString()} (max $10,000)</span>
+                          <span>${federalDetails.saltDeduction.toLocaleString()} (max ${effectiveSaltCap.toLocaleString()})</span>
                         </div>
                       )}
                       <div className="flex justify-between pt-1">

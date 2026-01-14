@@ -1,10 +1,11 @@
 import { FilingStatus, DeductionInfo } from '@/types'
 import { DeductionsData, EstimatedPaymentsData } from '@/store/useStore'
-import { 
+import {
   TaxYear,
   getFederalTaxBrackets,
   getFederalStandardDeduction,
-  getFederalCapitalGainsBrackets
+  getFederalCapitalGainsBrackets,
+  getFederalSaltCap
 } from './constants'
 import { calculateProgressiveTaxWithDetails, TaxBracketDetail } from '../utils/taxBrackets'
 import { calculateEstimatedPaymentsWithCumulativeSchedule, type QuarterlyPaymentSchedule } from '../utils/estimatedPayments'
@@ -194,38 +195,49 @@ export interface FederalItemizedDeductionDetails {
 export function calculateFederalItemizedDeductions(
   deductions: DeductionsData,
   estimatedCAStateTax: number,
-  includeCaliforniaTax: boolean
+  includeCaliforniaTax: boolean,
+  taxYear: TaxYear,
+  magi: number
 ): number {
   const details = calculateFederalItemizedDeductionDetails(
     deductions,
     estimatedCAStateTax,
-    includeCaliforniaTax
+    includeCaliforniaTax,
+    taxYear,
+    magi
   )
   return details.total
 }
 
 /**
  * Calculate federal itemized deductions with detailed breakdown
+ * For 2025: SALT cap is fixed at $10,000
+ * For 2026+: SALT cap is $40,000 with income-based phaseout starting at $500,000 MAGI
  */
 export function calculateFederalItemizedDeductionDetails(
   deductions: DeductionsData,
   estimatedCAStateTax: number,
-  includeCaliforniaTax: boolean
+  includeCaliforniaTax: boolean,
+  taxYear: TaxYear,
+  magi: number
 ): FederalItemizedDeductionDetails {
   const propertyTax = parseFloat(deductions.propertyTax) || 0
   const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
   const donations = parseFloat(deductions.donations) || 0
   const mortgageBalance = parseFloat(deductions.mortgageBalance) || 0
-  
+
   // Calculate state income tax for SALT
-  const stateIncomeTax = includeCaliforniaTax 
+  const stateIncomeTax = includeCaliforniaTax
     ? estimatedCAStateTax
     : parseFloat(deductions.otherStateIncomeTax) || 0
-  
-  // Apply SALT cap ($10,000 for both single and married filing jointly)
+
+  // Apply SALT cap based on tax year and MAGI
+  // For 2025: $10,000 cap (no phaseout)
+  // For 2026+: $40,000 cap with phaseout at $500,000 MAGI
+  const saltCap = getFederalSaltCap(taxYear, magi)
   const saltTotal = propertyTax + stateIncomeTax
-  const saltDeduction = Math.min(saltTotal, 10000)
-  const saltCapped = saltTotal > 10000
+  const saltDeduction = Math.min(saltTotal, saltCap)
+  const saltCapped = saltTotal > saltCap
   
   // Calculate mortgage interest deduction with limits
   let deductibleMortgageInterest = mortgageInterest

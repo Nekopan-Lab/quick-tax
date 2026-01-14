@@ -118,11 +118,19 @@ The application will feature a clear, step-by-step flow to guide users through t
      * Estimated full-year Donations.  
      * Other State Income Tax (shown only when California State Tax is NOT selected).
    * **Guidance:** A clear explanation that these are *full-year estimations*.  
-   * **Logic & Display:**  
+   * **Logic & Display:**
      * Calculate federal itemized deductions with the following limits:
-       * **SALT Cap**: State and Local Tax (SALT) deduction is capped at $10,000 for federal taxes. This includes property tax plus either:
-         * Estimated California state income tax (when CA tax is selected), or
-         * Other state income tax entered manually (when CA tax is not selected)
+       * **SALT Cap**: State and Local Tax (SALT) deduction cap varies by tax year:
+         * **Tax Year 2025**: SALT deduction is capped at $10,000 for all filers
+         * **Tax Year 2026**: Under the One Big Beautiful Bill Act (OBBBA), SALT cap is increased to $40,000 with income-based phaseout:
+           * Base cap: $40,000 for all filers
+           * Phaseout begins at $500,000 Modified Adjusted Gross Income (MAGI)
+           * Phaseout rate: $0.30 reduction for every $1 over the $500,000 threshold
+           * Minimum cap: $10,000 (cap never falls below this regardless of income)
+           * Example: At $550,000 MAGI, cap = $40,000 - ($50,000 × 0.30) = $25,000
+         * SALT deduction includes property tax plus either:
+           * Estimated California state income tax (when CA tax is selected), or
+           * Other state income tax entered manually (when CA tax is not selected)
        * **Mortgage Interest Limits**: Based on loan origination date:
          * Loans before Dec 16, 2017: Interest deductible on up to $1,000,000 of mortgage debt
          * Loans after Dec 15, 2017: Interest deductible on up to $750,000 of mortgage debt

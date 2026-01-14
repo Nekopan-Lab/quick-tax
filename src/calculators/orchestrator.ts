@@ -123,9 +123,11 @@ export function calculateComprehensiveTax(
   // Calculate deductions (standard vs itemized)
   const standardDeduction = getFederalStandardDeduction(taxYear, filingStatus)
   const itemizedDeduction = calculateFederalItemizedDeductions(
-    deductions, 
+    deductions,
     estimatedCAStateTax,
-    includeCaliforniaTax
+    includeCaliforniaTax,
+    taxYear,
+    totalIncome  // Use total income as MAGI for SALT cap phaseout calculation
   )
   
   const useItemized = itemizedDeduction > standardDeduction
