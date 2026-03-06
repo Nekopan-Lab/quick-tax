@@ -145,7 +145,7 @@ export function calculateCaliforniaItemizedDeductionDetails(
  * Calculate suggested California estimated tax payments with cumulative schedule
  * California requires cumulative payments: Q1: 30%, Q2: 70%, Q4: 100%
  */
-const CALIFORNIA_PAYMENT_SCHEDULES: Record<TaxYear, { quarter: string; dueDate: string; dueDateObj: Date; cumulativePercentage: number }[]> = {
+export const CALIFORNIA_PAYMENT_SCHEDULES: Record<TaxYear, { quarter: string; dueDate: string; dueDateObj: Date; cumulativePercentage: number }[]> = {
   2025: [
     { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), cumulativePercentage: 0.30 },
     { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), cumulativePercentage: 0.70 },

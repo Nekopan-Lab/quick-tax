@@ -1,9 +1,12 @@
 import { useStore } from '../../store/useStore'
 import { numberInputProps } from '../../utils/inputHelpers'
-import { 
+import {
   calculateTotalFederalEstimatedPayments,
   calculateTotalCaliforniaEstimatedPayments
 } from '../../calculators/orchestrator'
+import { FEDERAL_PAYMENT_SCHEDULES } from '../../calculators/federal/calculator'
+import { CALIFORNIA_PAYMENT_SCHEDULES } from '../../calculators/california/calculator'
+import type { TaxYear } from '../../types'
 
 interface EstimatedPaymentsProps {
   onNext: () => void
@@ -11,10 +14,13 @@ interface EstimatedPaymentsProps {
 }
 
 export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps) {
-  const { includeCaliforniaTax, estimatedPayments, setEstimatedPayments } = useStore()
+  const { taxYear, includeCaliforniaTax, estimatedPayments, setEstimatedPayments } = useStore()
 
   const totalFederal = calculateTotalFederalEstimatedPayments(estimatedPayments)
   const totalCA = calculateTotalCaliforniaEstimatedPayments(estimatedPayments)
+
+  const fedSchedule = FEDERAL_PAYMENT_SCHEDULES[taxYear as TaxYear]
+  const caSchedule = CALIFORNIA_PAYMENT_SCHEDULES[taxYear as TaxYear]
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -23,7 +29,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-8">
         <div className="bg-emerald-50 p-4 rounded-md">
           <p className="text-sm text-emerald-800">
-            Enter any estimated tax payments you've already made for the 2025 tax year.
+            Enter any estimated tax payments you've already made for the {taxYear} tax year.
             Leave blank if you haven't made any payments.
           </p>
         </div>
@@ -34,7 +40,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Q1 Payment (Due April 15, 2025)
+                Q1 Payment (Due {fedSchedule[0].dueDate})
               </label>
               <input
                 type="number" {...numberInputProps}
@@ -47,7 +53,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Q2 Payment (Due June 16, 2025)
+                Q2 Payment (Due {fedSchedule[1].dueDate})
               </label>
               <input
                 type="number" {...numberInputProps}
@@ -60,7 +66,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Q3 Payment (Due September 15, 2025)
+                Q3 Payment (Due {fedSchedule[2].dueDate})
               </label>
               <input
                 type="number" {...numberInputProps}
@@ -73,7 +79,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Q4 Payment (Due January 15, 2026)
+                Q4 Payment (Due {fedSchedule[3].dueDate})
               </label>
               <input
                 type="number" {...numberInputProps}
@@ -104,7 +110,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Q1 Payment (Due April 15, 2025)
+                  Q1 Payment (Due {caSchedule[0].dueDate})
                   <span className="text-xs text-gray-500 ml-1">(30% of annual)</span>
                 </label>
                 <input
@@ -118,7 +124,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Q2 Payment (Due June 16, 2025)
+                  Q2 Payment (Due {caSchedule[1].dueDate})
                   <span className="text-xs text-gray-500 ml-1">(40% of annual)</span>
                 </label>
                 <input
@@ -145,7 +151,7 @@ export function EstimatedPayments({ onNext, onPrevious }: EstimatedPaymentsProps
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Q4 Payment (Due January 15, 2026)
+                  Q4 Payment (Due {caSchedule[2].dueDate})
                   <span className="text-xs text-gray-500 ml-1">(30% of annual)</span>
                 </label>
                 <input
