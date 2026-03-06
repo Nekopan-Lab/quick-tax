@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
-import { 
+import {
   calculateFederalEstimatedPayments,
   calculateCaliforniaEstimatedPayments,
   TaxCalculationResult
 } from '../../calculators/orchestrator'
+import type { TaxYear } from '../../types'
 import { calculateFutureIncome } from '../../calculators/utils/income'
 import '../../styles/print.css'
 
@@ -137,13 +138,15 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
   // Calculate suggested estimated payments
   // Pass the total that needs to be paid via estimated payments (owed + already paid)
   const federalSuggestions = calculateFederalEstimatedPayments(
-    federalOwed + federalEstimatedPaid, 
-    estimatedPayments
+    federalOwed + federalEstimatedPaid,
+    estimatedPayments,
+    taxYear as TaxYear
   )
   const californiaSuggestions = includeCaliforniaTax
     ? calculateCaliforniaEstimatedPayments(
         caOwed + californiaEstimatedPaid,
-        estimatedPayments
+        estimatedPayments,
+        taxYear as TaxYear
       )
     : []
     

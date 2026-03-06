@@ -47,6 +47,11 @@ function App() {
   const federalOwed = taxResults?.federalTax.owedOrRefund || 0
   const californiaOwed = taxResults?.californiaTax?.owedOrRefund || 0
 
+  // Update document title based on selected tax year
+  useEffect(() => {
+    document.title = `QuickTax - ${taxYear} Tax Estimator`
+  }, [taxYear])
+
   // Scroll to top when step changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })

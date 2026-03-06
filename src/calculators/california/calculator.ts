@@ -145,16 +145,31 @@ export function calculateCaliforniaItemizedDeductionDetails(
  * Calculate suggested California estimated tax payments with cumulative schedule
  * California requires cumulative payments: Q1: 30%, Q2: 70%, Q4: 100%
  */
+const CALIFORNIA_PAYMENT_SCHEDULES: Record<TaxYear, { quarter: string; dueDate: string; dueDateObj: Date; cumulativePercentage: number }[]> = {
+  2025: [
+    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), cumulativePercentage: 0.30 },
+    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), cumulativePercentage: 0.70 },
+    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), cumulativePercentage: 1.00 }
+  ],
+  2026: [
+    { quarter: 'Q1', dueDate: 'April 15, 2026', dueDateObj: new Date('2026-04-15'), cumulativePercentage: 0.30 },
+    { quarter: 'Q2', dueDate: 'June 15, 2026', dueDateObj: new Date('2026-06-15'), cumulativePercentage: 0.70 },
+    { quarter: 'Q4', dueDate: 'January 15, 2027', dueDateObj: new Date('2027-01-15'), cumulativePercentage: 1.00 }
+  ]
+}
+
 export function calculateCaliforniaEstimatedPayments(
   totalTaxOwed: number,
-  estimatedPayments: EstimatedPaymentsData
+  estimatedPayments: EstimatedPaymentsData,
+  taxYear: TaxYear = 2025
 ): EstimatedPaymentSuggestion[] {
+  const schedule = CALIFORNIA_PAYMENT_SCHEDULES[taxYear]
   const paymentSchedule: QuarterlyPaymentSchedule[] = [
-    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), cumulativePercentage: 0.30, paid: parseFloat(estimatedPayments.californiaQ1) || 0 },
-    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), cumulativePercentage: 0.70, paid: parseFloat(estimatedPayments.californiaQ2) || 0 },
-    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), cumulativePercentage: 1.00, paid: parseFloat(estimatedPayments.californiaQ4) || 0 }
+    { ...schedule[0], paid: parseFloat(estimatedPayments.californiaQ1) || 0 },
+    { ...schedule[1], paid: parseFloat(estimatedPayments.californiaQ2) || 0 },
+    { ...schedule[2], paid: parseFloat(estimatedPayments.californiaQ4) || 0 }
   ]
-  
+
   return calculateEstimatedPaymentsWithCumulativeSchedule(totalTaxOwed, paymentSchedule)
 }
 

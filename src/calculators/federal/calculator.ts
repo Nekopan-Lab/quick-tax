@@ -271,16 +271,33 @@ export function calculateFederalItemizedDeductionDetails(
  * Calculate suggested federal estimated tax payments
  * Federal requires cumulative payments: Q1: 25%, Q2: 50%, Q3: 75%, Q4: 100%
  */
+const FEDERAL_PAYMENT_SCHEDULES: Record<TaxYear, { quarter: string; dueDate: string; dueDateObj: Date; cumulativePercentage: number }[]> = {
+  2025: [
+    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), cumulativePercentage: 0.25 },
+    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), cumulativePercentage: 0.50 },
+    { quarter: 'Q3', dueDate: 'September 15, 2025', dueDateObj: new Date('2025-09-15'), cumulativePercentage: 0.75 },
+    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), cumulativePercentage: 1.00 }
+  ],
+  2026: [
+    { quarter: 'Q1', dueDate: 'April 15, 2026', dueDateObj: new Date('2026-04-15'), cumulativePercentage: 0.25 },
+    { quarter: 'Q2', dueDate: 'June 15, 2026', dueDateObj: new Date('2026-06-15'), cumulativePercentage: 0.50 },
+    { quarter: 'Q3', dueDate: 'September 15, 2026', dueDateObj: new Date('2026-09-15'), cumulativePercentage: 0.75 },
+    { quarter: 'Q4', dueDate: 'January 15, 2027', dueDateObj: new Date('2027-01-15'), cumulativePercentage: 1.00 }
+  ]
+}
+
 export function calculateFederalEstimatedPayments(
   totalTaxOwed: number,
-  estimatedPayments: EstimatedPaymentsData
+  estimatedPayments: EstimatedPaymentsData,
+  taxYear: TaxYear = 2025
 ): EstimatedPaymentSuggestion[] {
+  const schedule = FEDERAL_PAYMENT_SCHEDULES[taxYear]
   const paymentSchedule: QuarterlyPaymentSchedule[] = [
-    { quarter: 'Q1', dueDate: 'April 15, 2025', dueDateObj: new Date('2025-04-15'), cumulativePercentage: 0.25, paid: parseFloat(estimatedPayments.federalQ1) || 0 },
-    { quarter: 'Q2', dueDate: 'June 16, 2025', dueDateObj: new Date('2025-06-16'), cumulativePercentage: 0.50, paid: parseFloat(estimatedPayments.federalQ2) || 0 },
-    { quarter: 'Q3', dueDate: 'September 15, 2025', dueDateObj: new Date('2025-09-15'), cumulativePercentage: 0.75, paid: parseFloat(estimatedPayments.federalQ3) || 0 },
-    { quarter: 'Q4', dueDate: 'January 15, 2026', dueDateObj: new Date('2026-01-15'), cumulativePercentage: 1.00, paid: parseFloat(estimatedPayments.federalQ4) || 0 }
+    { ...schedule[0], paid: parseFloat(estimatedPayments.federalQ1) || 0 },
+    { ...schedule[1], paid: parseFloat(estimatedPayments.federalQ2) || 0 },
+    { ...schedule[2], paid: parseFloat(estimatedPayments.federalQ3) || 0 },
+    { ...schedule[3], paid: parseFloat(estimatedPayments.federalQ4) || 0 }
   ]
-  
+
   return calculateEstimatedPaymentsWithCumulativeSchedule(totalTaxOwed, paymentSchedule)
 }
