@@ -79,10 +79,14 @@ The application will feature a clear, step-by-step flow to guide users through t
        * Short-Term Capital Gains/Losses.  
        * Long-Term Capital Gains/Losses.  
        * **Hint:** Remind users these are full-year estimations.  
-     * **YTD W2 Income:**  
-       * Taxable Wage (Year-to-Date).  
-       * Federal Withhold (Year-to-Date).  
-       * State Withhold (Year-to-Date) \- *This field will be hidden if California State Tax is not selected.*  
+     * **IRA Conversions:**
+       * Traditional IRA to Roth IRA Conversion amount.
+       * **Tax Treatment:** Roth IRA conversions are taxed as ordinary income for both federal and California. There is no automatic withholding on conversions. The full conversion amount is added to taxable income and affects AGI/MAGI.
+       * **Note:** Displayed per-person (shows for both user and spouse tabs).
+     * **YTD W2 Income:**
+       * Taxable Wage (Year-to-Date).
+       * Federal Withhold (Year-to-Date).
+       * State Withhold (Year-to-Date) \- *This field will be hidden if California State Tax is not selected.*
      * **Future Income (User Selects One Mode):**  
        * **Mode I (Simple Estimation):**  
          * Estimated Future Taxable Wage.  
@@ -168,8 +172,17 @@ The application will feature a clear, step-by-step flow to guide users through t
            * All Income (including Capital Gains) Taxed At: \[Applicable California Marginal Rates\], plus the 1% mental health services tax for taxable income exceeding $1,000,000  
        * Total Withholdings (W2 YTD \+ Future).  
        * Total Estimated Payments Made YTD.  
-       * Net Tax Owed / Overpaid.  
-     * **Suggested Remaining Estimated Payments:**  
+       * Net Tax Owed / Overpaid.
+     * **Distance to Next Tax Bracket:**
+       * Displayed after the tax owed/refund cards and before the detailed breakdown.
+       * Shows for both Federal and California (if enabled):
+         * Current marginal tax rate
+         * Next marginal tax rate
+         * Dollar amount remaining before entering the next bracket
+         * Contextual note: "You can convert $X more via Roth IRA without entering the next bracket"
+       * California section also shows distance to the $1,000,000 Mental Health Tax threshold
+       * For 2026: Shows warning about SALT cap phaseout if MAGI is near $500,000
+     * **Suggested Remaining Estimated Payments:**
        * **Display Logic:**  
          * Show all payment quarters with clear visual distinction:  
            * Paid quarters: Green background with checkmark and "(Paid)" label  

@@ -9,6 +9,7 @@ describe('aggregateHouseholdIncome', () => {
     interestIncome: '500',
     shortTermGains: '2000',
     longTermGains: '3000',
+    rothConversion: '',
     ytdWage: '50000',
     ytdFederalWithhold: '10000',
     ytdStateWithhold: '5000',
@@ -22,6 +23,7 @@ describe('aggregateHouseholdIncome', () => {
     paycheckState: '',
     payFrequency: 'biweekly',
     nextPayDate: '',
+    lastPayDate: '',
     rsuVestWage: '',
     rsuVestFederal: '',
     rsuVestState: '',
@@ -136,6 +138,38 @@ describe('aggregateHouseholdIncome', () => {
 
       expect(result.investmentIncome.shortTermGains).toBe(-4000) // -5000 + 1000
       expect(result.investmentIncome.longTermGains).toBe(-6000) // 2000 + -8000
+    })
+  })
+
+  describe('Roth conversion aggregation', () => {
+    it('should aggregate Roth conversion amounts for married filing jointly', () => {
+      const userIncome = createMockIncome({ rothConversion: '50000' })
+      const spouseIncome = createMockIncome({ rothConversion: '30000' })
+
+      const result = aggregateHouseholdIncome(userIncome, spouseIncome, 'marriedFilingJointly')
+
+      expect(result.rothConversion).toBe(80000)
+      // Total income should include Roth conversion
+      expect(result.totalIncome).toBe(86500 + 50000 + 86500 + 30000)
+    })
+
+    it('should only include user Roth conversion when filing single', () => {
+      const userIncome = createMockIncome({ rothConversion: '50000' })
+      const spouseIncome = createMockIncome({ rothConversion: '30000' })
+
+      const result = aggregateHouseholdIncome(userIncome, spouseIncome, 'single')
+
+      expect(result.rothConversion).toBe(50000)
+      expect(result.totalIncome).toBe(86500 + 50000)
+    })
+
+    it('should handle empty Roth conversion as zero', () => {
+      const userIncome = createMockIncome()
+      const spouseIncome = createMockIncome()
+
+      const result = aggregateHouseholdIncome(userIncome, spouseIncome, 'marriedFilingJointly')
+
+      expect(result.rothConversion).toBe(0)
     })
   })
 

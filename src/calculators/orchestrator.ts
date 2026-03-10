@@ -101,9 +101,10 @@ export function calculateComprehensiveTax(
   const adjustedInterestIncome = totalInvestmentIncome.interestIncome * adjustmentRatio
   
   const federalIncomeBreakdown: FederalIncomeBreakdown = {
-    ordinaryIncome: adjustedWageIncome + 
+    ordinaryIncome: adjustedWageIncome +
                     adjustedNonQualifiedDividends +
                     adjustedInterestIncome +
+                    household.rothConversion +
                     capitalLossDeduction, // Apply capital loss limit
     qualifiedDividends: totalInvestmentIncome.qualifiedDividends,
     longTermCapitalGains: Math.max(0, totalInvestmentIncome.longTermGains), // Only positive LTCG
@@ -112,7 +113,8 @@ export function calculateComprehensiveTax(
     wages: adjustedWageIncome,
     interestIncome: adjustedInterestIncome,
     ordinaryDividends: totalInvestmentIncome.ordinaryDividends,
-    capitalLossDeduction
+    capitalLossDeduction,
+    rothConversion: household.rothConversion
   }
 
   // Calculate estimated CA state tax for SALT deduction if needed

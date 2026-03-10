@@ -264,6 +264,30 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
             </div>
           </div>
 
+          {/* IRA Conversions Section */}
+          <div>
+            <h3 className="text-lg font-medium mb-4">IRA Conversions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Traditional IRA to Roth IRA Conversion
+                </label>
+                <input
+                  type="number" {...numberInputProps}
+                  value={currentIncome.rothConversion}
+                  onChange={(e) => setCurrentIncome({ rothConversion: e.target.value })}
+                  placeholder="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+            </div>
+            <div className="mt-3 p-3 bg-amber-50 rounded-md">
+              <p className="text-xs text-amber-800">
+                <span className="font-medium">Note:</span> Roth IRA conversions are taxed as ordinary income for both federal and California. There is no automatic withholding on conversions. The full conversion amount is added to your taxable income.
+              </p>
+            </div>
+          </div>
+
           {/* YTD W2 Income Section */}
           <div>
             <h3 className="text-lg font-medium mb-4">YTD W2 Income</h3>

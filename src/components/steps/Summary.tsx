@@ -30,7 +30,8 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
     capitalGainsTax: false,
     caBaseTax: false,
     mentalHealthTax: false,
-    paymentSchedule: false
+    paymentSchedule: false,
+    bracketDistance: false
   })
   
   // State for payment schedule info toggle
@@ -44,7 +45,8 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
         capitalGainsTax: true,
         caBaseTax: true,
         mentalHealthTax: true,
-        paymentSchedule: true
+        paymentSchedule: true,
+        bracketDistance: true
       })
       setShowScheduleInfo(true)
     }
@@ -55,7 +57,8 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
         capitalGainsTax: false,
         caBaseTax: false,
         mentalHealthTax: false,
-        paymentSchedule: false
+        paymentSchedule: false,
+        bracketDistance: false
       })
       setShowScheduleInfo(false)
     }
@@ -343,6 +346,12 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                                   <div className="flex justify-between">
                                     <span>Short-term capital gains</span>
                                     <span>${incomeComponents.shortTermGains.toLocaleString()}</span>
+                                  </div>
+                                )}
+                                {incomeComponents.rothConversion > 0 && (
+                                  <div className="flex justify-between">
+                                    <span>Roth IRA conversion</span>
+                                    <span>${incomeComponents.rothConversion.toLocaleString()}</span>
                                   </div>
                                 )}
                                 {incomeComponents.capitalLossDeduction < 0 && (
@@ -658,6 +667,116 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                 <span>{taxResults.californiaTax.effectiveRate.toFixed(2)}%</span>
               </div>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Distance to Next Bracket - Expandable */}
+      <div className="bg-white rounded-lg shadow-sm mb-8">
+        <button
+          onClick={() => toggleSection('bracketDistance')}
+          className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-lg transition-colors"
+          aria-expanded={expandedSections.bracketDistance}
+        >
+          <span className="text-sm font-medium text-gray-700">Distance to Next Tax Bracket</span>
+          <svg
+            className={`w-4 h-4 text-gray-500 transform transition-transform ${expandedSections.bracketDistance ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {expandedSections.bracketDistance && (
+          <div className="px-4 pb-4 space-y-4">
+            {/* Federal Bracket Distance */}
+            <div className="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+              <h4 className="font-medium mb-3 flex items-center">
+                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">FEDERAL</span>
+                Federal Tax Bracket
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Current marginal rate</span>
+                  <span className="font-medium">{(taxResults.federalTax.nextBracketInfo.currentRate * 100).toFixed(0)}%</span>
+                </div>
+                {taxResults.federalTax.nextBracketInfo.nextRate !== null && (
+                  <div className="flex justify-between">
+                    <span>Next marginal rate</span>
+                    <span className="font-medium">{(taxResults.federalTax.nextBracketInfo.nextRate * 100).toFixed(0)}%</span>
+                  </div>
+                )}
+                {taxResults.federalTax.nextBracketInfo.distanceToNextBracket !== null ? (
+                  <div className="flex justify-between pt-2 border-t border-blue-200">
+                    <span className="font-medium">Room before next bracket</span>
+                    <span className="font-bold text-blue-700">
+                      ${Math.round(taxResults.federalTax.nextBracketInfo.distanceToNextBracket).toLocaleString()}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="pt-2 border-t border-blue-200 text-gray-600">
+                    You are in the highest federal tax bracket.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* California Bracket Distance */}
+            {includeCaliforniaTax && taxResults.californiaTax && (
+              <div className="p-4 border-2 border-purple-200 rounded-lg bg-purple-50">
+                <h4 className="font-medium mb-3 flex items-center">
+                  <span className="bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded mr-2">CA</span>
+                  California Tax Bracket
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Current marginal rate</span>
+                    <span className="font-medium">{(taxResults.californiaTax.nextBracketInfo.currentRate * 100).toFixed(1)}%</span>
+                  </div>
+                  {taxResults.californiaTax.nextBracketInfo.nextRate !== null && (
+                    <div className="flex justify-between">
+                      <span>Next marginal rate</span>
+                      <span className="font-medium">{(taxResults.californiaTax.nextBracketInfo.nextRate * 100).toFixed(1)}%</span>
+                    </div>
+                  )}
+                  {taxResults.californiaTax.nextBracketInfo.distanceToNextBracket !== null ? (
+                    <div className="flex justify-between pt-2 border-t border-purple-200">
+                      <span className="font-medium">Room before next bracket</span>
+                      <span className="font-bold text-purple-700">
+                        ${Math.round(taxResults.californiaTax.nextBracketInfo.distanceToNextBracket).toLocaleString()}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="pt-2 border-t border-purple-200 text-gray-600">
+                      You are in the highest California tax bracket.
+                    </div>
+                  )}
+                  {taxResults.californiaTax.distanceToMentalHealthTax !== null && (
+                    <div className="flex justify-between pt-2 border-t border-purple-200">
+                      <span className="font-medium">Distance to Mental Health Tax ($1M)</span>
+                      <span className="font-bold text-purple-700">
+                        ${Math.round(taxResults.californiaTax.distanceToMentalHealthTax).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* SALT Phaseout Warning for 2026 */}
+            {taxYear === 2026 && taxResults.totalIncome > 400000 && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-xs text-amber-800">
+                  <span className="font-medium">2026 SALT Cap Note:</span> The SALT deduction cap phases out starting at $500,000 MAGI.
+                  {taxResults.totalIncome < 500000
+                    ? ` You are $${(500000 - taxResults.totalIncome).toLocaleString()} below the phaseout threshold.`
+                    : ` Your MAGI exceeds the $500,000 threshold, so your SALT cap is being reduced.`
+                  }
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

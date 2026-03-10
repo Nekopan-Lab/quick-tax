@@ -140,6 +140,7 @@ export function aggregateIndividualIncome(income: IncomeData): {
     longTermGains: number
   }
   wageIncome: number
+  rothConversion: number
   totalWithholdings: {
     federal: number
     state: number
@@ -160,20 +161,22 @@ export function aggregateIndividualIncome(income: IncomeData): {
   const futureIncome = calculateFutureIncome(income)
 
   const totalWageIncome = ytdWage + futureIncome.totalWage
-  
+  const rothConversion = parseFloat(income.rothConversion) || 0
+
   // Don't double-count qualified dividends - they're already included in ordinary dividends
-  const totalInvestmentIncome = 
+  const totalInvestmentIncome =
     investmentIncome.ordinaryDividends + // This already includes qualified dividends
-    investmentIncome.interestIncome + 
-    investmentIncome.shortTermGains + 
+    investmentIncome.interestIncome +
+    investmentIncome.shortTermGains +
     investmentIncome.longTermGains
     // Note: NOT adding qualifiedDividends separately as they're part of ordinaryDividends
     // Note: Capital loss limit is applied at the tax calculation level, not here
 
   const result = {
-    totalIncome: totalWageIncome + totalInvestmentIncome,
+    totalIncome: totalWageIncome + totalInvestmentIncome + rothConversion,
     investmentIncome,
     wageIncome: totalWageIncome,
+    rothConversion,
     totalWithholdings: {
       federal: ytdFederalWithhold + futureIncome.totalFederalWithhold,
       state: ytdStateWithhold + futureIncome.totalStateWithhold

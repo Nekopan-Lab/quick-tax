@@ -15,7 +15,10 @@ export interface IncomeData {
   interestIncome: string
   shortTermGains: string
   longTermGains: string
-  
+
+  // IRA Conversions
+  rothConversion: string
+
   // YTD W2
   ytdWage: string
   ytdFederalWithhold: string
@@ -113,7 +116,10 @@ const initialIncomeData: IncomeData = {
   interestIncome: '',
   shortTermGains: '',
   longTermGains: '',
-  
+
+  // IRA Conversions
+  rothConversion: '',
+
   // YTD W2
   ytdWage: '',
   ytdFederalWithhold: '',

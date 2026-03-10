@@ -7,7 +7,7 @@ import {
   getFederalCapitalGainsBrackets,
   getFederalSaltCap
 } from './constants'
-import { calculateProgressiveTaxWithDetails, TaxBracketDetail } from '../utils/taxBrackets'
+import { calculateProgressiveTaxWithDetails, TaxBracketDetail, calculateDistanceToNextBracket, NextBracketInfo } from '../utils/taxBrackets'
 import { calculateEstimatedPaymentsWithCumulativeSchedule, type QuarterlyPaymentSchedule } from '../utils/estimatedPayments'
 
 export interface FederalIncomeBreakdown {
@@ -20,6 +20,7 @@ export interface FederalIncomeBreakdown {
   interestIncome: number
   ordinaryDividends: number
   capitalLossDeduction: number
+  rothConversion: number
 }
 
 export interface FederalIncomeComponents {
@@ -30,6 +31,7 @@ export interface FederalIncomeComponents {
   longTermGains: number
   qualifiedDividends: number
   capitalLossDeduction: number
+  rothConversion: number
   totalOrdinaryIncome: number
   ordinaryTaxableIncome: number
 }
@@ -45,6 +47,7 @@ export interface FederalTaxResult {
   incomeComponents: FederalIncomeComponents  // Breakdown of income components
   ordinaryTaxBrackets: TaxBracketDetail[]    // Detailed bracket calculations for ordinary income
   capitalGainsBrackets: TaxBracketDetail[]   // Detailed bracket calculations for capital gains
+  nextBracketInfo: NextBracketInfo           // Distance to next tax bracket
 }
 
 /**
@@ -146,10 +149,17 @@ export function calculateFederalTax(
     longTermGains: income.longTermCapitalGains,
     qualifiedDividends: income.qualifiedDividends,
     capitalLossDeduction: income.capitalLossDeduction,
+    rothConversion: income.rothConversion,
     totalOrdinaryIncome: income.ordinaryIncome + income.shortTermCapitalGains,
     ordinaryTaxableIncome
   }
-  
+
+  // Calculate distance to next bracket based on ordinary taxable income
+  const nextBracketInfo = calculateDistanceToNextBracket(
+    ordinaryTaxableIncome,
+    getFederalTaxBrackets(taxYear, filingStatus)
+  )
+
   return {
     taxableIncome,
     ordinaryIncomeTax: Math.round(ordinaryTaxResult.totalTax),
@@ -160,7 +170,8 @@ export function calculateFederalTax(
     effectiveRate,
     incomeComponents,
     ordinaryTaxBrackets: ordinaryTaxResult.bracketDetails,
-    capitalGainsBrackets
+    capitalGainsBrackets,
+    nextBracketInfo
   }
 }
 

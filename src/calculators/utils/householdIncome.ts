@@ -11,6 +11,7 @@ export interface HouseholdIncomeAggregation {
     longTermGains: number
   }
   wageIncome: number
+  rothConversion: number
   totalWithholdings: {
     federal: number
     state: number
@@ -44,6 +45,7 @@ export function aggregateHouseholdIncome(
       longTermGains: userAgg.investmentIncome.longTermGains + (spouseAgg?.investmentIncome.longTermGains || 0)
     },
     wageIncome: userAgg.wageIncome + (spouseAgg?.wageIncome || 0),
+    rothConversion: userAgg.rothConversion + (spouseAgg?.rothConversion || 0),
     totalWithholdings: {
       federal: userAgg.totalWithholdings.federal + (spouseAgg?.totalWithholdings.federal || 0),
       state: userAgg.totalWithholdings.state + (spouseAgg?.totalWithholdings.state || 0)

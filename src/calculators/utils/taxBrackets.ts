@@ -4,6 +4,13 @@ interface TaxBracket {
   rate: number
 }
 
+export interface NextBracketInfo {
+  currentRate: number
+  nextRate: number | null
+  distanceToNextBracket: number | null
+  currentBracketMax: number
+}
+
 export interface TaxBracketDetail {
   bracket: { min: number; max: number; rate: number }
   taxableInBracket: number
@@ -63,8 +70,50 @@ export function calculateProgressiveTaxWithDetails(
     remainingIncome -= taxableInBracket
   }
 
-  return { 
+  return {
     totalTax: Math.round(totalTax * 100) / 100,
-    bracketDetails 
+    bracketDetails
+  }
+}
+
+/**
+ * Calculate the distance from current taxable income to the next tax bracket
+ * @param taxableIncome - Current taxable income (after deductions)
+ * @param brackets - Array of tax brackets
+ * @returns Info about current bracket and distance to next bracket
+ */
+export function calculateDistanceToNextBracket(
+  taxableIncome: number,
+  brackets: TaxBracket[]
+): NextBracketInfo {
+  if (taxableIncome <= 0 || brackets.length === 0) {
+    return {
+      currentRate: brackets.length > 0 ? brackets[0].rate : 0,
+      nextRate: brackets.length > 1 ? brackets[1].rate : null,
+      distanceToNextBracket: brackets.length > 0 ? brackets[0].max : null,
+      currentBracketMax: brackets.length > 0 ? brackets[0].max : 0
+    }
+  }
+
+  for (let i = 0; i < brackets.length; i++) {
+    const bracket = brackets[i]
+    if (taxableIncome <= bracket.max) {
+      const nextBracket = i < brackets.length - 1 ? brackets[i + 1] : null
+      return {
+        currentRate: bracket.rate,
+        nextRate: nextBracket ? nextBracket.rate : null,
+        distanceToNextBracket: bracket.max === Infinity ? null : bracket.max - taxableIncome,
+        currentBracketMax: bracket.max
+      }
+    }
+  }
+
+  // Income exceeds all brackets (shouldn't happen with Infinity max)
+  const lastBracket = brackets[brackets.length - 1]
+  return {
+    currentRate: lastBracket.rate,
+    nextRate: null,
+    distanceToNextBracket: null,
+    currentBracketMax: lastBracket.max
   }
 }

@@ -36,7 +36,10 @@ export const DEMO_USER_INCOME: IncomeData = {
   interestIncome: '800', // High-yield savings interest
   shortTermGains: '500', // Small trading gains
   longTermGains: '3000', // Some stock sales
-  
+
+  // IRA Conversions
+  rothConversion: '',
+
   // YTD W2 (assuming we're in Q2, so ~40% through year)
   ytdWage: '50000', // Base salary portion (~$130k annual)
   ytdFederalWithhold: '7500', // ~15% withholding (intentionally low)
@@ -84,7 +87,10 @@ export const DEMO_SPOUSE_INCOME: IncomeData = {
   interestIncome: '600',
   shortTermGains: '0',
   longTermGains: '2000',
-  
+
+  // IRA Conversions
+  rothConversion: '',
+
   // YTD W2 (non-tech role)
   ytdWage: '40000',
   ytdFederalWithhold: '6000', // ~15% withholding (intentionally low)

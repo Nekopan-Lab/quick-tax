@@ -7,7 +7,7 @@ import {
   getCaliforniaMentalHealthTaxThreshold,
   getCaliforniaMentalHealthTaxRate
 } from './constants'
-import { calculateProgressiveTaxWithDetails, TaxBracketDetail } from '../utils/taxBrackets'
+import { calculateProgressiveTaxWithDetails, TaxBracketDetail, calculateDistanceToNextBracket, NextBracketInfo } from '../utils/taxBrackets'
 import { calculateEstimatedPaymentsWithCumulativeSchedule, type QuarterlyPaymentSchedule } from '../utils/estimatedPayments'
 
 export interface CaliforniaIncomeBreakdown {
@@ -23,6 +23,8 @@ export interface CaliforniaTaxResult {
   owedOrRefund: number       // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
   effectiveRate: number      // Effective tax rate as percentage
   taxBrackets: TaxBracketDetail[]  // Detailed bracket calculations
+  nextBracketInfo: NextBracketInfo  // Distance to next tax bracket
+  distanceToMentalHealthTax: number | null  // Distance to $1M mental health tax threshold (null if already above)
 }
 
 /**
@@ -65,6 +67,17 @@ export function calculateCaliforniaTax(
   const owedOrRefund = totalTax - withholdings - estimatedPayments
   const effectiveRate = income > 0 ? (totalTax / income) * 100 : 0
   
+  // Calculate distance to next bracket
+  const nextBracketInfo = calculateDistanceToNextBracket(
+    taxableIncome,
+    getCaliforniaTaxBrackets(taxYear, filingStatus)
+  )
+
+  // Calculate distance to mental health tax threshold
+  const distanceToMentalHealthTax = taxableIncome < threshold
+    ? threshold - taxableIncome
+    : null
+
   return {
     taxableIncome,
     baseTax: Math.round(taxResult.totalTax),
@@ -73,7 +86,9 @@ export function calculateCaliforniaTax(
     deduction: deductionInfo,
     owedOrRefund: Math.round(owedOrRefund),
     effectiveRate,
-    taxBrackets: taxResult.bracketDetails
+    taxBrackets: taxResult.bracketDetails,
+    nextBracketInfo,
+    distanceToMentalHealthTax
   }
 }
 
