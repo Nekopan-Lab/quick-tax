@@ -126,12 +126,12 @@ The application will feature a clear, step-by-step flow to guide users through t
      * Calculate federal itemized deductions with the following limits:
        * **SALT Cap**: State and Local Tax (SALT) deduction cap varies by tax year:
          * **Tax Year 2025**: SALT deduction is capped at $10,000 for all filers
-         * **Tax Year 2026**: Under the One Big Beautiful Bill Act (OBBBA), SALT cap is increased to $40,000 with income-based phaseout:
-           * Base cap: $40,000 for all filers
-           * Phaseout begins at $500,000 Modified Adjusted Gross Income (MAGI)
-           * Phaseout rate: $0.30 reduction for every $1 over the $500,000 threshold
+         * **Tax Year 2026**: Under the One Big Beautiful Bill Act (OBBBA), the SALT cap is $40,000 for 2025 and indexed +1% per year through 2029, giving $40,400 for 2026, with income-based phaseout:
+           * Base cap: $40,400 for all filers
+           * Phaseout begins at $505,000 Modified Adjusted Gross Income (MAGI) ($500,000 indexed +1%)
+           * Phaseout rate: $0.30 reduction for every $1 over the $505,000 threshold
            * Minimum cap: $10,000 (cap never falls below this regardless of income)
-           * Example: At $550,000 MAGI, cap = $40,000 - ($50,000 × 0.30) = $25,000
+           * Example: At $555,000 MAGI, cap = $40,400 - ($50,000 × 0.30) = $25,400
          * SALT deduction includes property tax plus either:
            * Estimated California state income tax (when CA tax is selected), or
            * Other state income tax entered manually (when CA tax is not selected)
@@ -181,7 +181,7 @@ The application will feature a clear, step-by-step flow to guide users through t
          * Dollar amount remaining before entering the next bracket
          * Contextual note: "You can convert $X more via Roth IRA without entering the next bracket"
        * California section also shows distance to the $1,000,000 Mental Health Tax threshold
-       * For 2026: Shows warning about SALT cap phaseout if MAGI is near $500,000
+       * For 2026: Shows warning about SALT cap phaseout if MAGI is near $505,000
      * **Suggested Remaining Estimated Payments:**
        * **Display Logic:**  
          * Show all payment quarters with clear visual distinction:  
@@ -429,7 +429,7 @@ The application is designed with a flexible, multi-year architecture that suppor
 ### **9.2. Currently Supported Tax Years**
 
 * **2025:** Full implementation with official IRS and California FTB tax brackets and rates
-* **2026:** Preliminary implementation with estimated brackets (to be updated when official rates are released)
+* **2026:** Federal uses official IRS 2026 brackets/standard deductions (IR-2025-103). California uses the 2025 FTB schedule indexed by the 3.4% CA CPI adjustment (single brackets: 1% to $11,456, 2% to $27,157, 4% to $42,861, 6% to $59,498, 8% to $75,197, 9.3% to $384,109, 10.3% to $460,927, 11.3% to $768,213, 12.3% above; MFJ thresholds are 2x single; standard deduction $5,900 single / $11,800 MFJ)
 
 ### **9.3. Adding New Tax Years**
 

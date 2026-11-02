@@ -49,34 +49,36 @@ export const CALIFORNIA_TAX_DATA: Record<TaxYear, CaliforniaYearlyTaxData> = {
     mentalHealthTaxRate: 0.01
   },
   2026: {
-    // Official 2026 CA FTB tax brackets
+    // 2026 CA FTB tax brackets: 2025 FTB schedule indexed by the 3.4% California CPI
+    // adjustment (June 2025 - June 2026), rounded to the nearest dollar.
+    // MFJ thresholds are 2x the single thresholds.
     taxBrackets: {
       single: [
-        { min: 0, max: 11079, rate: 0.01 },
-        { min: 11079, max: 26264, rate: 0.02 },
-        { min: 26264, max: 41452, rate: 0.04 },
-        { min: 41452, max: 57542, rate: 0.06 },
-        { min: 57542, max: 72724, rate: 0.08 },
-        { min: 72724, max: 371479, rate: 0.093 },
-        { min: 371479, max: 445771, rate: 0.103 },
-        { min: 445771, max: 742953, rate: 0.113 },
-        { min: 742953, max: Infinity, rate: 0.123 }
+        { min: 0, max: 11456, rate: 0.01 },
+        { min: 11456, max: 27157, rate: 0.02 },
+        { min: 27157, max: 42861, rate: 0.04 },
+        { min: 42861, max: 59498, rate: 0.06 },
+        { min: 59498, max: 75197, rate: 0.08 },
+        { min: 75197, max: 384109, rate: 0.093 },
+        { min: 384109, max: 460927, rate: 0.103 },
+        { min: 460927, max: 768213, rate: 0.113 },
+        { min: 768213, max: Infinity, rate: 0.123 }
       ],
       marriedFilingJointly: [
-        { min: 0, max: 22158, rate: 0.01 },
-        { min: 22158, max: 52528, rate: 0.02 },
-        { min: 52528, max: 82904, rate: 0.04 },
-        { min: 82904, max: 115084, rate: 0.06 },
-        { min: 115084, max: 145448, rate: 0.08 },
-        { min: 145448, max: 742958, rate: 0.093 },
-        { min: 742958, max: 891542, rate: 0.103 },
-        { min: 891542, max: 1485906, rate: 0.113 },
-        { min: 1485906, max: Infinity, rate: 0.123 }
+        { min: 0, max: 22912, rate: 0.01 },
+        { min: 22912, max: 54314, rate: 0.02 },
+        { min: 54314, max: 85722, rate: 0.04 },
+        { min: 85722, max: 118996, rate: 0.06 },
+        { min: 118996, max: 150394, rate: 0.08 },
+        { min: 150394, max: 768218, rate: 0.093 },
+        { min: 768218, max: 921854, rate: 0.103 },
+        { min: 921854, max: 1536426, rate: 0.113 },
+        { min: 1536426, max: Infinity, rate: 0.123 }
       ]
     },
     standardDeductions: {
-      single: 5670,
-      marriedFilingJointly: 11340
+      single: 5900,
+      marriedFilingJointly: 11800
     },
     mentalHealthTaxThreshold: 1000000,
     mentalHealthTaxRate: 0.01

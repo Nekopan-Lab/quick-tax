@@ -107,11 +107,13 @@ export const FEDERAL_TAX_DATA: Record<TaxYear, YearlyTaxData> = {
         { min: 613700, max: Infinity, rate: 0.20 }
       ]
     },
-    // 2026: SALT cap increased to $40,000 under One Big Beautiful Bill Act (OBBBA)
-    // Phaseout begins at $500,000 MAGI, reduces by $0.30 per $1 over threshold, minimum $10,000
+    // 2026: SALT cap under One Big Beautiful Bill Act (OBBBA) - $40,000 for 2025,
+    // indexed +1% per year through 2029, so $40,400 for 2026.
+    // Phaseout threshold is likewise indexed: $500,000 (2025) -> $505,000 (2026) MAGI.
+    // Reduces by $0.30 per $1 over threshold, minimum $10,000
     saltCap: {
-      baseCap: 40000,
-      phaseoutThreshold: 500000,
+      baseCap: 40400,
+      phaseoutThreshold: 505000,
       phaseoutRate: 0.30,
       minimumCap: 10000
     }
@@ -126,7 +128,7 @@ export function getFederalTaxBrackets(year: TaxYear, filingStatus: FilingStatus)
 /**
  * Calculate the effective SALT cap for a given tax year and MAGI
  * For 2025: Fixed at $10,000 (no phaseout)
- * For 2026+: Base cap of $40,000 with phaseout starting at $500,000 MAGI
+ * For 2026: Base cap of $40,400 with phaseout starting at $505,000 MAGI
  *            Reduces by $0.30 per $1 over threshold, minimum $10,000
  */
 export function getFederalSaltCap(year: TaxYear, magi: number): number {

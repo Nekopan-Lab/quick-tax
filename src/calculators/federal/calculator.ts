@@ -223,7 +223,7 @@ export function calculateFederalItemizedDeductions(
 /**
  * Calculate federal itemized deductions with detailed breakdown
  * For 2025: SALT cap is fixed at $10,000
- * For 2026+: SALT cap is $40,000 with income-based phaseout starting at $500,000 MAGI
+ * For 2026: SALT cap is $40,400 with income-based phaseout starting at $505,000 MAGI
  */
 export function calculateFederalItemizedDeductionDetails(
   deductions: DeductionsData,
@@ -244,7 +244,7 @@ export function calculateFederalItemizedDeductionDetails(
 
   // Apply SALT cap based on tax year and MAGI
   // For 2025: $10,000 cap (no phaseout)
-  // For 2026+: $40,000 cap with phaseout at $500,000 MAGI
+  // For 2026: $40,400 cap with phaseout at $505,000 MAGI
   const saltCap = getFederalSaltCap(taxYear, magi)
   const saltTotal = propertyTax + stateIncomeTax
   const saltDeduction = Math.min(saltTotal, saltCap)

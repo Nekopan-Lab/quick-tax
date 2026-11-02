@@ -57,12 +57,40 @@ const CA_TAX_YEAR_DATA = {
   },
   2026: {
     standardDeductions: {
-      single: 5670,
-      marriedFilingJointly: 11340
+      single: 5900,
+      marriedFilingJointly: 11800
     },
     mentalHealthThreshold: 1000000,
-    singleTaxTests: [],
-    marriedTaxTests: []
+    singleTaxTests: [
+      {
+        name: 'low income',
+        income: 20000,
+        expected: { taxableIncome: 14100, baseTax: 167, mentalHealthTax: 0, totalTax: 167 }
+      },
+      {
+        name: 'middle income',
+        income: 80000,
+        expected: { taxableIncome: 74100, baseTax: 3223, mentalHealthTax: 0, totalTax: 3223 }
+      },
+      {
+        name: 'high income',
+        income: 500000,
+        // 43,700.499 -> rounded to cents (43,700.50) then to dollars
+        expected: { taxableIncome: 494100, baseTax: 43701, mentalHealthTax: 0, totalTax: 43701 }
+      }
+    ],
+    marriedTaxTests: [
+      {
+        name: 'middle income married couple',
+        income: 120000,
+        expected: { taxableIncome: 108200, baseTax: 3462, mentalHealthTax: 0, totalTax: 3462 }
+      },
+      {
+        name: 'high income married couple',
+        income: 900000,
+        expected: { taxableIncome: 888200, baseTax: 76438, mentalHealthTax: 0, totalTax: 76438 }
+      }
+    ]
   }
 } as const
 
@@ -71,8 +99,8 @@ describe('California Tax Calculator', () => {
     const testCases: Array<{ year: TaxYear; filingStatus: FilingStatus; expected: number }> = [
       { year: 2025, filingStatus: 'single', expected: 5540 },
       { year: 2025, filingStatus: 'marriedFilingJointly', expected: 11080 },
-      { year: 2026, filingStatus: 'single', expected: 5670 },
-      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 11340 }
+      { year: 2026, filingStatus: 'single', expected: 5900 },
+      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 11800 }
     ]
 
     testCases.forEach(({ year, filingStatus, expected }) => {

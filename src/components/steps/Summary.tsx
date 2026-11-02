@@ -7,6 +7,7 @@ import {
 } from '../../calculators/orchestrator'
 import type { TaxYear } from '../../types'
 import { calculateFutureIncome } from '../../calculators/utils/income'
+import { FEDERAL_TAX_DATA } from '../../calculators/federal/constants'
 import '../../styles/print.css'
 
 interface SummaryProps {
@@ -766,13 +767,13 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
             )}
 
             {/* SALT Phaseout Warning for 2026 */}
-            {taxYear === 2026 && taxResults.totalIncome > 400000 && (
+            {taxYear === 2026 && taxResults.totalIncome > FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold - 100000 && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
                 <p className="text-xs text-amber-800">
-                  <span className="font-medium">2026 SALT Cap Note:</span> The SALT deduction cap phases out starting at $500,000 MAGI.
-                  {taxResults.totalIncome < 500000
-                    ? ` You are $${(500000 - taxResults.totalIncome).toLocaleString()} below the phaseout threshold.`
-                    : ` Your MAGI exceeds the $500,000 threshold, so your SALT cap is being reduced.`
+                  <span className="font-medium">2026 SALT Cap Note:</span> The SALT deduction cap phases out starting at ${FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold.toLocaleString()} MAGI.
+                  {taxResults.totalIncome < FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold
+                    ? ` You are $${(FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold - taxResults.totalIncome).toLocaleString()} below the phaseout threshold.`
+                    : ` Your MAGI exceeds the $${FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold.toLocaleString()} threshold, so your SALT cap is being reduced.`
                   }
                 </p>
               </div>

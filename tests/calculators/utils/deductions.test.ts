@@ -76,11 +76,11 @@ describe('Federal Itemized Deductions', () => {
   })
 
   describe('SALT Cap - Tax Year 2026', () => {
-    it('should have $40,000 SALT cap for 2026 with income under phaseout threshold', () => {
+    it('should have $40,400 SALT cap for 2026 with income under phaseout threshold', () => {
       const deductions = {
         ...baseDeductions,
         propertyTax: '25000',
-        otherStateIncomeTax: '15000'
+        otherStateIncomeTax: '20000'
       }
 
       const result = calculateFederalItemizedDeductions(
@@ -88,14 +88,14 @@ describe('Federal Itemized Deductions', () => {
         0, // estimatedCAStateTax
         false, // includeCaliforniaTax
         2026, // taxYear
-        400000 // MAGI below $500k phaseout threshold
+        400000 // MAGI below $505k phaseout threshold
       )
 
-      // Property tax ($25k) + state income tax ($15k) = $40k, exactly at cap for 2026
-      expect(result).toBe(40000)
+      // Property tax ($25k) + state income tax ($20k) = $45k, capped at $40,400 for 2026
+      expect(result).toBe(40400)
     })
 
-    it('should allow full SALT deduction up to $40,000 for 2026', () => {
+    it('should allow full SALT deduction up to $40,400 for 2026', () => {
       const deductions = {
         ...baseDeductions,
         propertyTax: '20000',
@@ -110,50 +110,50 @@ describe('Federal Itemized Deductions', () => {
         300000 // MAGI below threshold
       )
 
-      // Property tax ($20k) + state income tax ($10k) = $30k, under $40k cap
+      // Property tax ($20k) + state income tax ($10k) = $30k, under $40,400 cap
       expect(result).toBe(30000)
     })
 
-    it('should apply phaseout for income above $500,000 in 2026', () => {
+    it('should apply phaseout for income above $505,000 in 2026', () => {
       const deductions = {
         ...baseDeductions,
         propertyTax: '30000',
         otherStateIncomeTax: '20000'
       }
 
-      // At $600k MAGI, the cap phases out by ($600k - $500k) * 0.30 = $30k
-      // So cap = $40k - $30k = $10k (minimum)
+      // At $610k MAGI, the cap phases out by ($610k - $505k) * 0.30 = $31.5k
+      // So cap = max($40.4k - $31.5k, $10k) = $10k (minimum)
       const result = calculateFederalItemizedDeductions(
         deductions,
         0, // estimatedCAStateTax
         false, // includeCaliforniaTax
         2026, // taxYear
-        600000 // MAGI above $500k phaseout threshold
+        610000 // MAGI above $505k phaseout threshold
       )
 
       // SALT total is $50k, but cap is reduced to $10k (minimum)
       expect(result).toBe(10000)
     })
 
-    it('should apply partial phaseout for income between $500k and $600k in 2026', () => {
+    it('should apply partial phaseout for income between $505k and ~$606k in 2026', () => {
       const deductions = {
         ...baseDeductions,
         propertyTax: '30000',
         otherStateIncomeTax: '20000'
       }
 
-      // At $550k MAGI, the cap phases out by ($550k - $500k) * 0.30 = $15k
-      // So cap = $40k - $15k = $25k
+      // At $555k MAGI, the cap phases out by ($555k - $505k) * 0.30 = $15k
+      // So cap = $40.4k - $15k = $25.4k
       const result = calculateFederalItemizedDeductions(
         deductions,
         0, // estimatedCAStateTax
         false, // includeCaliforniaTax
         2026, // taxYear
-        550000 // MAGI above threshold
+        555000 // MAGI above threshold
       )
 
-      // SALT total is $50k, but cap is reduced to $25k
-      expect(result).toBe(25000)
+      // SALT total is $50k, but cap is reduced to $25.4k
+      expect(result).toBe(25400)
     })
 
     it('should never reduce SALT cap below $10,000 regardless of income in 2026', () => {
@@ -163,7 +163,7 @@ describe('Federal Itemized Deductions', () => {
         otherStateIncomeTax: '20000'
       }
 
-      // At $1M MAGI, the cap phases out by ($1M - $500k) * 0.30 = $150k
+      // At $1M MAGI, the cap phases out by ($1M - $505k) * 0.30 = $148.5k
       // But minimum cap is $10k
       const result = calculateFederalItemizedDeductions(
         deductions,
@@ -185,17 +185,19 @@ describe('Federal Itemized Deductions', () => {
       expect(getFederalSaltCap(2025, 1000000)).toBe(10000)
     })
 
-    it('should return $40,000 for 2026 when income is at or below $500,000', () => {
-      expect(getFederalSaltCap(2026, 100000)).toBe(40000)
-      expect(getFederalSaltCap(2026, 400000)).toBe(40000)
-      expect(getFederalSaltCap(2026, 500000)).toBe(40000)
+    it('should return $40,400 for 2026 when income is at or below $505,000', () => {
+      expect(getFederalSaltCap(2026, 100000)).toBe(40400)
+      expect(getFederalSaltCap(2026, 500000)).toBe(40400)
+      expect(getFederalSaltCap(2026, 505000)).toBe(40400)
     })
 
-    it('should phase out for 2026 when income is above $500,000', () => {
-      // At $550k: $40k - ($50k * 0.30) = $40k - $15k = $25k
-      expect(getFederalSaltCap(2026, 550000)).toBe(25000)
-      // At $600k: $40k - ($100k * 0.30) = $40k - $30k = $10k (minimum)
-      expect(getFederalSaltCap(2026, 600000)).toBe(10000)
+    it('should phase out for 2026 when income is above $505,000', () => {
+      // At $555k: $40.4k - ($50k * 0.30) = $40.4k - $15k = $25.4k
+      expect(getFederalSaltCap(2026, 555000)).toBeCloseTo(25400, 6)
+      // At $600k: $40.4k - ($95k * 0.30) = $40.4k - $28.5k = $11.9k
+      expect(getFederalSaltCap(2026, 600000)).toBeCloseTo(11900, 6)
+      // Fully phased down to the $10k floor at ~$606,333
+      expect(getFederalSaltCap(2026, 606334)).toBe(10000)
     })
 
     it('should never return less than $10,000 for 2026', () => {
@@ -312,7 +314,7 @@ describe('Federal Itemized Deductions', () => {
         400000 // MAGI below phaseout threshold
       )
 
-      // SALT: $25k + $10k = $35k (under $40k cap for 2026)
+      // SALT: $25k + $10k = $35k (under $40,400 cap for 2026)
       // Mortgage: $40k * ($750k / $900k) = $33,333.33
       // Donations: $5k
       // Total: $35k + $33,333.33 + $5k = $73,333.33
