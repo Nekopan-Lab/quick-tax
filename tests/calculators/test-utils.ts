@@ -77,7 +77,7 @@ export function validateFlexibleResults(
 /**
  * Constants for supported tax years
  */
-export const SUPPORTED_TAX_YEARS: TaxYear[] = [2025, 2026]
+export const SUPPORTED_TAX_YEARS: TaxYear[] = [2025, 2026, 2027]
 
 /**
  * Helper to get year-specific test data

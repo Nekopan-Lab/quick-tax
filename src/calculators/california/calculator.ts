@@ -170,6 +170,12 @@ export const CALIFORNIA_PAYMENT_SCHEDULES: Record<TaxYear, { quarter: string; du
     { quarter: 'Q1', dueDate: 'April 15, 2026', dueDateObj: new Date('2026-04-15'), cumulativePercentage: 0.30 },
     { quarter: 'Q2', dueDate: 'June 15, 2026', dueDateObj: new Date('2026-06-15'), cumulativePercentage: 0.70 },
     { quarter: 'Q4', dueDate: 'January 15, 2027', dueDateObj: new Date('2027-01-15'), cumulativePercentage: 1.00 }
+  ],
+  // Jan 15, 2028 is a Saturday and Jan 17, 2028 is MLK Day, so Q4 shifts to Tuesday Jan 18, 2028
+  2027: [
+    { quarter: 'Q1', dueDate: 'April 15, 2027', dueDateObj: new Date('2027-04-15'), cumulativePercentage: 0.30 },
+    { quarter: 'Q2', dueDate: 'June 15, 2027', dueDateObj: new Date('2027-06-15'), cumulativePercentage: 0.70 },
+    { quarter: 'Q4', dueDate: 'January 18, 2028', dueDateObj: new Date('2028-01-18'), cumulativePercentage: 1.00 }
   ]
 }
 

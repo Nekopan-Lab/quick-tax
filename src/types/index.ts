@@ -1,5 +1,5 @@
 export type FilingStatus = 'single' | 'marriedFilingJointly'
-export type TaxYear = 2025 | 2026
+export type TaxYear = 2025 | 2026 | 2027
 
 export interface DeductionData {
   propertyTax: number

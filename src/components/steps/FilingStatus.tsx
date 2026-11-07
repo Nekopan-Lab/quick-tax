@@ -5,7 +5,7 @@ interface FilingStatusProps {
 }
 
 // Available tax years - can easily add more years in the future
-const AVAILABLE_TAX_YEARS = [2025, 2026] as const
+const AVAILABLE_TAX_YEARS = [2025, 2026, 2027] as const
 
 export function FilingStatus({ onNext }: FilingStatusProps) {
   const { taxYear, setTaxYear, filingStatus, setFilingStatus, includeCaliforniaTax, setIncludeCaliforniaTax } = useStore()
@@ -20,7 +20,7 @@ export function FilingStatus({ onNext }: FilingStatusProps) {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Tax Year
             </h3>
-            <div className="flex gap-4 mb-2">
+            <div className="flex flex-wrap gap-4 mb-2">
               {AVAILABLE_TAX_YEARS.map(year => (
                 <label key={year} className={`
                   relative flex items-center px-6 py-3 border-2 rounded-xl cursor-pointer transition-all

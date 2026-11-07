@@ -1,6 +1,6 @@
 import { FilingStatus } from '@/types'
 
-export type TaxYear = 2025 | 2026
+export type TaxYear = 2025 | 2026 | 2027
 
 interface TaxBracket {
   min: number
@@ -117,6 +117,53 @@ export const FEDERAL_TAX_DATA: Record<TaxYear, YearlyTaxData> = {
       phaseoutRate: 0.30,
       minimumCap: 10000
     }
+  },
+  2027: {
+    // Official 2027 IRS tax brackets (announced November 2026, IR-2026-133 / Rev. Proc. 2026-35)
+    taxBrackets: {
+      single: [
+        { min: 0, max: 12800, rate: 0.10 },
+        { min: 12800, max: 52025, rate: 0.12 },
+        { min: 52025, max: 109125, rate: 0.22 },
+        { min: 109125, max: 208325, rate: 0.24 },
+        { min: 208325, max: 264550, rate: 0.32 },
+        { min: 264550, max: 661375, rate: 0.35 },
+        { min: 661375, max: Infinity, rate: 0.37 }
+      ],
+      marriedFilingJointly: [
+        { min: 0, max: 25600, rate: 0.10 },
+        { min: 25600, max: 104050, rate: 0.12 },
+        { min: 104050, max: 218250, rate: 0.22 },
+        { min: 218250, max: 416650, rate: 0.24 },
+        { min: 416650, max: 529100, rate: 0.32 },
+        { min: 529100, max: 793650, rate: 0.35 },
+        { min: 793650, max: Infinity, rate: 0.37 }
+      ]
+    },
+    standardDeductions: {
+      single: 16600,
+      marriedFilingJointly: 33200
+    },
+    capitalGainsBrackets: {
+      single: [
+        { min: 0, max: 51050, rate: 0 },
+        { min: 51050, max: 563200, rate: 0.15 },
+        { min: 563200, max: Infinity, rate: 0.20 }
+      ],
+      marriedFilingJointly: [
+        { min: 0, max: 102100, rate: 0 },
+        { min: 102100, max: 633600, rate: 0.15 },
+        { min: 633600, max: Infinity, rate: 0.20 }
+      ]
+    },
+    // 2027: OBBBA SALT cap indexed +1% from 2026: $40,400 -> $40,804;
+    // phaseout threshold $505,000 -> $510,050 MAGI. $0.30 per $1 over threshold, minimum $10,000
+    saltCap: {
+      baseCap: 40804,
+      phaseoutThreshold: 510050,
+      phaseoutRate: 0.30,
+      minimumCap: 10000
+    }
   }
 }
 
@@ -129,6 +176,7 @@ export function getFederalTaxBrackets(year: TaxYear, filingStatus: FilingStatus)
  * Calculate the effective SALT cap for a given tax year and MAGI
  * For 2025: Fixed at $10,000 (no phaseout)
  * For 2026: Base cap of $40,400 with phaseout starting at $505,000 MAGI
+ * For 2027: Base cap of $40,804 with phaseout starting at $510,050 MAGI
  *            Reduces by $0.30 per $1 over threshold, minimum $10,000
  */
 export function getFederalSaltCap(year: TaxYear, magi: number): number {

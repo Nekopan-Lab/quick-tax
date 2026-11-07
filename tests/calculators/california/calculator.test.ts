@@ -91,6 +91,28 @@ const CA_TAX_YEAR_DATA = {
         expected: { taxableIncome: 888200, baseTax: 76438, mentalHealthTax: 0, totalTax: 76438 }
       }
     ]
+  },
+  // 2027: placeholder reusing the 2026 FTB schedule (official 2027 figures not yet published)
+  2027: {
+    standardDeductions: {
+      single: 5900,
+      marriedFilingJointly: 11800
+    },
+    mentalHealthThreshold: 1000000,
+    singleTaxTests: [
+      {
+        name: 'middle income (same as 2026 placeholder)',
+        income: 80000,
+        expected: { taxableIncome: 74100, baseTax: 3223, mentalHealthTax: 0, totalTax: 3223 }
+      }
+    ],
+    marriedTaxTests: [
+      {
+        name: 'high income married couple (same as 2026 placeholder)',
+        income: 900000,
+        expected: { taxableIncome: 888200, baseTax: 76438, mentalHealthTax: 0, totalTax: 76438 }
+      }
+    ]
   }
 } as const
 
@@ -100,7 +122,10 @@ describe('California Tax Calculator', () => {
       { year: 2025, filingStatus: 'single', expected: 5540 },
       { year: 2025, filingStatus: 'marriedFilingJointly', expected: 11080 },
       { year: 2026, filingStatus: 'single', expected: 5900 },
-      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 11800 }
+      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 11800 },
+      // 2027 reuses the 2026 schedule until FTB publishes official figures
+      { year: 2027, filingStatus: 'single', expected: 5900 },
+      { year: 2027, filingStatus: 'marriedFilingJointly', expected: 11800 }
     ]
 
     testCases.forEach(({ year, filingStatus, expected }) => {
@@ -191,7 +216,7 @@ describe('California Tax Calculator', () => {
   })
 
   describe('California Tax - All Income Types Treated Same (All Years)', () => {
-    const testYears: TaxYear[] = [2025, 2026]
+    const testYears: TaxYear[] = [2025, 2026, 2027]
 
     testYears.forEach((year) => {
       it(`should tax capital gains the same as ordinary income in ${year}`, () => {
@@ -251,7 +276,7 @@ describe('California Tax Calculator', () => {
       }
     ]
 
-    const testYears: TaxYear[] = [2025, 2026]
+    const testYears: TaxYear[] = [2025, 2026, 2027]
 
     testYears.forEach((year) => {
       describe(`${year} Edge Cases`, () => {

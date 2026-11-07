@@ -224,6 +224,7 @@ export function calculateFederalItemizedDeductions(
  * Calculate federal itemized deductions with detailed breakdown
  * For 2025: SALT cap is fixed at $10,000
  * For 2026: SALT cap is $40,400 with income-based phaseout starting at $505,000 MAGI
+ * For 2027: SALT cap is $40,804 with income-based phaseout starting at $510,050 MAGI
  */
 export function calculateFederalItemizedDeductionDetails(
   deductions: DeductionsData,
@@ -245,6 +246,7 @@ export function calculateFederalItemizedDeductionDetails(
   // Apply SALT cap based on tax year and MAGI
   // For 2025: $10,000 cap (no phaseout)
   // For 2026: $40,400 cap with phaseout at $505,000 MAGI
+  // For 2027: $40,804 cap with phaseout at $510,050 MAGI
   const saltCap = getFederalSaltCap(taxYear, magi)
   const saltTotal = propertyTax + stateIncomeTax
   const saltDeduction = Math.min(saltTotal, saltCap)
@@ -294,6 +296,13 @@ export const FEDERAL_PAYMENT_SCHEDULES: Record<TaxYear, { quarter: string; dueDa
     { quarter: 'Q2', dueDate: 'June 15, 2026', dueDateObj: new Date('2026-06-15'), cumulativePercentage: 0.50 },
     { quarter: 'Q3', dueDate: 'September 15, 2026', dueDateObj: new Date('2026-09-15'), cumulativePercentage: 0.75 },
     { quarter: 'Q4', dueDate: 'January 15, 2027', dueDateObj: new Date('2027-01-15'), cumulativePercentage: 1.00 }
+  ],
+  // Jan 15, 2028 is a Saturday and Jan 17, 2028 is MLK Day, so Q4 shifts to Tuesday Jan 18, 2028
+  2027: [
+    { quarter: 'Q1', dueDate: 'April 15, 2027', dueDateObj: new Date('2027-04-15'), cumulativePercentage: 0.25 },
+    { quarter: 'Q2', dueDate: 'June 15, 2027', dueDateObj: new Date('2027-06-15'), cumulativePercentage: 0.50 },
+    { quarter: 'Q3', dueDate: 'September 15, 2027', dueDateObj: new Date('2027-09-15'), cumulativePercentage: 0.75 },
+    { quarter: 'Q4', dueDate: 'January 18, 2028', dueDateObj: new Date('2028-01-18'), cumulativePercentage: 1.00 }
   ]
 }
 

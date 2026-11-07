@@ -20,7 +20,7 @@ This document outlines the product requirements for "QuickTax," a web-based appl
 
 * **Product Name:** QuickTax  
 * **Purpose:** Estimated tax payment calculation (not for filing).  
-* **Tax Year:** User-selectable, starting with 2025 (with architecture designed to support maximum 2 tax years).  
+* **Tax Year:** User-selectable, starting with 2025. A new tax year is added each year once its official figures are released; previously supported years are kept (no maximum number of years).  
 * **Tax Jurisdictions:** Federal (IRS) and California state (FTB).  
 * **Filing Statuses:** Single, Married Filing Jointly.  
 * **Deductions:** Standard vs. Itemized (Property Tax, Mortgage Interest, Donations).  
@@ -36,7 +36,6 @@ This document outlines the product requirements for "QuickTax," a web-based appl
 ### **3.2. Out of Scope**
 
 * Actual tax filing or submission to tax authorities.  
-* Support for more than 2 tax years simultaneously.  
 * Support for states other than California initially.  
 * Support for filing statuses other than Single and Married Filing Jointly (e.g., Head of Household, Married Filing Separately, Qualifying Widower).  
 * Complex tax scenarios (e.g., self-employment tax, foreign income, depreciation, credits beyond basic withholding).  
@@ -58,7 +57,7 @@ The application will feature a clear, step-by-step flow to guide users through t
    * A small footer link, when clicked, will open a popup with the data privacy disclaimer.  
 2. **Step 1: Filing Status & Tax Scope:**  
    * **Input:**  
-     * Tax Year: Toggle button selector (currently 2025 only, with support for one additional year in the future).  
+     * Tax Year: Toggle button selector listing every supported tax year (currently 2025, 2026, 2027). A new year is added each year.
      * Filing Status: Radio buttons for "Single" or "Married Filing Jointly."  
      * Tax Scope: A checkbox for "California State Tax (FTB)." Federal tax calculation will always be performed.  
    * **Action:**  
@@ -132,6 +131,10 @@ The application will feature a clear, step-by-step flow to guide users through t
            * Phaseout rate: $0.30 reduction for every $1 over the $505,000 threshold
            * Minimum cap: $10,000 (cap never falls below this regardless of income)
            * Example: At $555,000 MAGI, cap = $40,400 - ($50,000 × 0.30) = $25,400
+         * **Tax Year 2027**: OBBBA cap indexed another +1%:
+           * Base cap: $40,804 for all filers
+           * Phaseout begins at $510,050 MAGI, $0.30 reduction per $1 over the threshold
+           * Minimum cap: $10,000
          * SALT deduction includes property tax plus either:
            * Estimated California state income tax (when CA tax is selected), or
            * Other state income tax entered manually (when CA tax is not selected)
@@ -430,10 +433,11 @@ The application is designed with a flexible, multi-year architecture that suppor
 
 * **2025:** Full implementation with official IRS and California FTB tax brackets and rates
 * **2026:** Federal uses official IRS 2026 brackets/standard deductions (IR-2025-103). California uses the 2025 FTB schedule indexed by the 3.4% CA CPI adjustment (single brackets: 1% to $11,456, 2% to $27,157, 4% to $42,861, 6% to $59,498, 8% to $75,197, 9.3% to $384,109, 10.3% to $460,927, 11.3% to $768,213, 12.3% above; MFJ thresholds are 2x single; standard deduction $5,900 single / $11,800 MFJ)
+* **2027:** Federal uses official IRS 2027 brackets/standard deductions (IR-2026-133, Rev. Proc. 2026-35): standard deduction $16,600 single / $33,200 MFJ; single brackets 10% to $12,800, 12% to $52,025, 22% to $109,125, 24% to $208,325, 32% to $264,550, 35% to $661,375, 37% above; MFJ brackets 10% to $25,600, 12% to $104,050, 22% to $218,250, 24% to $416,650, 32% to $529,100, 35% to $793,650, 37% above; LTCG/qualified dividend 0% up to $51,050 single / $102,100 MFJ, 15% up to $563,200 single / $633,600 MFJ, 20% above. Estimated payment due dates: April 15, 2027; June 15, 2027; September 15, 2027; January 18, 2028 (CA: April 15, June 15, 2027 and January 18, 2028). **California placeholder:** the FTB has not yet published the 2027 schedule, so 2027 reuses the 2026 California brackets and standard deductions until official figures are released.
 
 ### **9.3. Adding New Tax Years**
 
-To add support for a new tax year (e.g., 2027):
+A new tax year is added every year once the IRS publishes its inflation adjustments (typically October/November). If the California FTB schedule for that year is not yet available, temporarily reuse the prior year's California data and replace it when FTB publishes. To add support for a new tax year (e.g., 2028):
 
 1. **Update Type Definitions:** Add the new year to the `TaxYear` type in `/src/types/index.ts`
 2. **Federal Tax Data:** Add the new year's data to `FEDERAL_TAX_DATA` in `/src/calculators/federal/constants.ts`

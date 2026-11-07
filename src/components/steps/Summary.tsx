@@ -766,18 +766,22 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
               </div>
             )}
 
-            {/* SALT Phaseout Warning for 2026 */}
-            {taxYear === 2026 && taxResults.totalIncome > FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold - 100000 && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
-                <p className="text-xs text-amber-800">
-                  <span className="font-medium">2026 SALT Cap Note:</span> The SALT deduction cap phases out starting at ${FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold.toLocaleString()} MAGI.
-                  {taxResults.totalIncome < FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold
-                    ? ` You are $${(FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold - taxResults.totalIncome).toLocaleString()} below the phaseout threshold.`
-                    : ` Your MAGI exceeds the $${FEDERAL_TAX_DATA[2026].saltCap.phaseoutThreshold.toLocaleString()} threshold, so your SALT cap is being reduced.`
-                  }
-                </p>
-              </div>
-            )}
+            {/* SALT Phaseout Warning (years with an OBBBA SALT cap phaseout) */}
+            {(() => {
+              const saltPhaseout = FEDERAL_TAX_DATA[taxYear as TaxYear]?.saltCap.phaseoutThreshold
+              if (!saltPhaseout || !isFinite(saltPhaseout) || taxResults.totalIncome <= saltPhaseout - 100000) return null
+              return (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <p className="text-xs text-amber-800">
+                    <span className="font-medium">{taxYear} SALT Cap Note:</span> The SALT deduction cap phases out starting at ${saltPhaseout.toLocaleString()} MAGI.
+                    {taxResults.totalIncome < saltPhaseout
+                      ? ` You are $${(saltPhaseout - taxResults.totalIncome).toLocaleString()} below the phaseout threshold.`
+                      : ` Your MAGI exceeds the $${saltPhaseout.toLocaleString()} threshold, so your SALT cap is being reduced.`
+                    }
+                  </p>
+                </div>
+              )
+            })()}
           </div>
         )}
       </div>

@@ -15,7 +15,7 @@ interface CaliforniaYearlyTaxData {
 }
 
 // California tax data by year
-export const CALIFORNIA_TAX_DATA: Record<TaxYear, CaliforniaYearlyTaxData> = {
+const CALIFORNIA_TAX_DATA_BY_YEAR: Record<2025 | 2026, CaliforniaYearlyTaxData> = {
   2025: {
     taxBrackets: {
       single: [
@@ -83,6 +83,13 @@ export const CALIFORNIA_TAX_DATA: Record<TaxYear, CaliforniaYearlyTaxData> = {
     mentalHealthTaxThreshold: 1000000,
     mentalHealthTaxRate: 0.01
   }
+}
+
+export const CALIFORNIA_TAX_DATA: Record<TaxYear, CaliforniaYearlyTaxData> = {
+  ...CALIFORNIA_TAX_DATA_BY_YEAR,
+  // 2027: FTB has not yet published the 2027 schedule (it is released in the fall of the tax year).
+  // Placeholder: reuse the 2026 schedule until official figures are available.
+  2027: CALIFORNIA_TAX_DATA_BY_YEAR[2026]
 }
 
 // Helper functions to get data for specific year

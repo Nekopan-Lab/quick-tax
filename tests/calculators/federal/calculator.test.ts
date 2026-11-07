@@ -71,6 +71,40 @@ const TAX_YEAR_DATA = {
     },
     singleTaxTests: [],
     marriedTaxTests: []
+  },
+  2027: {
+    standardDeductions: {
+      single: 16600,
+      marriedFilingJointly: 33200
+    },
+    singleTaxTests: [
+      {
+        name: 'ordinary income only',
+        income: { ordinaryIncome: 50000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        // 33,400 taxable: 12,800 * 10% + 20,600 * 12% = 1,280 + 2,472
+        expected: { taxableIncome: 33400, ordinaryIncomeTax: 3752, capitalGainsTax: 0, totalTax: 3752 }
+      },
+      {
+        name: 'high income reaching the 37% bracket',
+        income: { ordinaryIncome: 700000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        // 683,400 taxable: 199,237.75 through the 35% bracket + 22,025 * 37% = 207,387
+        expected: { taxableIncome: 683400, ordinaryIncomeTax: 207387, capitalGainsTax: 0, totalTax: 207387 }
+      }
+    ],
+    marriedTaxTests: [
+      {
+        name: 'correct brackets for married filing jointly',
+        income: { ordinaryIncome: 100000, qualifiedDividends: 0, longTermCapitalGains: 0, shortTermCapitalGains: 0 },
+        // 66,800 taxable: 25,600 * 10% + 41,200 * 12% = 2,560 + 4,944
+        expected: { taxableIncome: 66800, ordinaryIncomeTax: 7504, capitalGainsTax: 0, totalTax: 7504 }
+      },
+      {
+        name: 'long-term gains within the 0% bracket ($102,100)',
+        income: { ordinaryIncome: 80000, qualifiedDividends: 0, longTermCapitalGains: 50000, shortTermCapitalGains: 0 },
+        // Ordinary taxable 46,800 -> 2,560 + 21,200 * 12% = 5,104; gains stack to 96,800 < 102,100 -> 0%
+        expected: { taxableIncome: 96800, ordinaryIncomeTax: 5104, capitalGainsTax: 0, totalTax: 5104 }
+      }
+    ]
   }
 } as const
 
@@ -80,7 +114,9 @@ describe('Federal Tax Calculator', () => {
       { year: 2025, filingStatus: 'single', expected: 15000 },
       { year: 2025, filingStatus: 'marriedFilingJointly', expected: 30000 },
       { year: 2026, filingStatus: 'single', expected: 16100 },
-      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 32200 }
+      { year: 2026, filingStatus: 'marriedFilingJointly', expected: 32200 },
+      { year: 2027, filingStatus: 'single', expected: 16600 },
+      { year: 2027, filingStatus: 'marriedFilingJointly', expected: 33200 }
     ]
 
     testCases.forEach(({ year, filingStatus, expected }) => {
@@ -195,7 +231,7 @@ describe('Federal Tax Calculator', () => {
       }
     ]
 
-    const testYears: TaxYear[] = [2025, 2026]
+    const testYears: TaxYear[] = [2025, 2026, 2027]
 
     testYears.forEach((year) => {
       describe(`${year} Edge Cases`, () => {
@@ -232,7 +268,7 @@ describe('Federal Tax Calculator', () => {
     })
   })
 
-  describe('2026 vs 2025 Bracket Comparison', () => {
+  describe('Year-over-Year Bracket Comparison', () => {
     const comparisonTests = [
       {
         name: 'ordinary income only - single filer',
@@ -261,50 +297,32 @@ describe('Federal Tax Calculator', () => {
       }
     ]
 
-    comparisonTests.forEach((testCase) => {
-      it(`should result in lower tax for ${testCase.name} in 2026 due to inflation adjustment`, () => {
-        const deduction2025 = getFederalStandardDeduction(2025, testCase.filingStatus)
-        const deduction2026 = getFederalStandardDeduction(2026, testCase.filingStatus)
+    const yearPairs: Array<[TaxYear, TaxYear]> = [[2025, 2026], [2026, 2027]]
 
-        const deductionInfo2025: DeductionInfo = {
-          type: 'standard',
-          amount: deduction2025
-        }
-        const deductionInfo2026: DeductionInfo = {
-          type: 'standard',
-          amount: deduction2026
-        }
+    yearPairs.forEach(([prevYear, nextYear]) => {
+      comparisonTests.forEach((testCase) => {
+        it(`should result in lower tax for ${testCase.name} in ${nextYear} vs ${prevYear} due to inflation adjustment`, () => {
+          const totalIncome = testCase.income.ordinaryIncome + testCase.income.qualifiedDividends +
+            testCase.income.longTermCapitalGains + testCase.income.shortTermCapitalGains
 
-        const totalIncome = testCase.income.ordinaryIncome + testCase.income.qualifiedDividends +
-          testCase.income.longTermCapitalGains + testCase.income.shortTermCapitalGains
+          const calc = (year: TaxYear) => calculateFederalTax(
+            testCase.income,
+            { type: 'standard', amount: getFederalStandardDeduction(year, testCase.filingStatus) },
+            testCase.filingStatus,
+            year,
+            totalIncome,
+            0,
+            0
+          )
 
-        const result2025 = calculateFederalTax(
-          testCase.income,
-          deductionInfo2025,
-          testCase.filingStatus,
-          2025,
-          totalIncome,
-          0,
-          0
-        )
+          const prev = calc(prevYear)
+          const next = calc(nextYear)
 
-        const result2026 = calculateFederalTax(
-          testCase.income,
-          deductionInfo2026,
-          testCase.filingStatus,
-          2026,
-          totalIncome,
-          0,
-          0
-        )
-
-        // 2026 should have lower or equal tax due to inflation-adjusted brackets
-        expect(result2026.totalTax).toBeLessThanOrEqual(result2025.totalTax)
-
-        // For non-zero tax cases, verify there's an actual reduction
-        if (result2025.totalTax > 0) {
-          expect(result2026.totalTax).toBeLessThan(result2025.totalTax)
-        }
+          expect(next.totalTax).toBeLessThanOrEqual(prev.totalTax)
+          if (prev.totalTax > 0) {
+            expect(next.totalTax).toBeLessThan(prev.totalTax)
+          }
+        })
       })
     })
   })

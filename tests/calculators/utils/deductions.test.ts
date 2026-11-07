@@ -205,6 +205,19 @@ describe('Federal Itemized Deductions', () => {
       expect(getFederalSaltCap(2026, 1000000)).toBe(10000)
       expect(getFederalSaltCap(2026, 5000000)).toBe(10000)
     })
+
+    it('should return $40,804 for 2027 when income is at or below $510,050', () => {
+      expect(getFederalSaltCap(2027, 100000)).toBe(40804)
+      expect(getFederalSaltCap(2027, 510050)).toBe(40804)
+    })
+
+    it('should phase out for 2027 when income is above $510,050', () => {
+      // At $560,050: $40,804 - ($50k * 0.30) = $25,804
+      expect(getFederalSaltCap(2027, 560050)).toBeCloseTo(25804, 6)
+      // Fully phased down to the $10k floor at ~$612,730
+      expect(getFederalSaltCap(2027, 612731)).toBe(10000)
+      expect(getFederalSaltCap(2027, 1000000)).toBe(10000)
+    })
   })
 
   describe('Mortgage Interest Limits', () => {
