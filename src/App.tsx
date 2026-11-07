@@ -156,7 +156,7 @@ function App() {
       case 2:
         return <Income onNext={handleNext} onPrevious={handlePrevious} />
       case 3:
-        return <Deductions onNext={handleNext} onPrevious={handlePrevious} />
+        return <Deductions onNext={handleNext} onPrevious={handlePrevious} taxResults={taxResults} />
       case 4:
         return <EstimatedPayments onNext={handleNext} onPrevious={handlePrevious} />
       case 5:

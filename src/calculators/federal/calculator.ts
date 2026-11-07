@@ -5,7 +5,14 @@ import {
   getFederalTaxBrackets,
   getFederalStandardDeduction,
   getFederalCapitalGainsBrackets,
-  getFederalSaltCap
+  getFederalSaltCap,
+  getFederalDeductionRules,
+  getFederalTopBracketThreshold,
+  NIIT_RATE,
+  NIIT_THRESHOLDS,
+  ADDITIONAL_MEDICARE_RATE,
+  ADDITIONAL_MEDICARE_THRESHOLDS,
+  ADDITIONAL_MEDICARE_EMPLOYER_WITHHOLDING_THRESHOLD
 } from './constants'
 import { calculateProgressiveTaxWithDetails, TaxBracketDetail, calculateDistanceToNextBracket, NextBracketInfo } from '../utils/taxBrackets'
 import { calculateEstimatedPaymentsWithCumulativeSchedule, type QuarterlyPaymentSchedule } from '../utils/estimatedPayments'
@@ -36,10 +43,21 @@ export interface FederalIncomeComponents {
   ordinaryTaxableIncome: number
 }
 
+/** Inputs for the surtaxes that sit on top of regular income tax */
+export interface FederalSurtaxInputs {
+  magi: number                  // Modified AGI (NIIT threshold test)
+  netInvestmentIncome: number   // Interest, dividends and net capital gains
+  wagesByPerson: number[]       // W-2 wages per earner (Additional Medicare Tax)
+}
+
 export interface FederalTaxResult {
   taxableIncome: number        // Income after deductions
   ordinaryIncomeTax: number    // Tax on wages, interest, non-qualified dividends, short-term gains
   capitalGainsTax: number      // Tax on qualified dividends and long-term capital gains
+  netInvestmentIncomeTax: number   // 3.8% NIIT
+  additionalMedicareTax: number    // 0.9% Additional Medicare Tax on wages
+  additionalMedicareWithheld: number // Additional Medicare Tax employers withhold (wages over $200k per earner)
+  withholdings: number         // Total federal withholdings credited (income tax withholding + Additional Medicare withheld)
   totalTax: number             // Total tax liability (before any withholdings or payments)
   deduction: DeductionInfo     // Deduction type and amount used for federal tax calculation
   owedOrRefund: number         // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
@@ -59,6 +77,7 @@ export interface FederalTaxResult {
  * @param totalIncome - Total income for effective rate calculation
  * @param withholdings - Total federal withholdings
  * @param estimatedPayments - Total estimated payments made
+ * @param surtaxInputs - Optional inputs for NIIT and Additional Medicare Tax (omitted = no surtaxes)
  * @returns Federal tax calculation result
  */
 export function calculateFederalTax(
@@ -68,7 +87,8 @@ export function calculateFederalTax(
   taxYear: TaxYear,
   totalIncome: number,
   withholdings: number,
-  estimatedPayments: number
+  estimatedPayments: number,
+  surtaxInputs?: FederalSurtaxInputs
 ): FederalTaxResult {
   // Calculate component income total (for internal calculations)
   const componentIncome = 
@@ -134,8 +154,16 @@ export function calculateFederalTax(
     }
   }
 
-  const totalTax = Math.round(ordinaryTaxResult.totalTax + capitalGainsTax)
-  const owedOrRefund = totalTax - withholdings - estimatedPayments
+  const netInvestmentIncomeTax = surtaxInputs
+    ? calculateNetInvestmentIncomeTax(surtaxInputs.netInvestmentIncome, surtaxInputs.magi, filingStatus)
+    : 0
+  const medicare = surtaxInputs
+    ? calculateAdditionalMedicareTax(surtaxInputs.wagesByPerson, filingStatus)
+    : { tax: 0, withheld: 0 }
+
+  const totalTax = Math.round(ordinaryTaxResult.totalTax + capitalGainsTax + netInvestmentIncomeTax + medicare.tax)
+  const totalWithholdings = withholdings + medicare.withheld
+  const owedOrRefund = totalTax - totalWithholdings - estimatedPayments
   const effectiveRate = totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0
   
   // Compute income components using the detailed breakdown
@@ -164,6 +192,10 @@ export function calculateFederalTax(
     taxableIncome,
     ordinaryIncomeTax: Math.round(ordinaryTaxResult.totalTax),
     capitalGainsTax: Math.round(capitalGainsTax),
+    netInvestmentIncomeTax: Math.round(netInvestmentIncomeTax),
+    additionalMedicareTax: Math.round(medicare.tax),
+    additionalMedicareWithheld: Math.round(medicare.withheld),
+    withholdings: Math.round(totalWithholdings),
     totalTax,
     deduction: deductionInfo,
     owedOrRefund: Math.round(owedOrRefund),
@@ -173,6 +205,66 @@ export function calculateFederalTax(
     capitalGainsBrackets,
     nextBracketInfo
   }
+}
+
+/**
+ * Net Investment Income Tax: 3.8% of the lesser of net investment income
+ * or MAGI above the filing-status threshold ($200k single / $250k MFJ)
+ */
+export function calculateNetInvestmentIncomeTax(
+  netInvestmentIncome: number,
+  magi: number,
+  filingStatus: FilingStatus
+): number {
+  const excessMagi = Math.max(0, magi - NIIT_THRESHOLDS[filingStatus])
+  const base = Math.min(Math.max(0, netInvestmentIncome), excessMagi)
+  return base * NIIT_RATE
+}
+
+/**
+ * Additional Medicare Tax: 0.9% of combined wages above the filing-status threshold.
+ * Employers withhold 0.9% on each earner's wages above $200k regardless of filing status;
+ * that withholding is credited against the tax.
+ */
+export function calculateAdditionalMedicareTax(
+  wagesByPerson: number[],
+  filingStatus: FilingStatus
+): { tax: number; withheld: number } {
+  const totalWages = wagesByPerson.reduce((sum, w) => sum + Math.max(0, w), 0)
+  const tax = Math.max(0, totalWages - ADDITIONAL_MEDICARE_THRESHOLDS[filingStatus]) * ADDITIONAL_MEDICARE_RATE
+  const withheld = wagesByPerson.reduce(
+    (sum, w) => sum + Math.max(0, w - ADDITIONAL_MEDICARE_EMPLOYER_WITHHOLDING_THRESHOLD) * ADDITIONAL_MEDICARE_RATE,
+    0
+  )
+  return { tax, withheld }
+}
+
+/**
+ * OBBBA (2026+) limitation on itemized deductions for 37%-bracket taxpayers:
+ * reduce itemized deductions by 2/37 of the lesser of (a) itemized deductions or
+ * (b) taxable income (before this limitation, plus itemized deductions) above the 37% threshold.
+ * incomeBeforeItemized is AGI (taxable income + itemized deductions when there are no other deductions).
+ */
+export function calculateFederalItemizedLimitation(
+  itemizedTotal: number,
+  incomeBeforeItemized: number,
+  filingStatus: FilingStatus,
+  taxYear: TaxYear
+): number {
+  const rate = getFederalDeductionRules(taxYear).itemizedLimitationRate
+  if (rate === 0 || itemizedTotal <= 0) return 0
+  const excess = Math.max(0, incomeBeforeItemized - getFederalTopBracketThreshold(taxYear, filingStatus))
+  return Math.min(itemizedTotal, excess) * rate
+}
+
+/** OBBBA (2026+) charitable deduction for taxpayers who take the standard deduction */
+export function calculateNonItemizerCharitableDeduction(
+  donations: number,
+  filingStatus: FilingStatus,
+  taxYear: TaxYear
+): number {
+  const cap = getFederalDeductionRules(taxYear).nonItemizerCharitableCap[filingStatus]
+  return Math.min(Math.max(0, donations), cap)
 }
 
 // Re-export the helper function for backwards compatibility
@@ -197,7 +289,11 @@ export interface FederalItemizedDeductionDetails {
   effectiveMortgageInterest: number
   mortgageLimited: boolean
   donations: number
-  total: number
+  charitableFloor: number        // OBBBA 0.5%-of-AGI floor on itemized donations (2026+)
+  deductibleDonations: number    // Donations after the floor
+  totalBeforeLimitation: number  // SALT + mortgage interest + deductible donations
+  limitationReduction: number    // OBBBA 2/37 itemized limitation for 37%-bracket taxpayers (2026+)
+  total: number                  // Itemized deductions after all limits
 }
 
 /**
@@ -208,14 +304,18 @@ export function calculateFederalItemizedDeductions(
   estimatedCAStateTax: number,
   includeCaliforniaTax: boolean,
   taxYear: TaxYear,
-  magi: number
+  magi: number,
+  filingStatus?: FilingStatus,
+  agi: number = magi
 ): number {
   const details = calculateFederalItemizedDeductionDetails(
     deductions,
     estimatedCAStateTax,
     includeCaliforniaTax,
     taxYear,
-    magi
+    magi,
+    filingStatus,
+    agi
   )
   return details.total
 }
@@ -225,13 +325,18 @@ export function calculateFederalItemizedDeductions(
  * For 2025: SALT cap is fixed at $10,000
  * For 2026: SALT cap is $40,400 with income-based phaseout starting at $505,000 MAGI
  * For 2027: SALT cap is $40,804 with income-based phaseout starting at $510,050 MAGI
+ * For 2026+: donations are deductible only above 0.5% of AGI, and when filingStatus is
+ * given the 2/37 limitation for 37%-bracket taxpayers is applied
+ * @param caStateTaxPaid - California income tax paid during the year (used when includeCaliforniaTax)
  */
 export function calculateFederalItemizedDeductionDetails(
   deductions: DeductionsData,
-  estimatedCAStateTax: number,
+  caStateTaxPaid: number,
   includeCaliforniaTax: boolean,
   taxYear: TaxYear,
-  magi: number
+  magi: number,
+  filingStatus?: FilingStatus,
+  agi: number = magi
 ): FederalItemizedDeductionDetails {
   const propertyTax = parseFloat(deductions.propertyTax) || 0
   const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
@@ -240,7 +345,7 @@ export function calculateFederalItemizedDeductionDetails(
 
   // Calculate state income tax for SALT
   const stateIncomeTax = includeCaliforniaTax
-    ? estimatedCAStateTax
+    ? caStateTaxPaid
     : parseFloat(deductions.otherStateIncomeTax) || 0
 
   // Apply SALT cap based on tax year and MAGI
@@ -265,6 +370,15 @@ export function calculateFederalItemizedDeductionDetails(
     }
   }
   
+  // OBBBA (2026+): itemized charitable deductions only above 0.5% of AGI
+  const charitableFloor = Math.min(donations, Math.max(0, agi) * getFederalDeductionRules(taxYear).charitableAgiFloorRate)
+  const deductibleDonations = donations - charitableFloor
+
+  const totalBeforeLimitation = saltDeduction + deductibleMortgageInterest + deductibleDonations
+  const limitationReduction = filingStatus
+    ? calculateFederalItemizedLimitation(totalBeforeLimitation, agi, filingStatus, taxYear)
+    : 0
+
   return {
     propertyTax,
     stateIncomeTax,
@@ -276,7 +390,11 @@ export function calculateFederalItemizedDeductionDetails(
     effectiveMortgageInterest: deductibleMortgageInterest,
     mortgageLimited,
     donations,
-    total: saltDeduction + deductibleMortgageInterest + donations
+    charitableFloor,
+    deductibleDonations,
+    totalBeforeLimitation,
+    limitationReduction,
+    total: totalBeforeLimitation - limitationReduction
   }
 }
 

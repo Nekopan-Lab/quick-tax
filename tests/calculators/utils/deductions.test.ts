@@ -329,9 +329,9 @@ describe('Federal Itemized Deductions', () => {
 
       // SALT: $25k + $10k = $35k (under $40,400 cap for 2026)
       // Mortgage: $40k * ($750k / $900k) = $33,333.33
-      // Donations: $5k
-      // Total: $35k + $33,333.33 + $5k = $73,333.33
-      expect(result).toBeCloseTo(73333.33, 2)
+      // Donations: $5k less OBBBA 0.5% AGI floor ($400k x 0.5% = $2k) = $3k
+      // Total: $35k + $33,333.33 + $3k = $71,333.33
+      expect(result).toBeCloseTo(71333.33, 2)
     })
   })
 })

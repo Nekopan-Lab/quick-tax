@@ -7,26 +7,55 @@ import {
 import { 
   calculateFederalTax, 
   getFederalStandardDeduction,
-  calculateFederalItemizedDeductions,
+  calculateFederalItemizedDeductionDetails,
   calculateFederalEstimatedPayments,
+  calculateNonItemizerCharitableDeduction,
   type FederalIncomeBreakdown,
   type FederalTaxResult,
+  type FederalItemizedDeductionDetails,
   type EstimatedPaymentSuggestion
 } from './federal/calculator'
+import { getFederalSaltCap } from './federal/constants'
 import { 
   calculateCaliforniaTax, 
   getCaliforniaStandardDeduction,
   calculateCaliforniaItemizedDeductions,
+  calculateCaliforniaItemizedDeductionDetails,
   calculateCaliforniaEstimatedPayments,
+  calculateCaliforniaTaxPaidInYear,
   calculateEstimatedCAStateTax,
-  type CaliforniaTaxResult
+  type CaliforniaTaxResult,
+  type CaliforniaItemizedDeductionDetails
 } from './california/calculator'
 import { aggregateHouseholdIncome } from './utils/householdIncome'
 
+export interface FederalDeductionSummary {
+  standardDeduction: number
+  nonItemizerCharitable: number   // OBBBA charitable deduction added to the standard deduction (2026+)
+  itemized: FederalItemizedDeductionDetails
+  saltCap: number                 // Effective SALT cap after MAGI phaseout
+  useItemized: boolean
+  amount: number                  // Deduction used in the federal calculation
+}
+
+export interface CaliforniaDeductionSummary {
+  standardDeduction: number
+  itemized: CaliforniaItemizedDeductionDetails
+  useItemized: boolean
+  amount: number
+}
+
 export interface TaxCalculationResult {
   // Total amounts
-  totalIncome: number
+  totalIncome: number             // AGI
   businessExpenses: number
+  netInvestmentIncome: number
+
+  // Deduction choice and breakdowns (single source of truth for the UI)
+  deductions: {
+    federal: FederalDeductionSummary
+    california?: CaliforniaDeductionSummary
+  }
   
   // Federal results
   federalTax: FederalTaxResult  // Contains total tax liability, breakdown, owed/refund, and effective rate
@@ -35,6 +64,30 @@ export interface TaxCalculationResult {
   californiaTax?: CaliforniaTaxResult  // Contains total CA tax liability, breakdown, owed/refund, and effective rate
 }
 
+/**
+ * Net short-term and long-term capital gains the way Schedule D does:
+ * a loss in one holding period offsets a gain in the other, and a net loss
+ * is deductible against ordinary income up to $3,000.
+ */
+export function netCapitalGains(shortTerm: number, longTerm: number): {
+  shortTermGain: number      // Taxable short-term gain after netting (>= 0)
+  longTermGain: number       // Taxable long-term gain after netting (>= 0)
+  lossDeduction: number      // Net capital loss allowed against ordinary income (<= 0, >= -3000)
+  disallowedLoss: number     // Net loss above $3,000 (carried forward; <= 0)
+} {
+  const net = shortTerm + longTerm
+  if (net < 0) {
+    const lossDeduction = Math.max(net, -3000)
+    return { shortTermGain: 0, longTermGain: 0, lossDeduction, disallowedLoss: net - lossDeduction }
+  }
+  if (shortTerm < 0) {
+    return { shortTermGain: 0, longTermGain: net, lossDeduction: 0, disallowedLoss: 0 }
+  }
+  if (longTerm < 0) {
+    return { shortTermGain: net, longTermGain: 0, lossDeduction: 0, disallowedLoss: 0 }
+  }
+  return { shortTermGain: shortTerm, longTermGain: longTerm, lossDeduction: 0, disallowedLoss: 0 }
+}
 
 /**
  * Calculate comprehensive tax results based on all user input
@@ -48,29 +101,22 @@ export function calculateComprehensiveTax(
   spouseIncome: IncomeData,
   estimatedPayments: EstimatedPaymentsData
 ): TaxCalculationResult | null {
-  // filingStatus is always defined now
-
-  // Aggregate income for the entire household
-  const household = aggregateHouseholdIncome(userIncome, spouseIncome, filingStatus)
+  // Aggregate income for the entire household (paychecks limited to the selected tax year)
+  const household = aggregateHouseholdIncome(userIncome, spouseIncome, filingStatus, taxYear)
   
   // Apply business expenses to reduce gross income (Schedule C)
   const businessExpenses = parseFloat(deductions.businessExpenses) || 0
   const grossIncomeAfterBusinessExpenses = household.totalIncome - businessExpenses
   
-  // Calculate total income before capital loss limit
-  const totalIncomeBeforeLimit = grossIncomeAfterBusinessExpenses
-  
   // Use household aggregated investment income
   const totalInvestmentIncome = household.investmentIncome
 
-  // Prepare income breakdown for federal tax calculation
-  // Apply capital loss limit: Net capital losses are limited to $3,000 deduction against ordinary income
-  const netCapitalGains = totalInvestmentIncome.shortTermGains + totalInvestmentIncome.longTermGains
-  const capitalLossDeduction = netCapitalGains < 0 ? Math.max(netCapitalGains, -3000) : 0
+  // Net short- and long-term gains, then apply the $3,000 capital loss limit
+  const capitalGains = netCapitalGains(totalInvestmentIncome.shortTermGains, totalInvestmentIncome.longTermGains)
+  const capitalLossDeduction = capitalGains.lossDeduction
   
-  // Calculate total income with capital loss limit applied
-  const capitalLossAdjustment = netCapitalGains < 0 ? netCapitalGains - capitalLossDeduction : 0
-  const totalIncome = totalIncomeBeforeLimit - capitalLossAdjustment
+  // AGI: household income already includes raw gains/losses; remove the disallowed part of a net loss
+  const totalIncome = grossIncomeAfterBusinessExpenses - capitalGains.disallowedLoss
 
   // Calculate total ordinary income components before applying business expenses
   const nonQualifiedDividends = totalInvestmentIncome.ordinaryDividends - totalInvestmentIncome.qualifiedDividends
@@ -107,8 +153,8 @@ export function calculateComprehensiveTax(
                     household.rothConversion +
                     capitalLossDeduction, // Apply capital loss limit
     qualifiedDividends: totalInvestmentIncome.qualifiedDividends,
-    longTermCapitalGains: Math.max(0, totalInvestmentIncome.longTermGains), // Only positive LTCG
-    shortTermCapitalGains: Math.max(0, totalInvestmentIncome.shortTermGains), // Only positive STCG
+    longTermCapitalGains: capitalGains.longTermGain,
+    shortTermCapitalGains: capitalGains.shortTermGain,
     // Additional detail fields
     wages: adjustedWageIncome,
     interestIncome: adjustedInterestIncome,
@@ -117,23 +163,38 @@ export function calculateComprehensiveTax(
     rothConversion: household.rothConversion
   }
 
-  // Calculate estimated CA state tax for SALT deduction if needed
-  const estimatedCAStateTax = includeCaliforniaTax
-    ? calculateEstimatedCAStateTax(totalIncome, filingStatus, taxYear)
+  // Net investment income for NIIT: interest, dividends and net capital gain (an allowed net loss reduces it)
+  const netInvestmentIncome = Math.max(
+    0,
+    totalInvestmentIncome.interestIncome +
+      totalInvestmentIncome.ordinaryDividends +
+      capitalGains.shortTermGain +
+      capitalGains.longTermGain +
+      capitalLossDeduction
+  )
+
+  // California income tax paid during the year (deductible under federal SALT)
+  const californiaWithholdings = household.totalWithholdings.state
+  const caStateTaxPaid = includeCaliforniaTax
+    ? calculateCaliforniaTaxPaidInYear(californiaWithholdings, estimatedPayments)
     : 0
 
-  // Calculate deductions (standard vs itemized)
+  // Federal deductions (standard vs itemized). MAGI = AGI for this calculator.
   const standardDeduction = getFederalStandardDeduction(taxYear, filingStatus)
-  const itemizedDeduction = calculateFederalItemizedDeductions(
+  const donations = parseFloat(deductions.donations) || 0
+  const nonItemizerCharitable = calculateNonItemizerCharitableDeduction(donations, filingStatus, taxYear)
+  const federalItemizedDetails = calculateFederalItemizedDeductionDetails(
     deductions,
-    estimatedCAStateTax,
+    caStateTaxPaid,
     includeCaliforniaTax,
     taxYear,
-    totalIncome  // Use total income as MAGI for SALT cap phaseout calculation
+    totalIncome,  // MAGI for SALT cap phaseout
+    filingStatus,
+    totalIncome   // AGI for the charitable floor and itemized limitation
   )
-  
-  const useItemized = itemizedDeduction > standardDeduction
-  const deductionAmount = useItemized ? itemizedDeduction : standardDeduction
+  const standardTotal = standardDeduction + nonItemizerCharitable
+  const useItemized = federalItemizedDetails.total > standardTotal
+  const deductionAmount = useItemized ? federalItemizedDetails.total : standardTotal
   
   // Create DeductionInfo object for federal tax calculation
   const federalDeductionInfo: DeductionInfo = {
@@ -145,7 +206,7 @@ export function calculateComprehensiveTax(
   const federalWithholdings = household.totalWithholdings.federal
   const federalEstimatedPaid = calculateTotalFederalEstimatedPayments(estimatedPayments)
 
-  // Calculate federal tax
+  // Calculate federal tax (including NIIT and Additional Medicare Tax)
   const federalResult = calculateFederalTax(
     federalIncomeBreakdown,
     federalDeductionInfo,
@@ -153,18 +214,33 @@ export function calculateComprehensiveTax(
     taxYear,
     totalIncome,
     federalWithholdings,
-    federalEstimatedPaid
+    federalEstimatedPaid,
+    {
+      magi: totalIncome,
+      netInvestmentIncome,
+      wagesByPerson: household.wageIncomeByPerson
+    }
   )
+
+  const federalDeductionSummary: FederalDeductionSummary = {
+    standardDeduction,
+    nonItemizerCharitable,
+    itemized: federalItemizedDetails,
+    saltCap: getFederalSaltCap(taxYear, totalIncome),
+    useItemized,
+    amount: deductionAmount
+  }
 
   // Initialize California results
   let californiaResult = undefined
+  let californiaDeductionSummary: CaliforniaDeductionSummary | undefined = undefined
 
   if (includeCaliforniaTax) {
-    // Calculate California deductions
+    // Calculate California deductions (with high-AGI itemized limitation)
     const caStandardDeduction = getCaliforniaStandardDeduction(taxYear, filingStatus)
-    const caItemizedDeduction = calculateCaliforniaItemizedDeductions(deductions)
-    const caUseItemized = caItemizedDeduction > caStandardDeduction
-    const caDeductionAmount = caUseItemized ? caItemizedDeduction : caStandardDeduction
+    const caItemizedDetails = calculateCaliforniaItemizedDeductionDetails(deductions, totalIncome, filingStatus, taxYear)
+    const caUseItemized = caItemizedDetails.total > caStandardDeduction
+    const caDeductionAmount = caUseItemized ? caItemizedDetails.total : caStandardDeduction
     
     // Create DeductionInfo object for California tax calculation
     const caDeductionInfo: DeductionInfo = {
@@ -172,26 +248,35 @@ export function calculateComprehensiveTax(
       amount: caDeductionAmount
     }
 
-    // Calculate California withholdings
-    const californiaWithholdings = household.totalWithholdings.state
-
     const californiaEstimatedPaid = calculateTotalCaliforniaEstimatedPayments(estimatedPayments)
 
-    // Calculate California tax
+    // Calculate California tax (exemption credit phases out on federal AGI)
     californiaResult = calculateCaliforniaTax(
       totalIncome,
       caDeductionInfo,
       filingStatus,
       taxYear,
       californiaWithholdings,
-      californiaEstimatedPaid
+      californiaEstimatedPaid,
+      totalIncome
     )
 
+    californiaDeductionSummary = {
+      standardDeduction: caStandardDeduction,
+      itemized: caItemizedDetails,
+      useItemized: caUseItemized,
+      amount: caDeductionAmount
+    }
   }
 
   return {
     totalIncome: Math.round(totalIncome),
     businessExpenses: Math.round(businessExpenses),
+    netInvestmentIncome: Math.round(netInvestmentIncome),
+    deductions: {
+      federal: federalDeductionSummary,
+      california: californiaDeductionSummary
+    },
     federalTax: federalResult,
     californiaTax: californiaResult
   }

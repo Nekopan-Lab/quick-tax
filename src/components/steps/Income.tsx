@@ -22,7 +22,7 @@ interface FutureRSUVest {
 
 export function Income({ onNext, onPrevious }: IncomeProps) {
   const [activeTab, setActiveTab] = useState<'user' | 'spouse'>('user')
-  const { filingStatus, includeCaliforniaTax, userIncome, spouseIncome, setUserIncome, setSpouseIncome } = useStore()
+  const { filingStatus, includeCaliforniaTax, taxYear, userIncome, spouseIncome, setUserIncome, setSpouseIncome } = useStore()
   const showSpouseTab = filingStatus === 'marriedFilingJointly'
   
   // State for tracking gains vs losses
@@ -44,7 +44,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
   const currentLongTermIsLoss = activeTab === 'user' ? longTermIsLoss.user : longTermIsLoss.spouse
   
   // Calculate total income for display
-  const totalIncome = calculateIndividualTotalIncome(currentIncome)
+  const totalIncome = calculateIndividualTotalIncome(currentIncome, taxYear)
 
   // Calculate tax withholding percentages from last vest
   const { federalRate: federalWithholdingRate, stateRate: stateWithholdingRate } = calculateWithholdingRates(currentIncome)
@@ -55,7 +55,7 @@ export function Income({ onNext, onPrevious }: IncomeProps) {
     projectedWage: projectedPaycheckIncome,
     projectedFederalWithhold: projectedPaycheckFederal,
     projectedStateWithhold: projectedPaycheckState
-  } = calculateProjectedPaycheckIncome(currentIncome)
+  } = calculateProjectedPaycheckIncome(currentIncome, taxYear)
 
   const addFutureRSUVest = () => {
     const newVest: FutureRSUVest = {

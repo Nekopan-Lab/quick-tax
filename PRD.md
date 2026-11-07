@@ -38,7 +38,7 @@ This document outlines the product requirements for "QuickTax," a web-based appl
 * Actual tax filing or submission to tax authorities.  
 * Support for states other than California initially.  
 * Support for filing statuses other than Single and Married Filing Jointly (e.g., Head of Household, Married Filing Separately, Qualifying Widower).  
-* Complex tax scenarios (e.g., self-employment tax, foreign income, depreciation, credits beyond basic withholding).  
+* Complex tax scenarios (e.g., self-employment tax, foreign income, depreciation, credits beyond basic withholding and the California personal exemption credit).  
 * Integration with financial institutions or payroll providers.  
 * Server-side data storage.
 
@@ -87,6 +87,7 @@ The application will feature a clear, step-by-step flow to guide users through t
        * Federal Withhold (Year-to-Date).
        * State Withhold (Year-to-Date) \- *This field will be hidden if California State Tax is not selected.*
      * **Future Income (User Selects One Mode):**  
+       * Only paychecks and future RSU vests dated within the selected tax year (January 1 to December 31) are counted, so selecting a future or past tax year never pulls in income from another calendar year.
        * **Mode I (Simple Estimation):**  
          * Estimated Future Taxable Wage.  
          * Estimated Future Federal Withhold.  
@@ -136,8 +137,14 @@ The application will feature a clear, step-by-step flow to guide users through t
            * Phaseout begins at $510,050 MAGI, $0.30 reduction per $1 over the threshold
            * Minimum cap: $10,000
          * SALT deduction includes property tax plus either:
-           * Estimated California state income tax (when CA tax is selected), or
+           * California state income tax *paid during the tax year* (when CA tax is selected): CA withholdings (YTD + future) plus the Q1 and Q2 CA estimated payments. The Q4 payment is due the following January, so it is deductible in the following year and is excluded. Any balance due paid with the return is also deductible only in the year it is paid.
            * Other state income tax entered manually (when CA tax is not selected)
+       * **Charitable Donations (Tax Year 2026+, OBBBA)**:
+         * Itemized charitable deductions are allowed only to the extent they exceed 0.5% of AGI
+         * Taxpayers who take the standard deduction may deduct up to $1,000 (Single) / $2,000 (Married Filing Jointly) of donations in addition to the standard deduction; the standard-vs-itemized comparison uses standard deduction plus this amount
+       * **Itemized Deduction Limitation for the 37% Bracket (Tax Year 2026+, OBBBA)**:
+         * Total itemized deductions are reduced by 2/37 of the lesser of (a) the itemized deductions or (b) AGI above the start of the 37% bracket for the year and filing status
+         * This caps the value of itemized deductions at 35% for top-bracket taxpayers
        * **Mortgage Interest Limits**: Based on loan origination date:
          * Loans before Dec 16, 2017: Interest deductible on up to $1,000,000 of mortgage debt
          * Loans after Dec 15, 2017: Interest deductible on up to $750,000 of mortgage debt
@@ -146,12 +153,14 @@ The application will feature a clear, step-by-step flow to guide users through t
        * No SALT cap for California
        * Mortgage interest limit is always $1,000,000 regardless of loan date
        * California does not allow deduction of California state income tax on CA return
+       * High-income limitation: when federal AGI exceeds the CA threshold (2025: $252,203 Single / $504,411 MFJ; 2026: $260,778 / $521,561), itemized deductions are reduced by the lesser of 6% of AGI over the threshold or 80% of itemized deductions
      * Compare total itemized deductions to the applicable standard deduction for the selected filing status (Federal and California separately, if CA tax is selected).  
      * Automatically select and display which deduction method (Standard or Itemized) is more beneficial for the user for *each* jurisdiction, explaining why.  
      * The higher deduction amount will be used in subsequent tax calculations.
      * Show expandable breakdowns for itemized deductions (always available to show why standard/itemized was chosen):
-       * Federal breakdown shows: Property tax, estimated CA state tax (or other state tax), SALT cap application, mortgage interest with limit application, and donations
-       * California breakdown shows: Property tax, mortgage interest with $1M limit application, and donations
+       * Federal breakdown shows: Property tax, CA state tax paid in the tax year (or other state tax), SALT cap application, mortgage interest with limit application, donations with the 0.5% AGI floor, and the 37%-bracket limitation when applied
+       * California breakdown shows: Property tax, mortgage interest with $1M limit application, donations, and the high-income limitation when applied
+       * The Deductions step displays the deduction results computed by the calculation layer (no separate UI-side calculation); all amounts are shown rounded to whole dollars
        * When itemized is less than standard deduction, show explanatory text
        * Clearly illustrate when caps/limits are applied with visual indicators and calculations
 5. **Estimated Tax Payments YTD:**  
@@ -171,9 +180,10 @@ The application will feature a clear, step-by-step flow to guide users through t
            * Ordinary Income Taxed At: \[Applicable Federal Marginal Rates\]  
            * Long-Term Capital Gains Taxed At: \[Applicable Federal LTCG Rates (0%, 15%, 20%)\]  
            * Other Investment Income (Ordinary Dividends, Interest) Taxed At: \[Applicable Federal Ordinary Income Rates\]  
+           * Net Investment Income Tax (3.8%) and Additional Medicare Tax (0.9%), when applicable (see Section 7.1.6)  
          * **California Tax Breakdown (if selected):**  
-           * All Income (including Capital Gains) Taxed At: \[Applicable California Marginal Rates\], plus the 1% mental health services tax for taxable income exceeding $1,000,000  
-       * Total Withholdings (W2 YTD \+ Future).  
+           * All Income (including Capital Gains) Taxed At: \[Applicable California Marginal Rates\], plus the 1% mental health services tax for taxable income exceeding $1,000,000, less the personal exemption credit (see Section 7.2.5)  
+       * Total Withholdings (W2 YTD \+ Future; federal also includes Additional Medicare Tax withheld by employers).  
        * Total Estimated Payments Made YTD.  
        * Net Tax Owed / Overpaid.
      * **Distance to Next Tax Bracket:**
@@ -191,7 +201,7 @@ The application will feature a clear, step-by-step flow to guide users through t
            * Paid quarters: Green background with checkmark and "(Paid)" label  
            * Future unpaid quarters: Blue background with suggested amount  
            * Past due unpaid quarters: Gray background with $0 and "(Past Due)" label  
-         * Calculate suggested future payments only for unpaid quarters that haven't passed their due date  
+         * Calculate suggested future payments only for unpaid quarters that haven't passed their due date (a quarter becomes past due after the end of its due date in the user's local time zone)  
          * If all payments have been made, show final tax owed/overpaid amount with reminder that this is an estimation  
        * **Federal Calculation:**  
          * If tax is owed and unpaid quarters remain, divide the remaining owed amount equally among the unpaid quarterly due dates  
@@ -313,12 +323,28 @@ These rates apply to the portion of qualified dividends and long-term capital ga
 5. Calculate the tax on qualified dividends and long-term capital gains separately.  
 6. Sum the ordinary income tax and the capital gains/qualified dividends tax to get the total federal tax liability.
 
+#### **7.1.3a. Capital Gain Netting**
+
+Short-term and long-term results are netted as on Schedule D before applying rates:
+
+* A net short-term loss offsets a net long-term gain (and vice versa); only the remaining net gain is taxed, keeping its holding-period character.
+* If the combined result is a net loss, up to $3,000 is deducted against ordinary income; the rest is carried forward (not modeled).
+
 #### **7.1.4. Estimated Tax Payment Due Dates (Federal)**
 
 * **Q1 (January 1 to March 31):** April 15, 2025  
 * **Q2 (April 1 to May 31):** June 16, 2025  
 * **Q3 (June 1 to August 31):** September 15, 2025  
 * **Q4 (September 1 to December 31):** January 15, 2026
+
+#### **7.1.5. MAGI**
+
+* For this calculator, MAGI equals AGI (total income after business expenses and the capital loss limit).
+
+#### **7.1.6. Surtaxes (all tax years; thresholds are statutory and not inflation-indexed)**
+
+* **Net Investment Income Tax (NIIT):** 3.8% of the lesser of net investment income or MAGI above $200,000 (Single) / $250,000 (Married Filing Jointly). Net investment income = interest + ordinary dividends + net capital gain (an allowed net capital loss of up to $3,000 reduces it). Wages and Roth conversions are not investment income but do count toward MAGI.
+* **Additional Medicare Tax:** 0.9% of combined W-2 wages above $200,000 (Single) / $250,000 (Married Filing Jointly). Employers withhold 0.9% on each earner's wages above $200,000; that withholding is credited against the tax. Taxable wages are used as an approximation of Medicare wages.
 
 ### **7.2. California State Tax (FTB) Calculation Rules**
 
@@ -373,6 +399,12 @@ California requires 3 payments for estimated tax, with specific percentages of t
 * **Q2 (April 1 to May 31):** June 16, 2025 (40% of total estimated tax)  
 * **Q3 (June 1 to August 31):** September 15, 2025 (0% \- no payment due)  
 * **Q4 (September 1 to December 31):** January 15, 2026 (30% of total estimated tax)
+
+#### **7.2.5. Personal Exemption Credit**
+
+* Credit against regular California tax (not the mental health services tax), never reducing tax below zero: 2025: $153 Single / $306 MFJ; 2026: $158 / $316 (2027 reuses 2026 until FTB publishes).
+* Phaseout: each credit is reduced by $6 for every $2,500 (or fraction) of federal AGI above the threshold (2025: $252,203 Single / $504,411 MFJ; 2026: $260,778 / $521,561). Single filers have one credit, MFJ filers two ($12 per step).
+* Dependent exemption credits are out of scope.
 
 ## **8\. Deployment Requirements**
 

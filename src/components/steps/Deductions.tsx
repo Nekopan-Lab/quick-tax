@@ -1,79 +1,49 @@
 import { useState } from 'react'
 import { useStore } from '../../store/useStore'
-import {
-  getFederalStandardDeduction,
-  calculateFederalItemizedDeductions,
-  calculateFederalItemizedDeductionDetails
-} from '../../calculators/federal/calculator'
-import { getFederalSaltCap } from '../../calculators/federal/constants'
-import { 
-  getCaliforniaStandardDeduction,
-  calculateCaliforniaItemizedDeductions,
-  calculateCaliforniaItemizedDeductionDetails
-} from '../../calculators/california/calculator'
-import { calculateEstimatedCAStateTax } from '../../calculators/orchestrator'
+import { getFederalStandardDeduction } from '../../calculators/federal/calculator'
+import { getCaliforniaStandardDeduction } from '../../calculators/california/calculator'
+import type { TaxCalculationResult } from '../../calculators/orchestrator'
 import { TaxYear } from '../../types'
 import { numberInputProps } from '../../utils/inputHelpers'
-import { calculateIndividualTotalIncome } from '../../calculators/utils/income'
 
 interface DeductionsProps {
   onNext: () => void
   onPrevious: () => void
+  taxResults: TaxCalculationResult | null
 }
 
-export function Deductions({ onNext, onPrevious }: DeductionsProps) {
+// Whole-dollar currency formatting for display
+const fmt = (value: number) => Math.round(value).toLocaleString()
+
+export function Deductions({ onNext, onPrevious, taxResults }: DeductionsProps) {
   const { 
     includeCaliforniaTax, 
     filingStatus, 
     taxYear,
     deductions, 
-    setDeductions,
-    userIncome,
-    spouseIncome
+    setDeductions
   } = useStore()
   
   const [expandedFederal, setExpandedFederal] = useState(false)
   const [expandedCalifornia, setExpandedCalifornia] = useState(false)
 
-  // Standard deduction values based on filing status and tax year
-  const federalStandardDeduction = filingStatus ? 
-    getFederalStandardDeduction(taxYear as TaxYear, filingStatus) : 0
-  const caStandardDeduction = filingStatus ? 
-    getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus) : 0
-  
-  // Calculate total income for CA state tax estimation
-  const userTotalIncome = calculateIndividualTotalIncome(userIncome)
-  const spouseTotalIncome = filingStatus === 'marriedFilingJointly' ? calculateIndividualTotalIncome(spouseIncome) : 0
-  const totalIncome = userTotalIncome + spouseTotalIncome
-  
-  // Calculate estimated CA state tax for SALT deduction
-  const estimatedCAStateTax = includeCaliforniaTax ? 
-    calculateEstimatedCAStateTax(totalIncome, filingStatus, taxYear as TaxYear) : 0
-  
-  // Calculate itemized deductions with SALT cap and mortgage limits
-  const federalItemized = calculateFederalItemizedDeductions(
-    deductions,
-    estimatedCAStateTax,
-    includeCaliforniaTax,
-    taxYear as TaxYear,
-    totalIncome
-  )
+  // All deduction math comes from the calculation layer (orchestrator)
+  const federal = taxResults?.deductions.federal
+  const california = taxResults?.deductions.california
 
-  const californiaItemized = calculateCaliforniaItemizedDeductions(deductions)
+  const federalStandardDeduction = federal?.standardDeduction ??
+    getFederalStandardDeduction(taxYear as TaxYear, filingStatus)
+  const federalStandardTotal = federalStandardDeduction + (federal?.nonItemizerCharitable ?? 0)
+  const federalItemized = federal?.itemized.total ?? 0
+  const federalDetails = federal?.itemized
+  const effectiveSaltCap = federal?.saltCap ?? 0
+  const federalUseItemized = federal?.useItemized ?? false
 
-  // Get detailed breakdown for display
-  const federalDetails = calculateFederalItemizedDeductionDetails(
-    deductions,
-    estimatedCAStateTax,
-    includeCaliforniaTax,
-    taxYear as TaxYear,
-    totalIncome
-  )
-  
-  const californiaDetails = calculateCaliforniaItemizedDeductionDetails(deductions)
-
-  // Get effective SALT cap for display
-  const effectiveSaltCap = getFederalSaltCap(taxYear as TaxYear, totalIncome)
+  const caStandardDeduction = california?.standardDeduction ??
+    getCaliforniaStandardDeduction(taxYear as TaxYear, filingStatus)
+  const californiaItemized = california?.itemized.total ?? 0
+  const californiaDetails = california?.itemized
+  const caUseItemized = california?.useItemized ?? false
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -248,23 +218,26 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
             <div className="space-y-3">
               <div className={`grid gap-3 ${includeCaliforniaTax ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
                 <div className={`rounded-lg p-3 sm:p-4 border-2 transition-all ${
-                  federalItemized > federalStandardDeduction 
+                  federalUseItemized
                     ? 'bg-green-50 border-green-300' 
                     : 'bg-white border-gray-200'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold text-sm sm:text-base text-gray-900">Federal (IRS)</span>
-                    {federalItemized > federalStandardDeduction ? (
+                    {federalUseItemized ? (
                       <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">ITEMIZED</span>
                     ) : (
                       <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-semibold">STANDARD</span>
                     )}
                   </div>
                   <div className="text-xl sm:text-2xl font-bold text-gray-900">
-                    ${Math.max(federalItemized, federalStandardDeduction).toLocaleString()}
+                    ${fmt(federalUseItemized ? federalItemized : federalStandardTotal)}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600 mt-1">
-                    Standard: ${federalStandardDeduction.toLocaleString()}
+                    Standard: ${fmt(federalStandardDeduction)}
+                    {(federal?.nonItemizerCharitable ?? 0) > 0 && (
+                      <span> + ${fmt(federal!.nonItemizerCharitable)} non-itemizer charitable deduction</span>
+                    )}
                   </div>
                   <button
                     onClick={() => setExpandedFederal(!expandedFederal)}
@@ -276,53 +249,70 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                     </svg>
                   </button>
                   
-                  {expandedFederal && (
+                  {expandedFederal && federalDetails && (
                     <div className="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
                       <div className="flex justify-between">
                         <span>Property Tax:</span>
-                        <span>${federalDetails.propertyTax.toLocaleString()}</span>
+                        <span>${fmt(federalDetails.propertyTax)}</span>
                       </div>
                       {includeCaliforniaTax && (
                         <div className="flex justify-between">
-                          <span>Est. CA State Tax:</span>
-                          <span>${Math.round(federalDetails.stateIncomeTax).toLocaleString()}</span>
+                          <span>CA State Tax Paid in {taxYear}:</span>
+                          <span>${fmt(federalDetails.stateIncomeTax)}</span>
+                        </div>
+                      )}
+                      {includeCaliforniaTax && (
+                        <div className="text-gray-500 pl-3">
+                          Withholdings + Q1/Q2 estimated payments (the Q4 payment is due next January, so it counts next year)
                         </div>
                       )}
                       {!includeCaliforniaTax && federalDetails.stateIncomeTax > 0 && (
                         <div className="flex justify-between">
                           <span>State Income Tax:</span>
-                          <span>${federalDetails.stateIncomeTax.toLocaleString()}</span>
+                          <span>${fmt(federalDetails.stateIncomeTax)}</span>
                         </div>
                       )}
                       {federalDetails.saltCapped && (
                         <div className="flex justify-between text-orange-600 font-medium">
                           <span>SALT Cap Applied:</span>
-                          <span>${federalDetails.saltDeduction.toLocaleString()} (max ${effectiveSaltCap.toLocaleString()})</span>
+                          <span>${fmt(federalDetails.saltDeduction)} (max ${fmt(effectiveSaltCap)})</span>
                         </div>
                       )}
                       <div className="flex justify-between pt-1">
                         <span>Mortgage Interest:</span>
-                        <span>${federalDetails.mortgageInterest.toLocaleString()}</span>
+                        <span>${fmt(federalDetails.mortgageInterest)}</span>
                       </div>
                       {federalDetails.mortgageLimited && (
                         <div className="flex justify-between text-orange-600 text-xs pl-3">
-                          <span>→ Limited to ${federalDetails.mortgageLimit.toLocaleString()} loan:</span>
-                          <span>${Math.round(federalDetails.effectiveMortgageInterest).toLocaleString()}</span>
+                          <span>→ Limited to ${fmt(federalDetails.mortgageLimit)} loan:</span>
+                          <span>${fmt(federalDetails.effectiveMortgageInterest)}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
                         <span>Donations:</span>
-                        <span>${federalDetails.donations.toLocaleString()}</span>
+                        <span>${fmt(federalDetails.donations)}</span>
                       </div>
+                      {federalDetails.charitableFloor > 0 && (
+                        <div className="flex justify-between text-orange-600 text-xs pl-3">
+                          <span>→ Less 0.5% of AGI floor:</span>
+                          <span>-${fmt(federalDetails.charitableFloor)}</span>
+                        </div>
+                      )}
+                      {federalDetails.limitationReduction > 0 && (
+                        <div className="flex justify-between text-orange-600 font-medium">
+                          <span>37% bracket limitation (2/37):</span>
+                          <span>-${fmt(federalDetails.limitationReduction)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between font-medium pt-1 border-t">
                         <span>Total Federal Itemized:</span>
-                        <span className={federalDetails.total < federalStandardDeduction ? 'text-gray-500' : ''}>
-                          ${federalDetails.total.toLocaleString()}
+                        <span className={!federalUseItemized ? 'text-gray-500' : ''}>
+                          ${fmt(federalDetails.total)}
                         </span>
                       </div>
-                      {federalDetails.total < federalStandardDeduction && (
+                      {!federalUseItemized && (
                         <div className="text-xs text-gray-500 mt-1">
-                          Itemized (${federalDetails.total.toLocaleString()}) is less than standard (${federalStandardDeduction.toLocaleString()})
+                          Itemized (${fmt(federalDetails.total)}) is less than standard (${fmt(federalStandardTotal)})
                         </div>
                       )}
                     </div>
@@ -331,23 +321,23 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
 
                 {includeCaliforniaTax && (
                   <div className={`rounded-lg p-3 sm:p-4 border-2 transition-all ${
-                    californiaItemized > caStandardDeduction 
+                    caUseItemized
                       ? 'bg-green-50 border-green-300' 
                       : 'bg-white border-gray-200'
                   }`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-sm sm:text-base text-gray-900">California (FTB)</span>
-                      {californiaItemized > caStandardDeduction ? (
+                      {caUseItemized ? (
                         <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">ITEMIZED</span>
                       ) : (
                         <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-semibold">STANDARD</span>
                       )}
                     </div>
                     <div className="text-xl sm:text-2xl font-bold text-gray-900">
-                      ${Math.max(californiaItemized, caStandardDeduction).toLocaleString()}
+                      ${fmt(Math.max(californiaItemized, caStandardDeduction))}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 mt-1">
-                      Standard: ${caStandardDeduction.toLocaleString()}
+                      Standard: ${fmt(caStandardDeduction)}
                     </div>
                     <button
                       onClick={() => setExpandedCalifornia(!expandedCalifornia)}
@@ -359,35 +349,41 @@ export function Deductions({ onNext, onPrevious }: DeductionsProps) {
                       </svg>
                     </button>
                     
-                    {expandedCalifornia && (
+                    {expandedCalifornia && californiaDetails && (
                       <div className="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
                         <div className="flex justify-between">
                           <span>Property Tax:</span>
-                          <span>${californiaDetails.propertyTax.toLocaleString()}</span>
+                          <span>${fmt(californiaDetails.propertyTax)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Mortgage Interest:</span>
-                          <span>${californiaDetails.mortgageInterest.toLocaleString()}</span>
+                          <span>${fmt(californiaDetails.mortgageInterest)}</span>
                         </div>
                         {californiaDetails.mortgageLimited && (
                           <div className="flex justify-between text-orange-600 text-xs pl-3">
                             <span>→ Limited to $1M loan:</span>
-                            <span>${Math.round(californiaDetails.effectiveMortgageInterest).toLocaleString()}</span>
+                            <span>${fmt(californiaDetails.effectiveMortgageInterest)}</span>
                           </div>
                         )}
                         <div className="flex justify-between">
                           <span>Donations:</span>
-                          <span>${californiaDetails.donations.toLocaleString()}</span>
+                          <span>${fmt(californiaDetails.donations)}</span>
                         </div>
+                        {californiaDetails.limitationReduction > 0 && (
+                          <div className="flex justify-between text-orange-600 font-medium">
+                            <span>High-income limitation (6% of AGI over threshold):</span>
+                            <span>-${fmt(californiaDetails.limitationReduction)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between font-medium pt-1 border-t">
                           <span>Total CA Itemized:</span>
-                          <span className={californiaDetails.total < caStandardDeduction ? 'text-gray-500' : ''}>
-                            ${californiaDetails.total.toLocaleString()}
+                          <span className={!caUseItemized ? 'text-gray-500' : ''}>
+                            ${fmt(californiaDetails.total)}
                           </span>
                         </div>
-                        {californiaDetails.total < caStandardDeduction && (
+                        {!caUseItemized && (
                           <div className="text-xs text-gray-500 mt-1">
-                            Itemized (${californiaDetails.total.toLocaleString()}) is less than standard (${caStandardDeduction.toLocaleString()})
+                            Itemized (${fmt(californiaDetails.total)}) is less than standard (${fmt(caStandardDeduction)})
                           </div>
                         )}
                       </div>

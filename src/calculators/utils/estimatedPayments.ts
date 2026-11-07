@@ -23,7 +23,12 @@ export function calculateEstimatedPaymentsWithCumulativeSchedule(
   // Process each quarter in sequence
   for (let i = 0; i < paymentSchedule.length; i++) {
     const q = paymentSchedule[i]
-    const isPastDue = q.dueDateObj <= currentDate
+    // dueDateObj is built from a YYYY-MM-DD string (UTC midnight); a quarter is past due
+    // only after the end of its due date in the user's local time zone
+    const dueEndOfDay = new Date(
+      q.dueDateObj.getUTCFullYear(), q.dueDateObj.getUTCMonth(), q.dueDateObj.getUTCDate(), 23, 59, 59, 999
+    )
+    const isPastDue = currentDate > dueEndOfDay
     
     // If this quarter is already paid
     if (q.paid > 0) {

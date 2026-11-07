@@ -19,12 +19,12 @@ const CA_TAX_YEAR_DATA = {
       {
         name: 'low income',
         income: 20000,
-        expected: { taxableIncome: 14460, baseTax: 182, mentalHealthTax: 0, totalTax: 182 }
+        expected: { taxableIncome: 14460, baseTax: 182, mentalHealthTax: 0, exemptionCredit: 153, totalTax: 29 }
       },
       {
         name: 'middle income',
         income: 75000,
-        expected: { taxableIncome: 69460, baseTax: 3017, mentalHealthTax: 0, totalTax: 3017 }
+        expected: { taxableIncome: 69460, baseTax: 3017, mentalHealthTax: 0, exemptionCredit: 153, totalTax: 2864 }
       },
       {
         name: 'high income with all brackets',
@@ -41,7 +41,7 @@ const CA_TAX_YEAR_DATA = {
       {
         name: 'correct brackets for married filing jointly',
         income: 100000,
-        expected: { taxableIncome: 88920, baseTax: 2490, mentalHealthTax: 0, totalTax: 2490 }
+        expected: { taxableIncome: 88920, baseTax: 2490, mentalHealthTax: 0, exemptionCredit: 306, totalTax: 2184 }
       },
       {
         name: 'high income married couple',
@@ -65,12 +65,12 @@ const CA_TAX_YEAR_DATA = {
       {
         name: 'low income',
         income: 20000,
-        expected: { taxableIncome: 14100, baseTax: 167, mentalHealthTax: 0, totalTax: 167 }
+        expected: { taxableIncome: 14100, baseTax: 167, mentalHealthTax: 0, exemptionCredit: 158, totalTax: 9 }
       },
       {
         name: 'middle income',
         income: 80000,
-        expected: { taxableIncome: 74100, baseTax: 3223, mentalHealthTax: 0, totalTax: 3223 }
+        expected: { taxableIncome: 74100, baseTax: 3223, mentalHealthTax: 0, exemptionCredit: 158, totalTax: 3065 }
       },
       {
         name: 'high income',
@@ -83,7 +83,7 @@ const CA_TAX_YEAR_DATA = {
       {
         name: 'middle income married couple',
         income: 120000,
-        expected: { taxableIncome: 108200, baseTax: 3462, mentalHealthTax: 0, totalTax: 3462 }
+        expected: { taxableIncome: 108200, baseTax: 3462, mentalHealthTax: 0, exemptionCredit: 316, totalTax: 3146 }
       },
       {
         name: 'high income married couple',
@@ -103,7 +103,7 @@ const CA_TAX_YEAR_DATA = {
       {
         name: 'middle income (same as 2026 placeholder)',
         income: 80000,
-        expected: { taxableIncome: 74100, baseTax: 3223, mentalHealthTax: 0, totalTax: 3223 }
+        expected: { taxableIncome: 74100, baseTax: 3223, mentalHealthTax: 0, exemptionCredit: 158, totalTax: 3065 }
       }
     ],
     marriedTaxTests: [
@@ -170,11 +170,14 @@ describe('California Tax Calculator', () => {
             if (testCase.expected.mentalHealthTax !== undefined) {
               expect(result.mentalHealthTax).toBe(testCase.expected.mentalHealthTax)
             }
+            if ('exemptionCredit' in testCase.expected) {
+              expect(result.exemptionCredit).toBe(testCase.expected.exemptionCredit)
+            }
             if (testCase.expected.totalTax !== undefined) {
               expect(result.totalTax).toBe(testCase.expected.totalTax)
             } else {
               // For cases where we only specify some values, ensure basic consistency
-              expect(result.totalTax).toBe(result.baseTax + result.mentalHealthTax)
+              expect(result.totalTax).toBe(result.baseTax - result.exemptionCredit + result.mentalHealthTax)
             }
           })
         })
@@ -203,11 +206,14 @@ describe('California Tax Calculator', () => {
             if (testCase.expected.mentalHealthTax !== undefined) {
               expect(result.mentalHealthTax).toBe(testCase.expected.mentalHealthTax)
             }
+            if ('exemptionCredit' in testCase.expected) {
+              expect(result.exemptionCredit).toBe(testCase.expected.exemptionCredit)
+            }
             if (testCase.expected.totalTax !== undefined) {
               expect(result.totalTax).toBe(testCase.expected.totalTax)
             } else {
               // For cases where we only specify some values, ensure basic consistency
-              expect(result.totalTax).toBe(result.baseTax + result.mentalHealthTax)
+              expect(result.totalTax).toBe(result.baseTax - result.exemptionCredit + result.mentalHealthTax)
             }
           })
         })
@@ -298,6 +304,9 @@ describe('California Tax Calculator', () => {
             expect(result.taxableIncome).toBe(testCase.expected.taxableIncome)
             if (testCase.expected.mentalHealthTax !== undefined) {
               expect(result.mentalHealthTax).toBe(testCase.expected.mentalHealthTax)
+            }
+            if ('exemptionCredit' in testCase.expected) {
+              expect(result.exemptionCredit).toBe(testCase.expected.exemptionCredit)
             }
             if (testCase.expected.totalTax !== undefined) {
               expect(result.totalTax).toBe(testCase.expected.totalTax)

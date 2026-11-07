@@ -109,23 +109,9 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
   const federalOwed = taxResults.federalTax.owedOrRefund
   const caOwed = taxResults.californiaTax?.owedOrRefund || 0
   
-  // Calculate withholdings separately for display
-  const userFutureIncome = calculateFutureIncome(userIncome)
-  const spouseFutureIncome = filingStatus === 'marriedFilingJointly' ? calculateFutureIncome(spouseIncome) : { totalFederalWithhold: 0, totalStateWithhold: 0 }
-  
-  const federalWithholdings = Math.round(
-    (parseFloat(userIncome.ytdFederalWithhold) || 0) +
-    (parseFloat(spouseIncome.ytdFederalWithhold) || 0) +
-    userFutureIncome.totalFederalWithhold +
-    spouseFutureIncome.totalFederalWithhold
-  )
-  
-  const userStateWithholdings = (parseFloat(userIncome.ytdStateWithhold) || 0) + userFutureIncome.totalStateWithhold
-  const spouseStateWithholdings = (parseFloat(spouseIncome.ytdStateWithhold) || 0) + spouseFutureIncome.totalStateWithhold
-  
-  const californiaWithholdings = includeCaliforniaTax 
-    ? Math.round(userStateWithholdings + (filingStatus === 'marriedFilingJointly' ? spouseStateWithholdings : 0))
-    : 0
+  // Withholdings come from the calculation layer (federal includes Additional Medicare Tax withheld)
+  const federalWithholdings = taxResults.federalTax.withholdings
+  const californiaWithholdings = includeCaliforniaTax ? (taxResults.californiaTax?.withholdings ?? 0) : 0
     
   // Calculate total estimated payments already made
   const federalEstimatedPaid = 
@@ -301,10 +287,13 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                         const incomeComponents = taxResults.federalTax.incomeComponents
                         
                         // Calculate YTD and future wages for display breakdown
+                        const isMarried = filingStatus === 'marriedFilingJointly'
                         const userYtdWage = parseFloat(userIncome.ytdWage) || 0
-                        const spouseYtdWage = parseFloat(spouseIncome.ytdWage) || 0
-                        const userFutureIncome = calculateFutureIncome(userIncome)
-                        const spouseFutureIncome = calculateFutureIncome(spouseIncome)
+                        const spouseYtdWage = isMarried ? (parseFloat(spouseIncome.ytdWage) || 0) : 0
+                        const userFutureIncome = calculateFutureIncome(userIncome, taxYear)
+                        const spouseFutureIncome = isMarried
+                          ? calculateFutureIncome(spouseIncome, taxYear)
+                          : { totalWage: 0, totalFederalWithhold: 0, totalStateWithhold: 0 }
                         
                         return (
                           <>
@@ -504,10 +493,33 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                 )}
               </div>
             </div>
+            <div className="pl-4 space-y-1 text-gray-600">
+              {taxResults.federalTax.netInvestmentIncomeTax > 0 && (
+                <div>
+                  • Net Investment Income Tax (3.8%): ${taxResults.federalTax.netInvestmentIncomeTax.toLocaleString()}
+                  <div className="pl-3 text-xs text-gray-500">
+                    3.8% of the lesser of net investment income (${taxResults.netInvestmentIncome.toLocaleString()}) or MAGI above ${(filingStatus === 'marriedFilingJointly' ? 250000 : 200000).toLocaleString()}
+                  </div>
+                </div>
+              )}
+              {taxResults.federalTax.additionalMedicareTax > 0 && (
+                <div>
+                  • Additional Medicare Tax (0.9%): ${taxResults.federalTax.additionalMedicareTax.toLocaleString()}
+                  <div className="pl-3 text-xs text-gray-500">
+                    0.9% of wages above ${(filingStatus === 'marriedFilingJointly' ? 250000 : 200000).toLocaleString()}
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="flex justify-between pt-2">
               <span>Total Withholdings</span>
               <span className="font-medium">-${federalWithholdings.toLocaleString()}</span>
             </div>
+            {taxResults.federalTax.additionalMedicareWithheld > 0 && (
+              <div className="pl-4 text-xs text-gray-500">
+                Includes ${taxResults.federalTax.additionalMedicareWithheld.toLocaleString()} Additional Medicare Tax withheld by employers (0.9% of each earner's wages above $200,000)
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Estimated Payments Made</span>
               <span className="font-medium">-${(
@@ -649,6 +661,11 @@ export function Summary({ onPrevious, taxResults }: SummaryProps) {
                   </div>
                 )}
               </div>
+              {taxResults.californiaTax.exemptionCredit > 0 && (
+                <div className="pl-4 text-gray-600">
+                  • Personal Exemption Credit: -${taxResults.californiaTax.exemptionCredit.toLocaleString()}
+                </div>
+              )}
               <div className="flex justify-between pt-2">
                 <span>Total Withholdings</span>
                 <span className="font-medium">-${californiaWithholdings.toLocaleString()}</span>

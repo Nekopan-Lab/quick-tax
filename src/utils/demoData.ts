@@ -29,6 +29,21 @@ const getNextBiweeklyPaydate = (): string => {
 }
 
 
+// Next quarterly RSU vest dates (15th of Mar/Jun/Sep/Dec) after today
+const getUpcomingVestDates = (count: number): string[] => {
+  const dates: string[] = []
+  const date = new Date(today.getFullYear(), 2, 15)
+  while (dates.length < count) {
+    if (date > today) {
+      const mm = String(date.getMonth() + 1).padStart(2, '0')
+      dates.push(`${date.getFullYear()}-${mm}-15`)
+    }
+    date.setMonth(date.getMonth() + 3)
+  }
+  return dates
+}
+const [demoVestDate1, demoVestDate2] = getUpcomingVestDates(2)
+
 export const DEMO_USER_INCOME: IncomeData = {
   // Investment Income (moderate savings)
   ordinaryDividends: '1500',
@@ -62,13 +77,13 @@ export const DEMO_USER_INCOME: IncomeData = {
   futureRSUVests: [
     {
       id: 'demo-vest-1',
-      date: '2025-06-15',
+      date: demoVestDate1,
       shares: '200',
       expectedPrice: '150'
     },
     {
       id: 'demo-vest-2',
-      date: '2025-09-15',
+      date: demoVestDate2,
       shares: '200',
       expectedPrice: '150'
     }

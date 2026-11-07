@@ -11,6 +11,7 @@ export interface HouseholdIncomeAggregation {
     longTermGains: number
   }
   wageIncome: number
+  wageIncomeByPerson: number[]  // W-2 wages per earner (user, then spouse if MFJ)
   rothConversion: number
   totalWithholdings: {
     federal: number
@@ -25,14 +26,15 @@ export interface HouseholdIncomeAggregation {
 export function aggregateHouseholdIncome(
   userIncome: IncomeData,
   spouseIncome: IncomeData,
-  filingStatus: FilingStatus
+  filingStatus: FilingStatus,
+  taxYear?: number
 ): HouseholdIncomeAggregation {
   // Always aggregate user income
-  const userAgg = aggregateIndividualIncome(userIncome)
+  const userAgg = aggregateIndividualIncome(userIncome, taxYear)
   
   // Only aggregate spouse income if married filing jointly
   const includeSpouse = filingStatus === 'marriedFilingJointly'
-  const spouseAgg = includeSpouse ? aggregateIndividualIncome(spouseIncome) : null
+  const spouseAgg = includeSpouse ? aggregateIndividualIncome(spouseIncome, taxYear) : null
   
   // Combine the incomes
   return {
@@ -45,6 +47,7 @@ export function aggregateHouseholdIncome(
       longTermGains: userAgg.investmentIncome.longTermGains + (spouseAgg?.investmentIncome.longTermGains || 0)
     },
     wageIncome: userAgg.wageIncome + (spouseAgg?.wageIncome || 0),
+    wageIncomeByPerson: spouseAgg ? [userAgg.wageIncome, spouseAgg.wageIncome] : [userAgg.wageIncome],
     rothConversion: userAgg.rothConversion + (spouseAgg?.rothConversion || 0),
     totalWithholdings: {
       federal: userAgg.totalWithholdings.federal + (spouseAgg?.totalWithholdings.federal || 0),
@@ -60,11 +63,12 @@ export function aggregateHouseholdIncome(
 export function getIndividualAggregations(
   userIncome: IncomeData,
   spouseIncome: IncomeData,
-  filingStatus: FilingStatus
+  filingStatus: FilingStatus,
+  taxYear?: number
 ) {
-  const userAgg = aggregateIndividualIncome(userIncome)
+  const userAgg = aggregateIndividualIncome(userIncome, taxYear)
   const spouseAgg = filingStatus === 'marriedFilingJointly' 
-    ? aggregateIndividualIncome(spouseIncome)
+    ? aggregateIndividualIncome(spouseIncome, taxYear)
     : null
     
   return { userAgg, spouseAgg }

@@ -4,13 +4,64 @@ import type { IncomeData } from '@/store/useStore'
 export type { IncomeData }
 
 /**
- * Calculate future income from paychecks and RSU vests
+ * Parse a YYYY-MM-DD date string as a local date (new Date('YYYY-MM-DD') parses as UTC,
+ * which shifts the day backwards in US time zones)
  */
-export function calculateFutureIncome(income: IncomeData): {
+export function parseLocalDate(value: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value)
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  }
+  return new Date(value)
+}
+
+/**
+ * Count pay dates from nextPayDate onwards that fall inside the tax year
+ * (and not after lastPayDate, if given)
+ */
+function countPayDatesInTaxYear(
+  nextPayDate: string,
+  payFrequency: 'biweekly' | 'monthly',
+  lastPayDate: string | undefined,
+  taxYear: number
+): number {
+  const yearStart = new Date(taxYear, 0, 1)
+  const yearEnd = new Date(taxYear, 11, 31)
+  let endDate = yearEnd
+  if (lastPayDate) {
+    const lastPay = parseLocalDate(lastPayDate)
+    if (lastPay < endDate) endDate = lastPay
+  }
+
+  const firstPay = parseLocalDate(nextPayDate)
+  if (isNaN(firstPay.getTime()) || firstPay > endDate) return 0
+
+  let count = 0
+  let step = 0
+  let payDate = new Date(firstPay)
+  while (payDate <= endDate) {
+    if (payDate >= yearStart) count++
+    step++
+    payDate = new Date(firstPay)
+    if (payFrequency === 'biweekly') {
+      payDate.setDate(firstPay.getDate() + 14 * step)
+    } else {
+      payDate.setMonth(firstPay.getMonth() + step)
+    }
+  }
+  return count
+}
+
+/**
+ * Calculate future income from paychecks and RSU vests
+ * @param taxYear - Only paychecks dated within this tax year are counted (defaults to the current year)
+ */
+export function calculateFutureIncome(income: IncomeData, taxYearInput: number = new Date().getFullYear()): {
   totalWage: number
   totalFederalWithhold: number
   totalStateWithhold: number
 } {
+  const taxYear = Number(taxYearInput)
   // If using simple mode, just return the direct values
   if (income.incomeMode === 'simple') {
     return {
@@ -25,47 +76,22 @@ export function calculateFutureIncome(income: IncomeData): {
   const paycheckFederal = parseFloat(income.paycheckFederal) || 0
   const paycheckState = parseFloat(income.paycheckState) || 0
 
-  // Calculate remaining paychecks
+  // Calculate remaining paychecks (only those dated within the tax year)
   let paychecksRemaining = 0
   if (income.nextPayDate) {
-    const nextPayDate = new Date(income.nextPayDate)
-    const currentDate = new Date()
-    const yearEnd = new Date(currentDate.getFullYear(), 11, 31)
-    
-    // Determine the end date for paycheck calculation
-    let endDate = yearEnd
-    if (income.lastPayDate) {
-      const lastPayDate = new Date(income.lastPayDate)
-      // Use the earlier of lastPayDate or yearEnd
-      endDate = lastPayDate < yearEnd ? lastPayDate : yearEnd
-    }
-    
-    if (nextPayDate <= endDate) {
-      // Count paychecks from next pay date until end date (inclusive of end date)
-      let payDate = new Date(nextPayDate)
-      while (payDate <= endDate) {
-        paychecksRemaining++
-        if (income.payFrequency === 'biweekly') {
-          payDate.setDate(payDate.getDate() + 14)
-        } else { // monthly
-          payDate.setMonth(payDate.getMonth() + 1)
-        }
-      }
-    }
+    paychecksRemaining = countPayDatesInTaxYear(income.nextPayDate, income.payFrequency, income.lastPayDate, taxYear)
   } else {
-    // Fallback if no next payment date specified
-    const currentDate = new Date()
-    const yearEnd = new Date(currentDate.getFullYear(), 11, 31)
-    
-    // Determine the end date for paycheck calculation
-    let endDate = yearEnd
+    // Fallback if no next payment date specified: estimate from the remaining weeks of the tax year
+    const yearStart = new Date(taxYear, 0, 1)
+    const now = new Date()
+    const startDate = now > yearStart ? now : yearStart
+    let endDate = new Date(taxYear, 11, 31)
     if (income.lastPayDate) {
-      const lastPayDate = new Date(income.lastPayDate)
-      // Use the earlier of lastPayDate or yearEnd
-      endDate = lastPayDate < yearEnd ? lastPayDate : yearEnd
+      const lastPayDate = parseLocalDate(income.lastPayDate)
+      if (lastPayDate < endDate) endDate = lastPayDate
     }
     
-    const weeksRemaining = Math.max(0, Math.ceil((endDate.getTime() - currentDate.getTime()) / (7 * 24 * 60 * 60 * 1000)))
+    const weeksRemaining = Math.max(0, Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)))
     
     paychecksRemaining = income.payFrequency === 'biweekly' 
       ? Math.ceil(weeksRemaining / 2) 
@@ -79,8 +105,10 @@ export function calculateFutureIncome(income: IncomeData): {
   }
   
 
-  // Add RSU vests
-  const rsuTotals = (income.futureRSUVests || []).reduce((acc, vest) => {
+  // Add RSU vests (a vest with a date outside the tax year belongs to another year)
+  const rsuTotals = (income.futureRSUVests || [])
+    .filter(vest => !vest.date || parseLocalDate(vest.date).getFullYear() === taxYear)
+    .reduce((acc, vest) => {
     const shares = parseFloat(vest.shares) || 0
     const price = parseFloat(vest.expectedPrice) || 0
     const vestValue = shares * price
@@ -130,7 +158,7 @@ export function calculateFutureIncome(income: IncomeData): {
  * included in the YTD W2 wage. It is used ONLY to calculate withholding rates
  * for future RSU vests, NOT added to total income.
  */
-export function aggregateIndividualIncome(income: IncomeData): {
+export function aggregateIndividualIncome(income: IncomeData, taxYear?: number): {
   totalIncome: number
   investmentIncome: {
     ordinaryDividends: number
@@ -158,7 +186,7 @@ export function aggregateIndividualIncome(income: IncomeData): {
   const ytdFederalWithhold = parseFloat(income.ytdFederalWithhold) || 0
   const ytdStateWithhold = parseFloat(income.ytdStateWithhold) || 0
 
-  const futureIncome = calculateFutureIncome(income)
+  const futureIncome = calculateFutureIncome(income, taxYear)
 
   const totalWageIncome = ytdWage + futureIncome.totalWage
   const rothConversion = parseFloat(income.rothConversion) || 0
@@ -190,8 +218,8 @@ export function aggregateIndividualIncome(income: IncomeData): {
 /**
  * Calculate total income for an individual (for display purposes)
  */
-export function calculateIndividualTotalIncome(income: IncomeData): number {
-  const aggregated = aggregateIndividualIncome(income)
+export function calculateIndividualTotalIncome(income: IncomeData, taxYear?: number): number {
+  const aggregated = aggregateIndividualIncome(income, taxYear)
   return aggregated.totalIncome
 }
 
@@ -223,47 +251,21 @@ export function calculateWithholdingRates(income: IncomeData): {
 /**
  * Calculate remaining paychecks for the year
  */
-export function calculateRemainingPaychecks(nextPayDate: string, payFrequency: 'biweekly' | 'monthly', lastPayDate?: string): number {
+export function calculateRemainingPaychecks(
+  nextPayDate: string,
+  payFrequency: 'biweekly' | 'monthly',
+  lastPayDate?: string,
+  taxYear?: number
+): number {
   if (!nextPayDate) return 0
-  
-  const nextPay = new Date(nextPayDate)
-  const yearEnd = new Date(nextPay.getFullYear(), 11, 31)
-  
-  // Determine the end date for paycheck calculation
-  let endDate = yearEnd
-  if (lastPayDate) {
-    const lastPay = new Date(lastPayDate)
-    // Use the earlier of lastPayDate or yearEnd
-    endDate = lastPay < yearEnd ? lastPay : yearEnd
-  }
-  
-  if (nextPay > endDate) return 0
-  
-  if (payFrequency === 'biweekly') {
-    // Count paychecks inclusive of the end date
-    let count = 0
-    let payDate = new Date(nextPay)
-    while (payDate <= endDate) {
-      count++
-      payDate.setDate(payDate.getDate() + 14)
-    }
-    return count
-  } else {
-    let count = 0
-    let payDate = new Date(nextPay)
-    
-    while (payDate <= endDate) {
-      count++
-      payDate.setMonth(payDate.getMonth() + 1)
-    }
-    return count
-  }
+  const year = taxYear ?? parseLocalDate(nextPayDate).getFullYear()
+  return countPayDatesInTaxYear(nextPayDate, payFrequency, lastPayDate, year)
 }
 
 /**
  * Calculate projected paycheck income
  */
-export function calculateProjectedPaycheckIncome(income: IncomeData): {
+export function calculateProjectedPaycheckIncome(income: IncomeData, taxYear?: number): {
   remainingPaychecks: number
   projectedWage: number
   projectedFederalWithhold: number
@@ -273,7 +275,7 @@ export function calculateProjectedPaycheckIncome(income: IncomeData): {
   const paycheckFederal = parseFloat(income.paycheckFederal) || 0
   const paycheckState = parseFloat(income.paycheckState) || 0
   
-  const remainingPaychecks = calculateRemainingPaychecks(income.nextPayDate, income.payFrequency, income.lastPayDate)
+  const remainingPaychecks = calculateRemainingPaychecks(income.nextPayDate, income.payFrequency, income.lastPayDate, taxYear)
   
   return {
     remainingPaychecks,

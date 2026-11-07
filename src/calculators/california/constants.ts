@@ -108,3 +108,42 @@ export function getCaliforniaMentalHealthTaxThreshold(year: TaxYear): number {
 export function getCaliforniaMentalHealthTaxRate(year: TaxYear): number {
   return CALIFORNIA_TAX_DATA[year].mentalHealthTaxRate
 }
+
+// ---------------------------------------------------------------------------
+// Personal exemption credit and high-income limitations
+// ---------------------------------------------------------------------------
+interface CaliforniaCreditData {
+  // Personal exemption credit (single = 1 credit, MFJ = 2 credits combined)
+  personalExemptionCredit: Record<FilingStatus, number>
+  // Federal AGI above which exemption credits phase out and itemized deductions are limited
+  agiLimitationThreshold: Record<FilingStatus, number>
+}
+
+const CALIFORNIA_CREDIT_DATA_BY_YEAR: Record<2025 | 2026, CaliforniaCreditData> = {
+  2025: {
+    personalExemptionCredit: { single: 153, marriedFilingJointly: 306 },
+    agiLimitationThreshold: { single: 252203, marriedFilingJointly: 504411 }
+  },
+  // 2026: FTB indexed amounts (3.4% CA CPI adjustment)
+  2026: {
+    personalExemptionCredit: { single: 158, marriedFilingJointly: 316 },
+    agiLimitationThreshold: { single: 260778, marriedFilingJointly: 521561 }
+  }
+}
+
+export const CALIFORNIA_CREDIT_DATA: Record<TaxYear, CaliforniaCreditData> = {
+  ...CALIFORNIA_CREDIT_DATA_BY_YEAR,
+  // 2027 placeholder: reuse 2026 until FTB publishes 2027 figures
+  2027: CALIFORNIA_CREDIT_DATA_BY_YEAR[2026]
+}
+
+// Exemption credits are reduced by $6 per credit for each $2,500 (or fraction) of AGI over the threshold
+export const CA_EXEMPTION_PHASEOUT_STEP = 2500
+export const CA_EXEMPTION_PHASEOUT_PER_CREDIT = 6
+// Itemized deductions are reduced by the lesser of 6% of AGI over the threshold or 80% of itemized deductions
+export const CA_ITEMIZED_LIMITATION_RATE = 0.06
+export const CA_ITEMIZED_LIMITATION_MAX_SHARE = 0.8
+
+export function getCaliforniaCreditData(year: TaxYear): CaliforniaCreditData {
+  return CALIFORNIA_CREDIT_DATA[year]
+}

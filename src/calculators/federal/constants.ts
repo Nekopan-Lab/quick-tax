@@ -203,3 +203,65 @@ export function getFederalStandardDeduction(year: TaxYear, filingStatus: FilingS
 export function getFederalCapitalGainsBrackets(year: TaxYear, filingStatus: FilingStatus): TaxBracket[] {
   return FEDERAL_TAX_DATA[year].capitalGainsBrackets[filingStatus]
 }
+
+// ---------------------------------------------------------------------------
+// Deduction rules that changed under OBBBA (effective for tax years 2026+)
+// ---------------------------------------------------------------------------
+interface FederalDeductionRules {
+  // Itemized charitable contributions are deductible only above this share of AGI
+  charitableAgiFloorRate: number
+  // Itemized deductions are reduced by this fraction of the lesser of
+  // (a) total itemized deductions or (b) income above the 37% bracket threshold
+  // (2/37 caps the value of itemized deductions at 35% for top-bracket taxpayers)
+  itemizedLimitationRate: number
+  // Charitable deduction available to taxpayers who take the standard deduction
+  nonItemizerCharitableCap: Record<FilingStatus, number>
+}
+
+export const FEDERAL_DEDUCTION_RULES: Record<TaxYear, FederalDeductionRules> = {
+  2025: {
+    charitableAgiFloorRate: 0,
+    itemizedLimitationRate: 0,
+    nonItemizerCharitableCap: { single: 0, marriedFilingJointly: 0 }
+  },
+  2026: {
+    charitableAgiFloorRate: 0.005,
+    itemizedLimitationRate: 2 / 37,
+    nonItemizerCharitableCap: { single: 1000, marriedFilingJointly: 2000 }
+  },
+  2027: {
+    charitableAgiFloorRate: 0.005,
+    itemizedLimitationRate: 2 / 37,
+    nonItemizerCharitableCap: { single: 1000, marriedFilingJointly: 2000 }
+  }
+}
+
+export function getFederalDeductionRules(year: TaxYear): FederalDeductionRules {
+  return FEDERAL_DEDUCTION_RULES[year]
+}
+
+/** Taxable income where the 37% bracket starts (used by the itemized deduction limitation) */
+export function getFederalTopBracketThreshold(year: TaxYear, filingStatus: FilingStatus): number {
+  const brackets = getFederalTaxBrackets(year, filingStatus)
+  return brackets[brackets.length - 1].min
+}
+
+// ---------------------------------------------------------------------------
+// Surtaxes (statutory thresholds, not inflation-indexed)
+// ---------------------------------------------------------------------------
+// Net Investment Income Tax (IRC §1411): 3.8% of the lesser of net investment
+// income or MAGI above the threshold
+export const NIIT_RATE = 0.038
+export const NIIT_THRESHOLDS: Record<FilingStatus, number> = {
+  single: 200000,
+  marriedFilingJointly: 250000
+}
+
+// Additional Medicare Tax (IRC §3101(b)(2)): 0.9% of wages above the threshold.
+// Employers must withhold it on each employee's wages above $200,000.
+export const ADDITIONAL_MEDICARE_RATE = 0.009
+export const ADDITIONAL_MEDICARE_THRESHOLDS: Record<FilingStatus, number> = {
+  single: 200000,
+  marriedFilingJointly: 250000
+}
+export const ADDITIONAL_MEDICARE_EMPLOYER_WITHHOLDING_THRESHOLD = 200000

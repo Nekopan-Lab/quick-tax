@@ -5,7 +5,12 @@ import {
   getCaliforniaTaxBrackets,
   getCaliforniaStandardDeduction,
   getCaliforniaMentalHealthTaxThreshold,
-  getCaliforniaMentalHealthTaxRate
+  getCaliforniaMentalHealthTaxRate,
+  getCaliforniaCreditData,
+  CA_EXEMPTION_PHASEOUT_STEP,
+  CA_EXEMPTION_PHASEOUT_PER_CREDIT,
+  CA_ITEMIZED_LIMITATION_RATE,
+  CA_ITEMIZED_LIMITATION_MAX_SHARE
 } from './constants'
 import { calculateProgressiveTaxWithDetails, TaxBracketDetail, calculateDistanceToNextBracket, NextBracketInfo } from '../utils/taxBrackets'
 import { calculateEstimatedPaymentsWithCumulativeSchedule, type QuarterlyPaymentSchedule } from '../utils/estimatedPayments'
@@ -16,9 +21,11 @@ export interface CaliforniaIncomeBreakdown {
 
 export interface CaliforniaTaxResult {
   taxableIncome: number      // Income after deductions
-  baseTax: number            // Tax calculated from standard brackets
+  baseTax: number            // Tax calculated from standard brackets (before credits)
+  exemptionCredit: number    // Personal exemption credit applied against base tax (after AGI phaseout)
   mentalHealthTax: number    // Additional 1% tax on income over $1M
   totalTax: number           // Total tax liability (before any withholdings or payments)
+  withholdings: number       // California withholdings credited against the tax
   deduction: DeductionInfo   // Deduction type and amount used for CA tax calculation
   owedOrRefund: number       // Final amount owed (positive) or refunded (negative) after subtracting withholdings and estimated payments
   effectiveRate: number      // Effective tax rate as percentage
@@ -36,6 +43,7 @@ export interface CaliforniaTaxResult {
  * @param taxYear - Tax year for calculations
  * @param withholdings - Total California withholdings
  * @param estimatedPayments - Total estimated payments made
+ * @param agi - Federal AGI used for the exemption credit phaseout (defaults to income)
  * @returns California tax calculation result
  */
 export function calculateCaliforniaTax(
@@ -44,7 +52,8 @@ export function calculateCaliforniaTax(
   filingStatus: FilingStatus,
   taxYear: TaxYear,
   withholdings: number,
-  estimatedPayments: number
+  estimatedPayments: number,
+  agi: number = income
 ): CaliforniaTaxResult {
   // Calculate taxable income after deductions
   const taxableIncome = Math.max(0, income - deductionInfo.amount)
@@ -63,7 +72,13 @@ export function calculateCaliforniaTax(
     mentalHealthTax = (taxableIncome - threshold) * rate
   }
   
-  const totalTax = Math.round(taxResult.totalTax + mentalHealthTax)
+  // Personal exemption credit reduces regular tax (not below zero); it does not offset the mental health tax
+  const exemptionCredit = Math.min(
+    calculateCaliforniaExemptionCredit(agi, filingStatus, taxYear),
+    taxResult.totalTax
+  )
+
+  const totalTax = Math.round(taxResult.totalTax - exemptionCredit + mentalHealthTax)
   const owedOrRefund = totalTax - withholdings - estimatedPayments
   const effectiveRate = income > 0 ? (totalTax / income) * 100 : 0
   
@@ -81,8 +96,10 @@ export function calculateCaliforniaTax(
   return {
     taxableIncome,
     baseTax: Math.round(taxResult.totalTax),
+    exemptionCredit: Math.round(exemptionCredit),
     mentalHealthTax: Math.round(mentalHealthTax),
     totalTax,
+    withholdings: Math.round(withholdings),
     deduction: deductionInfo,
     owedOrRefund: Math.round(owedOrRefund),
     effectiveRate,
@@ -90,6 +107,45 @@ export function calculateCaliforniaTax(
     nextBracketInfo,
     distanceToMentalHealthTax
   }
+}
+
+/**
+ * California personal exemption credit after the high-income phaseout.
+ * Each credit is reduced by $6 for every $2,500 (or fraction) of federal AGI over the threshold.
+ * Single filers have one credit; MFJ filers have two.
+ */
+export function calculateCaliforniaExemptionCredit(
+  agi: number,
+  filingStatus: FilingStatus,
+  taxYear: TaxYear
+): number {
+  const data = getCaliforniaCreditData(taxYear)
+  const baseCredit = data.personalExemptionCredit[filingStatus]
+  const threshold = data.agiLimitationThreshold[filingStatus]
+  if (agi <= threshold) return baseCredit
+
+  const numberOfCredits = filingStatus === 'marriedFilingJointly' ? 2 : 1
+  const steps = Math.ceil((agi - threshold) / CA_EXEMPTION_PHASEOUT_STEP)
+  const reduction = steps * CA_EXEMPTION_PHASEOUT_PER_CREDIT * numberOfCredits
+  return Math.max(0, baseCredit - reduction)
+}
+
+/**
+ * California itemized deduction limitation for high-AGI taxpayers:
+ * reduction = lesser of 6% of AGI over the threshold, or 80% of itemized deductions
+ */
+export function calculateCaliforniaItemizedLimitation(
+  itemizedTotal: number,
+  agi: number,
+  filingStatus: FilingStatus,
+  taxYear: TaxYear
+): number {
+  const threshold = getCaliforniaCreditData(taxYear).agiLimitationThreshold[filingStatus]
+  if (agi <= threshold || itemizedTotal <= 0) return 0
+  return Math.min(
+    (agi - threshold) * CA_ITEMIZED_LIMITATION_RATE,
+    itemizedTotal * CA_ITEMIZED_LIMITATION_MAX_SHARE
+  )
 }
 
 // Re-export the helper function for backwards compatibility
@@ -107,16 +163,22 @@ export interface CaliforniaItemizedDeductionDetails {
   effectiveMortgageInterest: number
   mortgageLimited: boolean
   donations: number
-  total: number
+  totalBeforeLimitation: number  // Sum of itemized deductions before the high-income limitation
+  limitationReduction: number    // High-AGI itemized deduction limitation (0 when AGI is below threshold)
+  total: number                  // Itemized deductions after limitation
 }
 
 /**
- * Calculate California itemized deductions (no SALT cap, always $1M mortgage limit)
+ * Calculate California itemized deductions (no SALT cap, always $1M mortgage limit).
+ * When agi, filingStatus and taxYear are given, the high-income limitation is applied.
  */
 export function calculateCaliforniaItemizedDeductions(
-  deductions: DeductionsData
+  deductions: DeductionsData,
+  agi?: number,
+  filingStatus?: FilingStatus,
+  taxYear?: TaxYear
 ): number {
-  const details = calculateCaliforniaItemizedDeductionDetails(deductions)
+  const details = calculateCaliforniaItemizedDeductionDetails(deductions, agi, filingStatus, taxYear)
   return details.total
 }
 
@@ -124,7 +186,10 @@ export function calculateCaliforniaItemizedDeductions(
  * Calculate California itemized deductions with detailed breakdown
  */
 export function calculateCaliforniaItemizedDeductionDetails(
-  deductions: DeductionsData
+  deductions: DeductionsData,
+  agi?: number,
+  filingStatus?: FilingStatus,
+  taxYear?: TaxYear
 ): CaliforniaItemizedDeductionDetails {
   const propertyTax = parseFloat(deductions.propertyTax) || 0
   const mortgageInterest = parseFloat(deductions.mortgageInterest) || 0
@@ -144,6 +209,11 @@ export function calculateCaliforniaItemizedDeductionDetails(
     mortgageLimited = true
   }
   
+  const totalBeforeLimitation = propertyTax + deductibleMortgageInterest + donations
+  const limitationReduction = agi !== undefined && filingStatus && taxYear
+    ? calculateCaliforniaItemizedLimitation(totalBeforeLimitation, agi, filingStatus, taxYear)
+    : 0
+
   return {
     propertyTax,
     mortgageInterest,
@@ -152,7 +222,9 @@ export function calculateCaliforniaItemizedDeductionDetails(
     effectiveMortgageInterest: deductibleMortgageInterest,
     mortgageLimited,
     donations,
-    total: propertyTax + deductibleMortgageInterest + donations
+    totalBeforeLimitation,
+    limitationReduction,
+    total: totalBeforeLimitation - limitationReduction
   }
 }
 
@@ -212,6 +284,21 @@ export function calculateEstimatedCAStateTax(
   
   const caResult = calculateCaliforniaTax(totalIncome, deductionInfo, filingStatus, taxYear, 0, 0)
   return caResult.totalTax
+}
+
+/**
+ * California income tax actually paid during the tax year, which is what the
+ * federal SALT deduction allows (cash basis): withholdings plus the Q1 and Q2
+ * estimated payments. The Q4 payment is due in January of the following year,
+ * so it is deductible in that later year and is excluded here.
+ */
+export function calculateCaliforniaTaxPaidInYear(
+  withholdings: number,
+  estimatedPayments: EstimatedPaymentsData
+): number {
+  return withholdings +
+    (parseFloat(estimatedPayments.californiaQ1) || 0) +
+    (parseFloat(estimatedPayments.californiaQ2) || 0)
 }
 
 /**
